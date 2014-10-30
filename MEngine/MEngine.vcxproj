@@ -194,11 +194,6 @@ xcopy /F /Y /Q "..\Includes\Irrlicht$(PlatformArchitecture).dll" "..\MCS\bin\Irr
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
