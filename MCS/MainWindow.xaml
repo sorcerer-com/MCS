@@ -2,7 +2,156 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="My Creative Studio" Width="800" Height="600" Icon="Images/Icon.ico">
+    
+    <Window.Resources>
+        <Style x:Key="toolbarButtonImageStyle" TargetType="Image">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="17"/>
+            <Setter Property="Stretch" Value="Fill"/>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Top ToolBar -->
+        <ToolBarTray Height="27" Name="toolBar1" VerticalAlignment="Top" Grid.Row="0" IsManipulationEnabled="True">
+            <ToolBar Band="1" BandIndex="1" IsManipulationEnabled="True">
+                <Button Name="newButton" ToolTip="New (Ctrl+N)" Click="newButton_Click">
+                    <Image Source="/Images/MainWindow/New.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="openButton" ToolTip="Open (Ctrl+O)" Click="openButton_Click">
+                    <Image Source="/Images/MainWindow/Open.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="saveButton" ToolTip="Save (Ctrl+S)" Click="saveButton_Click">
+                    <Image Source="/Images/MainWindow/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+            </ToolBar>
+            <ToolBar Band="1" BandIndex="2" IsManipulationEnabled="True">
+                <Button Name="logButton" ToolTip="Log (F8)" Click="logButton_Click">
+                    <Image Source="/Images/MainWindow/Log.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="changeButton" ToolTip="Change Renderer (F9)" Click="changeButton_Click">
+                    <Image Source="/Images/MainWindow/Change.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+            </ToolBar>
+            <ToolBar Band="1" BandIndex="3" IsManipulationEnabled="True">
+                <RadioButton Name="selectRadioButton" GroupName="Cursors" IsChecked="True" Click="cursorRadioButton_Click">
+                    <Image Source="/Images/MainWindow/Cursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </RadioButton>
+                <RadioButton Name="translateRadioButton" GroupName="Cursors" Click="cursorRadioButton_Click">
+                    <Image Source="/Images/MainWindow/MoveCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </RadioButton>
+                <RadioButton Name="rotateRadioButton" GroupName="Cursors" Click="cursorRadioButton_Click">
+                    <Image Source="/Images/MainWindow/RotateCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </RadioButton>
+                <RadioButton Name="scaleRadioButton" GroupName="Cursors" Click="cursorRadioButton_Click">
+                    <Image Source="/Images/MainWindow/ScaleCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </RadioButton>
+            </ToolBar>
+            <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
+                <Button Name="contentButton" ToolTip="Content Browser (F3)" Click="contentButton_Click">
+                    <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="environmentButton" ToolTip="Environment (Ctrl+E)" Click="environmentButton_Click">
+                    <Image Source="/Images/MainWindow/Environment.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="findButton" ToolTip="Find (Ctrl+F)" Click="findButton_Click">
+                    <Image Source="/Images/MainWindow/Find.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="layersButton" ToolTip="Layers (Ctrl+L)" Click="layersButton_Click">
+                    <Image Source="/Images/MainWindow/Layers.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="animationButton" ToolTip="Animations (Ctrl+A)" Click="animationButton_Click">
+                    <Image Source="/Images/MainWindow/Animations.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="scriptButton" ToolTip="Scripts (F10)" Click="scriptButton_Click">
+                    <Image Source="/Images/MainWindow/Scripts.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+            </ToolBar>
+            <ToolBar Band="1" BandIndex="5" IsManipulationEnabled="True">
+                <Button Name="buildLightMapsButton" ToolTip="Build Light Maps (F6)" Click="buildLightMapsButton_Click">
+                    <Image Source="/Images/MainWindow/BuildLightMaps.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="packagingButton" ToolTip="Package Game (F12)" Click="packagingButton_Click">
+                    <Image Source="/Images/MainWindow/Packaging.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+            </ToolBar>
+            <ToolBar Band="1" BandIndex="5" IsManipulationEnabled="True">
+                <Button Name="profilingButton" ToolTip="Profiling (Ctrl+P)" Click="profilingButton_Click">
+                    <Image Source="/Images/MainWindow/Profiling.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button Name="playButton" ToolTip="Play/Stop (F5)" Click="playButton_Click">
+                    <Image Source="/Images/MainWindow/Play.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <!-- Render image -->
+        <Image Name="renderImage" Stretch="Fill" Grid.Row="1" Focusable="True" Source="/Images/MainWindow/scale.bmp" 
+               ContextMenuOpening="renderImage_ContextMenuOpening">
+
+            <Image.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Name="renameMenuItem" Header="Rename" Click="renameMenuItem_Click"/>
+                    <MenuItem Name="cloneMenuItem" Header="Clone" Click="cloneMenuItem_Click"/>
+                    <MenuItem Name="deleteMenuItem" Header="Delete" Click="deleteMenuItem_Click"/>
+                    <MenuItem Name="propertiesMenuItem" Header="Properties" Click="propertiesMenuItem_Click"/>
+                    <Separator/>
+                    <MenuItem Name="addCameraMenuItem" Header="Add Camera" Click="addMenuItem_Click"/>
+                    <MenuItem Name="addLightMenuItem" Header="Add Light" Click="addMenuItem_Click"/>
+                    <MenuItem Name="addStaticObjectMenuItem" Header="Add Static Object"/>
+                    <MenuItem Name="addDynamicObjectMenuItem" Header="Add Dynamic Object"/>
+                    <MenuItem Name="addWaterMenuItem" Header="Add Water"/>
+                    <MenuItem Name="addCharacterMenuItem" Header="Add Character"/>
+                </ContextMenu>
+            </Image.ContextMenu>
+
+        </Image>
+
+        <!-- Bottom StatusBar -->
+        <StatusBar Grid.Row="2" Height="30" Name="statusBar1" VerticalAlignment="Top">
+            <ComboBox Name="objectsComboBox" Width="250" MaxDropDownHeight="100" ItemsSource="{Binding Elements}" SelectionChanged="objectsComboBox_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <ContentPresenter Content="{Binding Name}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Separator/>
+            <!-- <MC:ValueBox x:Name="scaleValueBox" Width="50" Value="0.0" Changed="scaleValueBox_Changed"/> -->
+            <Separator/>
+            <Image Source="/Images/MainWindow/translate.png"/>
+            <ComboBox Name="translateComboBox" Width="Auto" SelectedIndex="1">
+                <ComboBoxItem Content="1"/>
+                <ComboBoxItem Content="4"/>
+                <ComboBoxItem Content="16"/>
+                <ComboBoxItem Content="64"/>
+                <ComboBoxItem Content="256"/>
+                <ComboBoxItem Content="1024"/>
+            </ComboBox>
+            <Separator/>
+            <Image Source="/Images/MainWindow/rotate.png"/>
+            <ComboBox Name="rotateComboBox" Width="Auto" SelectedIndex="1">
+                <ComboBoxItem Content="5"/>
+                <ComboBoxItem Content="15"/>
+                <ComboBoxItem Content="45"/>
+                <ComboBoxItem Content="90"/>
+            </ComboBox>
+            <Separator/>
+            <Image Source="/Images/MainWindow/scale.png"/>
+            <ComboBox Name="scaleComboBox" Width="Auto" SelectedIndex="2">
+                <ComboBoxItem Content="1"/>
+                <ComboBoxItem Content="10"/>
+                <ComboBoxItem Content="30"/>
+                <ComboBoxItem Content="50"/>
+            </ComboBox>
+            <Separator/>
+            <Label Name="infoLabel" Width="Auto"/>
+        </StatusBar>
     </Grid>
 </Window>

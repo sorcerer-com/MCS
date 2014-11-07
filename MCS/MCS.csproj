@@ -156,6 +156,33 @@
   <ItemGroup>
     <Resource Include="Images\Icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\MainWindow\Animations.png" />
+    <Resource Include="Images\MainWindow\BuildLightMaps.png" />
+    <Resource Include="Images\MainWindow\Change.PNG" />
+    <Resource Include="Images\MainWindow\Contents.PNG" />
+    <Resource Include="Images\MainWindow\Cursor.PNG" />
+    <Resource Include="Images\MainWindow\Environment.png" />
+    <Resource Include="Images\MainWindow\Find.PNG" />
+    <Resource Include="Images\MainWindow\Layers.png" />
+    <Resource Include="Images\MainWindow\Log.png" />
+    <Resource Include="Images\MainWindow\New.png" />
+    <Resource Include="Images\MainWindow\Open.PNG" />
+    <Resource Include="Images\MainWindow\Packaging.png" />
+    <Resource Include="Images\MainWindow\Play.png" />
+    <Resource Include="Images\MainWindow\Profiling.png" />
+    <Resource Include="Images\MainWindow\Rotate.PNG" />
+    <Resource Include="Images\MainWindow\Save.PNG" />
+    <Resource Include="Images\MainWindow\Scale.PNG" />
+    <Resource Include="Images\MainWindow\Scripts.png" />
+    <Resource Include="Images\MainWindow\Stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\MainWindow\MoveCursor.png" />
+    <Resource Include="Images\MainWindow\RotateCursor.PNG" />
+    <Resource Include="Images\MainWindow\ScaleCursor.PNG" />
+    <Resource Include="Images\MainWindow\translate.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
