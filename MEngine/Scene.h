@@ -35,4 +35,5 @@ namespace Engine {
 
 		static void Log(LogType type, const string& category, const string& text);
 	};
+
 }

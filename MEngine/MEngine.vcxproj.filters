@@ -4,11 +4,13 @@
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Utils\Config.h" />
+    <ClInclude Include="Wrappers\MScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Stdafx.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Wrappers\MScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
