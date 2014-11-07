@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using MEngine;
+using System.Windows;
 
+// 27.10.2014
 namespace MCS
 {
     /// <summary>
@@ -7,6 +9,8 @@ namespace MCS
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MScene scene;
+
         public MainWindow()
         {
             InitializeComponent();
