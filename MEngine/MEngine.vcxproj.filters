@@ -7,6 +7,7 @@
     <ClInclude Include="Wrappers\MScene.h" />
     <ClInclude Include="Managers\ContentManager.h" />
     <ClInclude Include="Content Elements\ContentElement.h" />
+    <ClInclude Include="Utils\Header.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

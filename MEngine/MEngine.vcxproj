@@ -199,6 +199,7 @@ xcopy /F /Y /Q "..\Includes\Irrlicht$(PlatformArchitecture).dll" "..\MCS\bin\Irr
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Utils\Config.h" />
+    <ClInclude Include="Utils\Header.h" />
     <ClInclude Include="Wrappers\MScene.h" />
   </ItemGroup>
   <ItemGroup>
