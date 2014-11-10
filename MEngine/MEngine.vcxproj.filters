@@ -5,12 +5,16 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Utils\Config.h" />
     <ClInclude Include="Wrappers\MScene.h" />
+    <ClInclude Include="Managers\ContentManager.h" />
+    <ClInclude Include="Content Elements\ContentElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Stdafx.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Wrappers\MScene.cpp" />
+    <ClCompile Include="Managers\ContentManager.cpp" />
+    <ClCompile Include="Content Elements\ContentElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

@@ -1,7 +1,8 @@
 ﻿<Window x:Class="MCS.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="My Creative Studio" Width="800" Height="600" Icon="Images/Icon.ico">
+        Title="My Creative Studio" Width="800" Height="600" Icon="Images/Icon.ico"
+        Loaded="Window_Loaded">
     
     <Window.Resources>
         <Style x:Key="toolbarButtonImageStyle" TargetType="Image">
@@ -92,7 +93,7 @@
         </ToolBarTray>
 
         <!-- Render image -->
-        <Image Name="renderImage" Stretch="Fill" Grid.Row="1" Focusable="True" Source="/Images/MainWindow/scale.bmp" 
+        <Image Name="renderImage" Stretch="Fill" Grid.Row="1" Focusable="True" Source="/Images/MainWindow/scale.png" 
                ContextMenuOpening="renderImage_ContextMenuOpening">
 
             <Image.ContextMenu>

@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "Scene.h"
 
+#include <time.h>
 #include <fstream>
 #include <iomanip>
 
@@ -16,6 +17,8 @@ namespace Engine {
 
 	Scene::Scene()
 	{
+		srand(clock());
+		Scene::Log(ELog, "Scene", "Start engine");
 	}
 
 	Scene::~Scene()
@@ -43,7 +46,7 @@ namespace Engine {
 
 		ofile << left;
 		ofile << setw(10) << stype << setw(0);
-		ofile << "[" << setw(20) << category << setw(0) << "]:";
+		ofile << "[" << setw(20) << category << setw(0) << "]: ";
 		ofile << text << endl;
 
 		ofile.flush();

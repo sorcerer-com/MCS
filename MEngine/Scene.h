@@ -2,9 +2,7 @@
 #pragma once
 #pragma unmanaged
 
-#include <string>
-
-using namespace std;
+#include "Utils\Header.h"
 
 
 namespace Engine {

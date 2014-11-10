@@ -18,6 +18,11 @@ namespace MCS
             InitializeComponent();
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.scene = new MScene();
+        }
+
 
         private void newButton_Click(object sender, RoutedEventArgs e)
         {
@@ -112,5 +117,6 @@ namespace MCS
         private void objectsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
         }
+
     }
 }
