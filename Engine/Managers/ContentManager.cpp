@@ -15,4 +15,9 @@ namespace Engine {
 	{
 	}
 
+
+	void ContentManager::doSerilization()
+	{
+	}
+
 }

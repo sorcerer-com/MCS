@@ -1,6 +1,7 @@
 // ContentManager.h
 #pragma once
-#pragma unmanaged
+
+#include <thread>
 
 #include "..\Utils\Header.h"
 

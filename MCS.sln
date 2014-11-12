@@ -9,6 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCS", "MCS\MCS.csproj", "{C
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MEngine", "MEngine\MEngine.vcxproj", "{96F06265-2D99-4574-A540-8EF4BF2B2830}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146} = {E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +40,14 @@ Global
 		{96F06265-2D99-4574-A540-8EF4BF2B2830}.Release|x64.Build.0 = Release|x64
 		{96F06265-2D99-4574-A540-8EF4BF2B2830}.Release|x86.ActiveCfg = Release|Win32
 		{96F06265-2D99-4574-A540-8EF4BF2B2830}.Release|x86.Build.0 = Release|Win32
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Debug|x64.ActiveCfg = Debug|x64
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Debug|x64.Build.0 = Debug|x64
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Debug|x86.ActiveCfg = Debug|Win32
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Debug|x86.Build.0 = Debug|Win32
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Release|x64.ActiveCfg = Release|x64
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Release|x64.Build.0 = Release|x64
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Release|x86.ActiveCfg = Release|Win32
+		{E4049CBB-66B7-45A2-9CFE-A95FBA4C4146}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

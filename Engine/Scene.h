@@ -1,11 +1,12 @@
 // Scene.h
 #pragma once
-#pragma unmanaged
 
 #include "Utils\Header.h"
 
 
 namespace Engine {
+
+	class ContentManager;
 
 	enum LogType
 	{
@@ -23,6 +24,7 @@ namespace Engine {
 	class Scene
 	{
 	public:
+		shared_ptr<ContentManager> contentManager;
 
 		static EngineMode Mode;
 

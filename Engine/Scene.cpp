@@ -8,6 +8,7 @@
 #include <iomanip>
 
 #include "Utils\Config.h"
+#include "Managers\ContentManager.h"
 
 
 namespace Engine {
@@ -18,7 +19,11 @@ namespace Engine {
 	Scene::Scene()
 	{
 		srand(clock());
+		ofstream ofile(LOG_FILE);
+		ofile.close();
 		Scene::Log(ELog, "Scene", "Start engine");
+
+		this->contentManager = make_shared<ContentManager>();
 	}
 
 	Scene::~Scene()

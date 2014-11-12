@@ -1,7 +1,7 @@
 // MScene.h
 #pragma once
 
-#include "..\Scene.h"
+#include "Scene.h"
 #pragma managed
 
 using namespace Engine;

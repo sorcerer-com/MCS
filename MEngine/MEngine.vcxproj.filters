@@ -2,20 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="Utils\Config.h" />
-    <ClInclude Include="Wrappers\MScene.h" />
-    <ClInclude Include="Managers\ContentManager.h" />
-    <ClInclude Include="Content Elements\ContentElement.h" />
-    <ClInclude Include="Utils\Header.h" />
+    <ClInclude Include="MScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Stdafx.cpp" />
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Wrappers\MScene.cpp" />
-    <ClCompile Include="Managers\ContentManager.cpp" />
-    <ClCompile Include="Content Elements\ContentElement.cpp" />
+    <ClCompile Include="MScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
