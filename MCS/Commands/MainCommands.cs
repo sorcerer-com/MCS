@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCS.MainWindows;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
@@ -11,7 +12,7 @@ namespace MCS.Commands
         {
             get
             {
-                return new DelegateCommand((o) => { showWindow(typeof(Window)); });
+                return new DelegateCommand((o) => { showWindow(typeof(LogWindow)); });
             }
         }
 
@@ -20,7 +21,7 @@ namespace MCS.Commands
 
         private void showWindow(Type windowType)
         {
-            if (windowType.IsSubclassOf(typeof(Window)))
+            if (!windowType.IsSubclassOf(typeof(Window)))
                 return;
 
             if (!windows.ContainsKey(windowType.Name))
