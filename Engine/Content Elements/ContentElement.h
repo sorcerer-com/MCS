@@ -1,6 +1,5 @@
 // ContentElement.h
 #pragma once
-#pragma unmanaged
 
 namespace Engine {
 

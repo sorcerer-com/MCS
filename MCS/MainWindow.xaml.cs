@@ -1,4 +1,5 @@
 ﻿using MEngine;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -21,6 +22,11 @@ namespace MCS
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.scene = new MScene();
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            this.scene.Dispose();
         }
 
 

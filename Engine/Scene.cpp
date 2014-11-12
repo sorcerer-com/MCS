@@ -18,7 +18,6 @@ namespace Engine {
 
 	Scene::Scene()
 	{
-		srand(clock());
 		ofstream ofile(LOG_FILE);
 		ofile.close();
 		Scene::Log(ELog, "Scene", "Start engine");
@@ -30,6 +29,7 @@ namespace Engine {
 	{
 
 	}
+
 
 	void Scene::Log(LogType type, const string& category, const string& text)
 	{
