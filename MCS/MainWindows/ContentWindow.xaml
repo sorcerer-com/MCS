@@ -1,0 +1,119 @@
+﻿<Window x:Class="MCS.MainWindows.ContentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Content Borwser" Width="640" Height="480" Icon="/Images/MainWindow/Contents.PNG">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Path Tree -->
+        <TreeView Width="170" ItemsSource="{Binding Path=PathsTree}" Grid.Column="0" IsTextSearchEnabled="True">
+
+            <TreeView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Create Package"/>
+                    <MenuItem Header="Create Folder"/>
+                    <MenuItem Header="Rename"/>
+                    <MenuItem Header="Delete"/>
+                </ContextMenu>
+            </TreeView.ContextMenu>
+
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="True"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Path=Value.Children}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Path=Value.Image}" Width="16" Height="16" Stretch="Fill"/>
+                        <Label Content="{Binding Path=Key}"/>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+
+        </TreeView>
+
+        <!-- Right Grid -->
+        <Grid Grid.Column="1">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Content List -->
+            <ListBox Grid.Row="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ItemsSource="{Binding Path=Content}" SelectionMode="Extended" AllowDrop="True">
+
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Open" FontWeight="Bold"/>
+                        <MenuItem Header="Clone" InputGestureText="F3"/>
+                        <MenuItem Header="Rename" InputGestureText="F2"/>
+                        <MenuItem Header="Move" InputGestureText="F4"/>
+                        <MenuItem Header="Delete" InputGestureText="Del"/>
+                        <MenuItem Header="Export" InputGestureText="F9"/>
+                        <Separator/>
+                        <MenuItem Header="Add Mesh"/>
+                        <MenuItem Header="Add Material"/>
+                        <MenuItem Header="Add Texture"/>
+                        <MenuItem Header="Add UI Screen"/>
+                        <MenuItem Header="Add Skeleton"/>
+                        <MenuItem Header="Add Sound"/>
+                        <Separator/>
+                        <MenuItem Header="Create Terrain"/>
+                        <MenuItem Header="Setup As Ocean" Visibility="Collapsed"/>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Width="60" Height="60" Margin="5" ToolTip="{Binding Path=Info}">
+                            <Image Source="{Binding Path=Image}" Width="32" Height="32" Margin="5"/>
+                            <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+
+            </ListBox>
+
+            <!-- Right Bottom Grid -->
+            <Grid Grid.Row="1">
+
+                <Button Content="All Content" Width="70" Height="20" HorizontalAlignment="Left" 
+                        Margin="6,6,0,0" VerticalAlignment="Top" ToolTip="Show all content (Ctrl+A)"/>
+                <Label Content="Search:" Width="50" Height="25" Margin="99,4,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <TextBox Height="25" Margin="155,6,6,0" VerticalAlignment="Top" ToolTip="Search (Ctrl+F)"
+                         Text="{Binding Path=TextFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <ListBox MinWidth="435" MinHeight="20" Margin="6,35,0,6" HorizontalAlignment="Left" 
+                         ItemsSource="{Binding Path=TypeFilter}">
+
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding Path=Value.Type}" IsChecked="{Binding Path=Value.IsSelected}" Margin="5"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

@@ -8,12 +8,16 @@ namespace MCS.Commands
 {
     public class MainCommands
     {
-        public ICommand LogCommand
+        
+        public ICommand LogWindowCommand
         {
-            get
-            {
-                return new DelegateCommand((o) => { showWindow(typeof(LogWindow)); });
-            }
+            get { return new DelegateCommand((o) => { showWindow(typeof(LogWindow)); }); }
+        }
+
+
+        public ICommand ContentWindowCommand
+        {
+            get { return new DelegateCommand((o) => { showWindow(typeof(ContentWindow)); }); }
         }
 
         

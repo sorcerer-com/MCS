@@ -11,7 +11,7 @@ namespace MCS
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MScene scene;
+        public MScene Scene { get; private set; }
 
         public MainCommands Commands { get; private set; }
 
@@ -26,12 +26,12 @@ namespace MCS
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.scene = new MScene();
+            this.Scene = new MScene();
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            this.scene.Dispose();
+            this.Scene.Dispose();
         }
 
     }
