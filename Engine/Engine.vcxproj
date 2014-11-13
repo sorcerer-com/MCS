@@ -184,6 +184,7 @@
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Utils\Config.h" />
     <ClInclude Include="Utils\Header.h" />
+    <ClInclude Include="Utils\IOUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

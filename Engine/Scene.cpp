@@ -3,10 +3,6 @@
 #include "stdafx.h"
 #include "Scene.h"
 
-#include <time.h>
-#include <fstream>
-#include <iomanip>
-
 #include "Utils\Config.h"
 #include "Managers\ContentManager.h"
 
@@ -22,7 +18,7 @@ namespace Engine {
 		ofile.close();
 		Scene::Log(ELog, "Scene", "Start engine");
 
-		this->contentManager = make_shared<ContentManager>();
+		this->ContentManager = make_shared<Engine::ContentManager>();
 	}
 
 	Scene::~Scene()

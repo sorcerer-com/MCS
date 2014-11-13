@@ -24,7 +24,7 @@ namespace Engine {
 	class Scene
 	{
 	public:
-		shared_ptr<ContentManager> contentManager;
+		shared_ptr<ContentManager> ContentManager;
 
 		static EngineMode Mode;
 
