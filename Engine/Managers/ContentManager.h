@@ -35,8 +35,8 @@ namespace Engine {
 		using ContentMapType = map < uint, ContentElement* > ; // id / content element
 		
 	private:
-		thread worker;
 		atomic_bool interrupt;
+		thread worker;
 		RequestQueueType requests;
 		mutex requestsMutex;
 

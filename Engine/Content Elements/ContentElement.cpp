@@ -76,15 +76,19 @@ namespace Engine {
 
 	string ContentElement::GetPackage(const string& fullName)
 	{
-		return fullName.substr(0, fullName.find_last_of("#") + 1);
+		return fullName.substr(0, fullName.find_last_of("#"));
 	}
 
 	string ContentElement::GetPath(const string& fullName)
 	{
 		if (fullName.find("\\") != string::npos)
-			return fullName.substr(0, fullName.find_last_of("\\") + 1);
+		{
+			size_t start = fullName.find_last_of("#") + 1;
+			size_t end = fullName.find_last_of("\\");
+			return fullName.substr(start, end - start);
+		}
 		else
-			return fullName.substr(0, fullName.find_last_of("#") + 1);
+			return "";
 	}
 
 	string ContentElement::GetName(const string& fullName)

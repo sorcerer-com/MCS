@@ -13,10 +13,13 @@ namespace Engine {
 
 	ContentManager::ContentManager()
 	{
-		this->worker = thread(&ContentManager::doSerilization, this);
 		this->interrupt = false;
+		this->worker = thread(&ContentManager::doSerilization, this);
 
 		this->requests.push(make_pair(ELoadDatabase, 0));
+
+		ContentElement* elem = new ContentElement(EMesh, "name", "package", "path");
+		this->AddElement(elem);
 	}
 
 
@@ -46,6 +49,8 @@ namespace Engine {
 		this->content[element->ID] = element;
 		this->packageInfos[element->Package].Paths[element->Path].push_back(element->ID);
 		this->contentMutex.unlock();
+
+		this->requests.push(make_pair(ESaveDatabase, 0));
 
 		Scene::Log(ELog, "ContentManager", "Add content element '" + element->Name + "'#" +	to_string(element->Version) + " (" + to_string(element->ID) + ")");
 		return true;
