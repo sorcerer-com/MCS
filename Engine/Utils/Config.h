@@ -8,3 +8,5 @@
 
 #define CONTENT_FOLDER "Contents"
 #define CONTENT_DB_FILE "content.mdb"
+
+#define BACKUP_FOLDER "Backups"

@@ -19,19 +19,15 @@ namespace Engine {
 	{
 	public:
 		uint Version;
-		uint ID;
 		ContentElementType Type;
+		uint ID;
 		string Name;
 		string Package;
 		string Path;
 		string Lock;
 
-		streampos PackageOffset;
-		streampos Size;
+		long long PackageOffset;
 		bool IsLoaded;
-
-	private:
-		ContentElement() = default;
 
 	public:
 		ContentElement(ContentElementType type, const string& name, const string& package, const string& path);
@@ -40,6 +36,7 @@ namespace Engine {
 
 		string GetFullName() const;
 
+		virtual long long Size() const;
 		virtual void WriteToFile(ostream& file) const;
 		virtual ContentElement* Clone() const;
 

@@ -50,7 +50,6 @@ namespace Engine {
 		ofile << "[" << setw(20) << category << setw(0) << "]: ";
 		ofile << text << endl;
 
-		ofile.flush();
 		ofile.close();
 	}
 

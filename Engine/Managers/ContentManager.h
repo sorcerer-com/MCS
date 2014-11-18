@@ -12,6 +12,7 @@ namespace Engine {
 
 	class Scene;
 	class ContentElement;
+	enum ContentElementType;
 
 	class ContentManager
 	{
@@ -19,17 +20,20 @@ namespace Engine {
 		struct PackageInfo
 		{
 			map < string, vector < uint > > Paths;
-			vector < pair<size_t, size_t > > FreeSpaces;
+			vector < pair< long long, long long > > FreeSpaces;
 		};
 
 		enum RequestType
 		{
 			ELoadDatabase,
-			ESaveDatabase
+			ESaveDatabase,
+			ELoadElement,
+			ESaveElement,
+			EEraseElement
 		};
 
 	public:
-		using RequestQueueType = queue < pair<RequestType, uint> >; // type / id
+		using RequestQueueType = deque < pair<RequestType, uint> >; // type / id
 
 		using PackageInfoMapType = map < string, PackageInfo > ; // package name / package info
 		using ContentMapType = map < uint, ContentElement* > ; // id / content element
@@ -49,15 +53,34 @@ namespace Engine {
 		ContentManager();
 		~ContentManager();
 
+		bool ImportPackage(const string& filePath);
+		bool ExportToPackage(const string& filePath, uint id);
+
+		bool CreatePath(const string& fullPath);
+		bool RenamePath(const string& oldFullPath, const string& newFullPath);
+		bool ContainPath(const string& fullPath) const;
+		bool DeletePath(const string& fullPath);
+
 		bool AddElement(ContentElement* element);
 		bool ContainElement(uint id) const;
+		bool MoveElement(uint id, const string& newFullPath);
+		bool DeleteElement(uint id);
 		ContentElement* GetElement(uint id, bool load);
 		ContentElement* GetElement(const string& fullName, bool load);
-
+		void SaveElement(uint id);
+		
 	private:
 		void doSerilization();
+		void addRequest(RequestType type, bool wait);
+		void addRequest(RequestType type, uint id = 0, bool wait = false);
+
 		void loadDatabase();
 		void saveDatabase();
+		bool loadElement(uint id);
+		ContentElement* loadElement(istream& ifile, ContentElementType type);
+		bool saveElement(uint id);
+		bool eraseElement(uint id);
+		void beckupElement(const ContentElement* element);
 
 	};
 

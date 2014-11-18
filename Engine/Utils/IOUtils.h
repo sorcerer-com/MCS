@@ -8,7 +8,7 @@ inline void Write(ostream& ofile, const T& value)
 
 inline void Write(ostream& ofile, const string& value)
 {
-	size_t size = value.size();
+	long long size = value.size();
 	ofile.write((char*)&size, sizeof(size));
 
 	const char *str = value.c_str();
@@ -28,7 +28,7 @@ inline void Read(istream& ifile, T& value)
 
 inline void Read(istream& ifile, string& value)
 {
-	size_t size = 0;
+	long long size = 0;
 	ifile.read((char*)&size, sizeof(size));
 
 	char *str = new char[size + 1];
@@ -36,6 +36,22 @@ inline void Read(istream& ifile, string& value)
 	str[size] = '\0';
 	value = str;
 	delete[] str;
+}
+
+#pragma endregion
+
+
+#pragma region Size
+
+template <class T>
+inline long long SizeOf(const T&)
+{
+	return sizeof(T);
+}
+
+inline long long SizeOf(const string& value)
+{
+	return sizeof(long long) + value.size() * sizeof(char);
 }
 
 #pragma endregion
