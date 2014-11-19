@@ -5,6 +5,8 @@
 
 namespace Engine {
 
+	class ContentManager;
+
 	enum ContentElementType
 	{
 		EMesh,
@@ -24,14 +26,15 @@ namespace Engine {
 		string Name;
 		string Package;
 		string Path;
-		string Lock;
 
 		long long PackageOffset;
 		bool IsLoaded;
 
+		ContentManager* Owner;
+
 	public:
-		ContentElement(ContentElementType type, const string& name, const string& package, const string& path);
-		ContentElement(istream& file);
+		ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path);
+		ContentElement(ContentManager* owner, istream& file);
 		virtual ~ContentElement();
 
 		string GetFullName() const;

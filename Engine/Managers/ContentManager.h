@@ -43,6 +43,7 @@ namespace Engine {
 		PackageInfoMapType packageInfos;
 		ContentMapType content;
 
+		// TODO: instances
 	public:
 		ContentManager();
 		~ContentManager();
@@ -55,6 +56,7 @@ namespace Engine {
 		bool ContainPath(const string& fullPath) const;
 		bool DeletePath(const string& fullPath);
 
+		ContentElement* AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);
 		bool AddElement(ContentElement* element);
 		bool ContainElement(uint id) const;
 		bool MoveElement(uint id, const string& newFullPath);

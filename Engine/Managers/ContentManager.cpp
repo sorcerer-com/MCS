@@ -256,6 +256,32 @@ namespace Engine {
 
 
 	/* E L E M E N T S */
+	ContentElement* ContentManager::AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id /* = 0 */)
+	{
+		ContentElement *element = NULL;
+		/* TODO: add content elements
+		if (type == EMesh)
+			element = new Mesh(this, name, path);
+		else if (type == EMaterial)
+			element = new Material(this, name, path);
+		else if (type == ETexture)
+			element = new Texture(this, name, path);
+		else if (type == EUIScreen)
+			element = new UIScreen(this, name, path);
+		else if (type == ESkeleton)
+			element = new Skeleton(this, name, path);
+		else if (type == ESound)
+			element = new Sound(this, name, path);*/
+
+		if (element != NULL)
+		{
+			element->ID = id;
+			if (!this->AddElement(element))
+				return NULL;
+		}
+		return element;
+	}
+
 	bool ContentManager::AddElement(ContentElement* element)
 	{
 		if (!element)
@@ -280,6 +306,40 @@ namespace Engine {
 		this->addRequest(ESaveDatabase);
 
 		Scene::Log(ELog, "ContentManager", "Add content element '" + element->Name + "'#" +	to_string(element->Version) + " (" + to_string(element->ID) + ")");
+		return true;
+	}
+
+	bool ContentManager::MoveElement(uint id, const string& newFullPath)
+	{
+		if (!this->ContainElement(id))
+		{
+			Scene::Log(EError, "ContentManager", "Try to move non existent content element (" + to_string(id) + ")");
+			return false;
+		}
+		if (!this->ContainPath(newFullPath))
+		{
+			Scene::Log(EError, "ContentManager", "Try to move element to non existent path '" + newFullPath + "'");
+			return false;
+		}
+
+		ContentElement* element = this->GetElement(id, false);
+		if (this->GetElement(newFullPath + "\\" + element->Name, false) != NULL)
+		{
+			Scene::Log(EError, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
+				") to path '" + newFullPath + "', but there is already element with the same name");
+			return false;
+		}
+
+		this->thread->mutex("contentMutex").lock();
+		vector<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
+		auto it = find(ids.begin(), ids.end(), id);
+		ids.erase(it);
+		element->Package = ContentElement::GetPackage(newFullPath);
+		element->Path = ContentElement::GetPath(newFullPath);
+		this->packageInfos[element->Package].Paths[element->Path].push_back(element->ID);
+		this->thread->mutex("contentMutex").unlock();
+
+		Scene::Log(ELog, "ContentManager", "Move content element '" + element->Name + "' (" + to_string(id) + ") to '" + newFullPath + "'");
 		return true;
 	}
 
@@ -492,7 +552,7 @@ namespace Engine {
 		Read(ifile, size);
 		for (int i = 0; i < size; i++)
 		{
-			ContentElement* element = new ContentElement(ifile);
+			ContentElement* element = new ContentElement(this, ifile);
 
 			if (element && !ifile.fail())
 			{
@@ -614,7 +674,7 @@ namespace Engine {
 		else if (type == ESound)
 		element = new Sound(this, ifile);*/
 		// TODO: add different content types and remove:
-		element = new ContentElement(ifile);
+		element = new ContentElement(this, ifile);
 		return element;
 	}
 

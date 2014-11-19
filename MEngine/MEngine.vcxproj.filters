@@ -3,11 +3,15 @@
   <ItemGroup>
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="MScene.h" />
+    <ClInclude Include="Content Elements\MContentElement.h" />
+    <ClInclude Include="Utils\MHeader.h" />
+    <ClInclude Include="Managers\MContentManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Stdafx.cpp" />
     <ClCompile Include="MScene.cpp" />
+    <ClCompile Include="Managers\MContentManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

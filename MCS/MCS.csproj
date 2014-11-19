@@ -199,6 +199,16 @@
     <Resource Include="Images\MainWindow\ScaleCursor.PNG" />
     <Resource Include="Images\MainWindow\translate.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ContentWindow\folder.png" />
+    <Resource Include="Images\ContentWindow\Material.png" />
+    <Resource Include="Images\ContentWindow\Mesh.png" />
+    <Resource Include="Images\ContentWindow\package.png" />
+    <Resource Include="Images\ContentWindow\Skeleton.png" />
+    <Resource Include="Images\ContentWindow\Sound.png" />
+    <Resource Include="Images\ContentWindow\Texture.png" />
+    <Resource Include="Images\ContentWindow\UIScreen.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

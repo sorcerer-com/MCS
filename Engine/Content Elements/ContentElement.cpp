@@ -9,7 +9,7 @@
 
 namespace Engine {
 
-	ContentElement::ContentElement(ContentElementType type, const string& name, const string& package, const string& path)
+	ContentElement::ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path)
 	{
 		this->Version = CURRENT_VERSION;
 		this->Type = type;
@@ -17,13 +17,14 @@ namespace Engine {
 		this->Name = name;
 		this->Package = package;
 		this->Path = path;
-		this->Lock = "";
 
 		this->PackageOffset = 0;
 		this->IsLoaded = false;
+
+		this->Owner = owner;
 	}
 
-	ContentElement::ContentElement(istream& file)
+	ContentElement::ContentElement(ContentManager* owner, istream& file)
 	{
 		Read(file, this->Version);
 		if (this->Version >= 1)
@@ -33,10 +34,11 @@ namespace Engine {
 			Read(file, this->Name);
 			Read(file, this->Package);
 			Read(file, this->Path);
-			Read(file, this->Lock);
 			Read(file, this->PackageOffset);
 		}
 		this->IsLoaded = false;
+
+		this->Owner = owner;
 	}
 
 	ContentElement::~ContentElement()
@@ -59,7 +61,6 @@ namespace Engine {
 		size += SizeOf(this->Name);
 		size += SizeOf(this->Package);
 		size += SizeOf(this->Path);
-		size += SizeOf(this->Lock);
 		size += SizeOf(this->PackageOffset);
 		return size;
 	}
@@ -72,7 +73,6 @@ namespace Engine {
 		Write(file, this->Name);
 		Write(file, this->Package);
 		Write(file, this->Path);
-		Write(file, this->Lock);
 		Write(file, this->PackageOffset);
 		file.flush();
 	}

@@ -1,8 +1,10 @@
 // MScene.h
 #pragma once
 
-#include "Scene.h"
+#include "Engine\Scene.h"
 #pragma managed
+
+#include "Managers\MContentManager.h"
 
 using namespace Engine;
 
@@ -21,6 +23,7 @@ namespace MEngine {
 		Scene* scene;
 
 	public:
+		property MContentManager^ ContentManager;
 
 		static EEngineMode Mode;
 

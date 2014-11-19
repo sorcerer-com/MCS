@@ -9,6 +9,8 @@ namespace MEngine {
 	MScene::MScene()
 	{
 		this->scene = new Scene();
+
+		this->ContentManager = gcnew MContentManager(&(*this->scene->ContentManager));
 	}
 
 	MScene::~MScene()
