@@ -185,6 +185,7 @@
     <ClInclude Include="Utils\Config.h" />
     <ClInclude Include="Utils\Header.h" />
     <ClInclude Include="Utils\IOUtils.h" />
+    <ClInclude Include="Utils\Thread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

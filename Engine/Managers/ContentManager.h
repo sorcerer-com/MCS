@@ -1,15 +1,12 @@
 // ContentManager.h
 #pragma once
 
-#include <thread>
-#include <atomic>
-#include <mutex>
-
 #include "..\Utils\Header.h"
 
 
 namespace Engine {
 
+	struct Thread;
 	class Scene;
 	class ContentElement;
 	enum ContentElementType;
@@ -39,15 +36,12 @@ namespace Engine {
 		using ContentMapType = map < uint, ContentElement* > ; // id / content element
 		
 	private:
-		atomic_bool interrupt;
-		thread worker;
+		shared_ptr<Thread> thread;
 		RequestQueueType requests;
-		mutex requestsMutex;
 
 
 		PackageInfoMapType packageInfos;
 		ContentMapType content;
-		mutex contentMutex;
 
 	public:
 		ContentManager();

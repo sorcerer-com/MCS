@@ -5,6 +5,7 @@
 
 #include "..\Scene.h"
 #include "..\Utils\Config.h"
+#include "..\Utils\Thread.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Content Elements\ContentElement.h"
 
@@ -14,16 +15,17 @@ namespace Engine {
 	/* C O N T E N T   M A N A G E R */
 	ContentManager::ContentManager()
 	{
-		this->interrupt = false;
-		this->worker = thread(&ContentManager::doSerilization, this);
+		this->thread = make_shared<Thread>();
+		this->thread->worker(&ContentManager::doSerilization, this);
+		this->thread->defMutex("requestsMutex");
+		this->thread->defMutex("contentMutex");
 
 		this->addRequest(ELoadDatabase, true);
 	}
 
 	ContentManager::~ContentManager()
 	{
-		this->interrupt = true;
-		this->worker.join();
+		this->thread->join();
 	}
 
 
@@ -61,9 +63,9 @@ namespace Engine {
 			if (elem && !ifile.fail())
 			{
 				elem->IsLoaded = true;
-				this->contentMutex.lock();
+				this->thread->mutex("contentMutex").lock();
 				this->content[elem->ID] = elem;
-				this->contentMutex.unlock();
+				this->thread->mutex("contentMutex").unlock();
 			}
 			else
 			{
@@ -80,7 +82,7 @@ namespace Engine {
 
 	bool ContentManager::ExportToPackage(const string& filePath, uint id)
 	{
-		lock_guard<mutex> lck(this->contentMutex);
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
 		ContentElement* element = this->GetElement(id, false);
 		if (!element)
@@ -115,9 +117,9 @@ namespace Engine {
 		{
 			string package = ContentElement::GetPackage(fullPath);
 			string path = ContentElement::GetPath(fullPath);
-			this->contentMutex.lock();
+			this->thread->mutex("contentMutex").lock();
 			this->packageInfos[package].Paths[path];
-			this->contentMutex.unlock();
+			this->thread->mutex("contentMutex").unlock();
 
 			this->addRequest(ESaveDatabase);
 
@@ -135,7 +137,7 @@ namespace Engine {
 		
 		if (res == true)
 		{
-			lock_guard<mutex> lck(this->contentMutex);
+			lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
 			string oldPackage = ContentElement::GetPackage(oldFullPath);
 			string oldPath = ContentElement::GetPath(oldFullPath);
@@ -231,17 +233,17 @@ namespace Engine {
 				forDelete.push_back(currPath);
 			}
 		}
-		this->contentMutex.lock();
+		this->thread->mutex("contentMutex").lock();
 		for (int i = 0; i < (int)forDelete.size(); i++)
 			info.Paths.erase(forDelete[i]);
-		this->contentMutex.unlock();
+		this->thread->mutex("contentMutex").unlock();
 
 		// delete package if it's deleted
 		if (info.Paths.size() == 0)
 		{
-			this->contentMutex.lock();
+			this->thread->mutex("contentMutex").lock();
 			this->packageInfos.erase(package);
-			this->contentMutex.unlock();
+			this->thread->mutex("contentMutex").unlock();
 
 			string packFile = CONTENT_FOLDER;
 			packFile += "\\" + package + ".mpk";
@@ -269,10 +271,10 @@ namespace Engine {
 		if (this->ContainElement(element->ID) || this->GetElement(element->GetFullName(), false) != NULL)
 			Scene::Log(EWarning, "ContentManager", "Add content element '" + element->GetFullName() + "' (" + to_string(element->ID) + ") that already exists");
 
-		this->contentMutex.lock();
+		this->thread->mutex("contentMutex").lock();
 		this->content[element->ID] = element;
 		this->packageInfos[element->Package].Paths[element->Path].push_back(element->ID);
-		this->contentMutex.unlock();
+		this->thread->mutex("contentMutex").unlock();
 
 		this->addRequest(ESaveElement, element->ID);
 		this->addRequest(ESaveDatabase);
@@ -288,7 +290,7 @@ namespace Engine {
 
 	bool ContentManager::DeleteElement(uint id)
 	{
-		lock_guard<mutex> lck(this->contentMutex);
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
 		if (!this->ContainElement(id))
 		{
@@ -364,14 +366,14 @@ namespace Engine {
 	/* S E R I L I Z A T I O N */
 	void ContentManager::doSerilization()
 	{
-		while (!this->interrupt)
+		while (!this->thread->interrupted())
 		{
 			while (!this->requests.empty())
 			{
-				this->requestsMutex.lock();
+				this->thread->mutex("requestsMutex").lock();
 				auto request = this->requests.front();
 				this->requests.pop_front();
-				this->requestsMutex.unlock();
+				this->thread->mutex("requestsMutex").unlock();
 
 				switch (request.first)
 				{
@@ -409,7 +411,7 @@ namespace Engine {
 
 	void ContentManager::addRequest(RequestType type, uint id /* = 0 */, bool wait /* = false */)
 	{
-		unique_lock<mutex> lck(this->requestsMutex);
+		unique_lock<mutex> lck(this->thread->mutex("requestsMutex"));
 
 		auto pair = make_pair(type, id);
 		auto it = find(this->requests.begin(), this->requests.end(), pair);
@@ -424,15 +426,15 @@ namespace Engine {
 		{
 			while (find(this->requests.begin(), this->requests.end(), pair) != this->requests.end())
 			{
-				bool isLock = !this->contentMutex.try_lock();
-				this->contentMutex.unlock();
+				bool isLock = !this->thread->mutex("contentMutex").try_lock();
+				this->thread->mutex("contentMutex").unlock();
 				
 				lck.unlock();
 				this_thread::sleep_for(chrono::milliseconds(10));
 				lck.lock();
 
 				if (isLock)
-					this->contentMutex.lock();
+					this->thread->mutex("contentMutex").lock();
 			}
 		}
 	}
@@ -440,7 +442,7 @@ namespace Engine {
 
 	void ContentManager::loadDatabase()
 	{
-		lock_guard<mutex> lck(this->contentMutex);
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
 		string filePath = string(CONTENT_FOLDER) + string("\\") + string(CONTENT_DB_FILE);
 		Scene::Log(ELog, "ContentManager", "Load database file: " + filePath);
@@ -504,7 +506,7 @@ namespace Engine {
 
 	void ContentManager::saveDatabase()
 	{
-		lock_guard<mutex> lck(this->contentMutex);
+		lock_guard<mutex> lck(thread->mutex("this->contentMutex"));
 
 		string filePath = string(CONTENT_FOLDER) + string("\\") + string(CONTENT_DB_FILE);
 		Scene::Log(ELog, "ContentManager", "Save database file: " + filePath);
@@ -578,9 +580,9 @@ namespace Engine {
 		{
 			delete element;
 			elem->IsLoaded = true;
-			this->contentMutex.lock();
+			this->thread->mutex("contentMutex").lock();
 			this->content[elem->ID] = elem;
-			this->contentMutex.unlock();
+			this->thread->mutex("contentMutex").unlock();
 		}
 		else
 		{
@@ -618,8 +620,7 @@ namespace Engine {
 
 	bool ContentManager::saveElement(uint id)
 	{
-		lock_guard<mutex> lck(this->contentMutex);
-		// TODO: backup
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
 		ContentElement* element = this->GetElement(id, false);
 		if (!element)
@@ -671,7 +672,7 @@ namespace Engine {
 
 	bool ContentManager::eraseElement(uint id)
 	{
-		lock_guard<mutex> lck(this->contentMutex);
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
 		ContentElement* element = this->GetElement(id, false);
 		if (!element)
@@ -734,9 +735,9 @@ namespace Engine {
 		backupPath += to_string(local_tm.tm_sec) + "_";
 		backupPath += element->Package + "_" + element->Name + ".mpk";
 
-		this->contentMutex.unlock();
+		this->thread->mutex("contentMutex").unlock();
 		this->ExportToPackage(backupPath, element->ID);
-		this->contentMutex.lock();
+		this->thread->mutex("contentMutex").lock();
 
 		Scene::Log(ELog, "ContentManager", "Backup content element '" + element->Name + "'#" +
 			to_string(element->Version) + " (" + to_string(element->ID) + ") to: " + backupPath);
