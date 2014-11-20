@@ -100,6 +100,7 @@
     </Compile>
     <Compile Include="Commands\DelegateCommand.cs" />
     <Compile Include="Commands\MainCommands.cs" />
+    <Compile Include="Commands\WindowsManager.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -208,6 +209,12 @@
     <Resource Include="Images\ContentWindow\Sound.png" />
     <Resource Include="Images\ContentWindow\Texture.png" />
     <Resource Include="Images\ContentWindow\UIScreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ContentWindow\search.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ContentWindow\clear.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

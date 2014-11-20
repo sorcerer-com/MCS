@@ -21,7 +21,7 @@ namespace MEngine {
 		}
 	};
 	
-	static string to_string(String^ str)
+	static inline string to_string(String^ str)
 	{
 		const char* cstr = (const char*)(System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(str)).ToPointer();
 		string sstr = cstr;

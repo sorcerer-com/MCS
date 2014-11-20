@@ -32,6 +32,7 @@ namespace MCS
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             this.Scene.Dispose();
+            WindowsManager.Close();
         }
 
     }
