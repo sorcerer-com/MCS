@@ -55,6 +55,7 @@ namespace Engine {
 		bool RenamePath(const string& oldFullPath, const string& newFullPath);
 		bool ContainPath(const string& fullPath) const;
 		bool DeletePath(const string& fullPath);
+		vector<string> GetPaths() const;
 
 		ContentElement* AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);
 		bool AddElement(ContentElement* element);

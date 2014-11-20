@@ -148,34 +148,34 @@ namespace Engine {
 			PackageInfo& newInfo = this->packageInfos[newPackage];
 			
 			vector<string> forDelete;
-			for (auto it = oldInfo.Paths.rbegin(); it != oldInfo.Paths.rend(); it++)
+			for (auto& pair : oldInfo.Paths)
 			{
-				string path = (*it).first;
+				string path = pair.first;
 				if (path.find(oldPath) == 0)
 				{
 					string npath = path.substr(oldPath.size());
 					npath = newPath + npath;
 
-					newInfo.Paths[npath].insert(newInfo.Paths[npath].end(), (*it).second.begin(), (*it).second.end());
+					newInfo.Paths[npath].insert(newInfo.Paths[npath].end(), pair.second.begin(), pair.second.end());
 					forDelete.push_back(path);
 
 					// change elements paths
 					vector<uint>& ids = newInfo.Paths[npath];
-					for (auto it2 = ids.begin(); it2 != ids.end(); it2++)
+					for (auto& id : ids)
 					{
-						ContentElement* element = this->GetElement(*it2, true);
-						this->addRequest(EEraseElement, *it2, true);
+						ContentElement* element = this->GetElement(id, true);
+						this->addRequest(EEraseElement, id, true);
 						element->Package = newPackage;
 						element->Path = npath;
-						this->addRequest(ESaveElement, *it2);
+						this->addRequest(ESaveElement, id);
 						this->addRequest(ESaveDatabase);
 					}
 
 					Scene::Log(ELog, "ContentManager", "Rename path '" + oldPackage + "#" + path + "' to '" + newPackage + "#" + npath + "'");
 				}
 			}
-			for (int i = 0; i < (int)forDelete.size(); i++)
-				oldInfo.Paths.erase(forDelete[i]);
+			for (auto& path : forDelete)
+				oldInfo.Paths.erase(path);
 
 			// delete package if it's renamed
 			if (oldInfo.Paths.size() == 0)
@@ -221,21 +221,21 @@ namespace Engine {
 		PackageInfo& info = this->packageInfos[package];
 
 		vector<string> forDelete;
-		for (auto it = info.Paths.rbegin(); it != info.Paths.rend(); it++)
+		for (auto& pair : info.Paths)
 		{
-			string currPath = (*it).first;
+			string currPath = pair.first;
 			if (currPath.find(path) == 0)
 			{
 				vector<uint>& ids = info.Paths[currPath];
-				for (int i = 0; i < (int)ids.size(); i++)
-					this->DeleteElement(ids[i]);
+				for (auto& id : ids)
+					this->DeleteElement(id);
 
 				forDelete.push_back(currPath);
 			}
 		}
 		this->thread->mutex("contentMutex").lock();
-		for (int i = 0; i < (int)forDelete.size(); i++)
-			info.Paths.erase(forDelete[i]);
+		for (auto& path : forDelete)
+			info.Paths.erase(path);
 		this->thread->mutex("contentMutex").unlock();
 
 		// delete package if it's deleted
@@ -252,6 +252,17 @@ namespace Engine {
 
 		Scene::Log(ELog, "ContentManager", "Delete path '" + fullPath + "'");
 		return true;
+	}
+	
+	vector<string> ContentManager::GetPaths() const
+	{
+		vector<string> result;
+		for (auto& pair : this->packageInfos)
+		{
+			for (auto& pair2 : pair.second.Paths)
+				result.push_back(pair.first + "#" + pair2.first);
+		}
+		return result;
 	}
 
 
@@ -406,11 +417,11 @@ namespace Engine {
 		}
 
 		vector<uint>& ids = info.Paths[path];
-		for (int i = 0; i < (int)ids.size(); i++)
+		for (auto& id : ids)
 		{
-			ContentElement* elem = this->GetElement(ids[i], false);
+			ContentElement* elem = this->GetElement(id, false);
 			if (elem->Name.compare(name) == 0)
-				return this->GetElement(ids[i], load);
+				return this->GetElement(id, load);
 		}
 
 		return NULL;
@@ -518,7 +529,7 @@ namespace Engine {
 		// Package Infos
 		long long size = 0;
 		Read(ifile, size);
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 		{
 			string packageName;
 			Read(ifile, packageName);
@@ -527,7 +538,7 @@ namespace Engine {
 			string str;
 			long long size2 = 0;
 			Read(ifile, size2);
-			for (int j = 0; j < size2; j++)
+			for (int j = 0; j < size2; ++j)
 			{
 				Read(ifile, str);
 				info.Paths[str];
@@ -536,7 +547,7 @@ namespace Engine {
 			long long s1, s2;
 			size2 = 0;
 			Read(ifile, size2);
-			for (int j = 0; j < size2; j++)
+			for (int j = 0; j < size2; ++j)
 			{
 				Read(ifile, s1);
 				Read(ifile, s2);
@@ -550,7 +561,7 @@ namespace Engine {
 		// Content Elements
 		size = 0;
 		Read(ifile, size);
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 		{
 			ContentElement* element = new ContentElement(this, ifile);
 
@@ -566,7 +577,7 @@ namespace Engine {
 
 	void ContentManager::saveDatabase()
 	{
-		lock_guard<mutex> lck(thread->mutex("this->contentMutex"));
+		lock_guard<mutex> lck(thread->mutex("contentMutex"));
 
 		string filePath = string(CONTENT_FOLDER) + string("\\") + string(CONTENT_DB_FILE);
 		Scene::Log(ELog, "ContentManager", "Save database file: " + filePath);
@@ -588,22 +599,22 @@ namespace Engine {
 			PackageInfo& info = pair.second;
 
 			Write(ofile, info.Paths.size());
-			for (auto it = info.Paths.begin(); it != info.Paths.end(); it++)
-				Write(ofile, (*it).first);
+			for (auto& pair2 : info.Paths)
+				Write(ofile, pair2.first);
 
 			Write(ofile, info.FreeSpaces.size());
-			for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); it++)
+			for (auto& pair2 : info.FreeSpaces)
 			{
-				Write(ofile, (*it).first);
-				Write(ofile, (*it).second);
+				Write(ofile, pair2.first);
+				Write(ofile, pair2.second);
 			}
 		}
 		
 		// Content Elements
 		Write(ofile, this->content.size());
-		for (auto it = this->content.begin(); it != this->content.end(); it++)
+		for (auto& pair : this->content)
 		{
-			ContentElement* element = (*it).second;
+			ContentElement* element = pair.second;
 			element->ContentElement::WriteToFile(ofile);
 		}
 
@@ -709,7 +720,7 @@ namespace Engine {
 
 		// Remove free space
 		PackageInfo& info = this->packageInfos[element->Package];
-		for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); it++)
+		for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); ++it)
 		{
 			if ((*it).second >= element->Size())
 			{
@@ -756,18 +767,18 @@ namespace Engine {
 
 		ofile.seekp(element->PackageOffset);
 		long long size = element->Size();
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 			ofile.write("\0", sizeof(char));
 		ofile.close();
 
 		// Add free space
 		PackageInfo& info = this->packageInfos[element->Package];
 		bool found = false;
-		for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); it++)
+		for (auto& pair : info.FreeSpaces)
 		{
-			if ((*it).first + (*it).second == element->PackageOffset)
+			if (pair.first + pair.second == element->PackageOffset)
 			{
-				(*it).second += size;
+				pair.second += size;
 				found = true;
 				break;
 			}
