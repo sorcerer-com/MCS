@@ -55,7 +55,7 @@
                 </RadioButton>
             </ToolBar>
             <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
-                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=Commands.ContentWindowCommand}">
+                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=Commands.ContentWindowCommand}" CommandParameter="{Binding Path=Scene.ContentManager}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Environment (Ctrl+E)">
@@ -115,7 +115,7 @@
 
         <!-- Bottom StatusBar -->
         <StatusBar Grid.Row="2" Height="30" VerticalAlignment="Top">
-            <ComboBox Width="250" MaxDropDownHeight="100" ItemsSource="{Binding Elements}">
+            <ComboBox Width="250" MaxDropDownHeight="100">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <ContentPresenter Content="{Binding Name}"/>

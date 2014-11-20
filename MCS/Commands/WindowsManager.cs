@@ -11,7 +11,7 @@ namespace MCS.Commands
     {
         private static Dictionary<string, Window> windows = new Dictionary<string, Window>();
 
-        public static void ShowWindow(Type windowType)
+        public static void ShowWindow(Type windowType, Object param)
         {
             if (!windowType.IsSubclassOf(typeof(Window)))
                 return;
@@ -28,7 +28,16 @@ namespace MCS.Commands
             else if (window != null)
                 window.Close();
 
-            window = (Window)windowType.GetConstructor(Type.EmptyTypes).Invoke(null);
+            try
+            {
+                if (param != null)
+                    window = windowType.GetConstructor(new Type[] { param.GetType() }).Invoke(new object[] { param }) as Window;
+                else
+                    window = windowType.GetConstructor(Type.EmptyTypes).Invoke(null) as Window;
+            }
+            catch { }
+            if (window == null)
+                throw new Exception("Cannot construct window from type: " + windowType + " with parametar: " + param);
 
             window.Show();
             windows[windowType.Name] = window;

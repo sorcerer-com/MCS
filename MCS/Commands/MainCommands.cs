@@ -11,13 +11,13 @@ namespace MCS.Commands
         
         public ICommand LogWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow), o); }); }
         }
 
 
         public ICommand ContentWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow)); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), o); }); }
         }
 
     }

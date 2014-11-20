@@ -21,12 +21,13 @@ namespace MCS
             InitializeComponent();
             this.DataContext = this;
 
+            this.Scene = new MScene();
             this.Commands = new MainCommands();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.Scene = new MScene();
+            // TODO: init renders
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -34,6 +35,6 @@ namespace MCS
             this.Scene.Dispose();
             WindowsManager.Close();
         }
-
+    
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using MEngine;
+using System.Windows;
 
 namespace MCS.MainWindows
 {
@@ -7,9 +8,14 @@ namespace MCS.MainWindows
     /// </summary>
     public partial class ContentWindow : Window
     {
-        public ContentWindow()
+        public MContentManager ContentManager { get; private set; }
+
+        public ContentWindow(MContentManager contentManager)
         {
             InitializeComponent();
+            this.DataContext = this;
+
+            this.ContentManager = contentManager;
         }
     }
 }
