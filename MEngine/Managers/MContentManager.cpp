@@ -5,8 +5,29 @@
 
 
 namespace MEngine {
+	
+	List<String^>^ MContentManager::Paths::get()
+	{
+		List<String^>^ collection = gcnew List<String^>();
 
-	// TODO: this->OnPropertyChanged("Content");
+		auto paths = this->contentManager->GetPaths();
+		for (auto& path : paths)
+			collection->Add(gcnew String(path.c_str()));
+
+		return collection;
+	}
+
+	List<MContentElement^>^ MContentManager::Content::get()
+	{
+		List<MContentElement^>^ collection = gcnew List<MContentElement^>();
+
+		auto elements = this->contentManager->GetElements();
+		for (auto& element : elements)
+			collection->Add(MContentManager::getMContentElement(element));
+
+		return collection;
+	}
+
 
 	MContentManager::MContentManager(ContentManager* contentManager)
 	{
@@ -16,7 +37,10 @@ namespace MEngine {
 
 	bool MContentManager::ImportPackage(String^ filePath)
 	{
-		return this->contentManager->ImportPackage(to_string(filePath));
+		bool res = this->contentManager->ImportPackage(to_string(filePath));
+		this->OnPropertyChanged("Paths");
+		this->OnPropertyChanged("Content");
+		return res;
 	}
 
 	bool MContentManager::ExportToPackage(String^ filePath, uint id)
@@ -27,23 +51,32 @@ namespace MEngine {
 
 	bool MContentManager::CreatePath(String^ fullPath)
 	{
-		return this->contentManager->CreatePath(to_string(fullPath));
+		bool res = this->contentManager->CreatePath(to_string(fullPath));
+		this->OnPropertyChanged("Paths");
+		return res;
 	}
 
 	bool MContentManager::RenamePath(String^ oldFullPath, String^ newFullPath)
 	{
-		return this->contentManager->RenamePath(to_string(oldFullPath), to_string(newFullPath));
+		bool res = this->contentManager->RenamePath(to_string(oldFullPath), to_string(newFullPath));
+		this->OnPropertyChanged("Paths");
+		return res;
 	}
 
 	bool MContentManager::DeletePath(String^ fullPath)
 	{
-		return this->contentManager->DeletePath(to_string(fullPath));
+		bool res = this->contentManager->DeletePath(to_string(fullPath));
+		this->OnPropertyChanged("Paths");
+		return res;
 	}
 
 
 	MContentElement^ MContentManager::AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id)
 	{
 		ContentElement* elem = this->contentManager->AddElement((ContentElementType)type, to_string(name), to_string(package), to_string(path), id);
+		
+		this->OnPropertyChanged("Paths");
+		this->OnPropertyChanged("Content");
 		return this->getMContentElement(elem);
 	}
 
@@ -57,6 +90,8 @@ namespace MEngine {
 		elem->ID = 0;
 		elem->Name = to_string(newName);
 		this->contentManager->AddElement(elem);
+		
+		this->OnPropertyChanged("Content");
 		return this->getMContentElement(elem);
 	}
 
@@ -71,18 +106,23 @@ namespace MEngine {
 			return false;
 
 		elem->Name = to_string(newName);
+		this->OnPropertyChanged("Content");
 		return true;
 	}
 
 	bool MContentManager::MoveElement(uint id, String^ newFullPath)
 	{
 		bool res = this->contentManager->MoveElement(id, to_string(newFullPath));
+
+		this->OnPropertyChanged("Paths");
+		this->OnPropertyChanged("Content");
 		return res;
 	}
 
 	bool MContentManager::DeleteElement(uint id)
 	{
 		bool res = this->contentManager->DeleteElement(id);
+		this->OnPropertyChanged("Content");
 		return res;
 	}
 

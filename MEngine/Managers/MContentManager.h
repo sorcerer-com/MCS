@@ -17,6 +17,15 @@ namespace MEngine {
 		ContentManager* contentManager;
 
 	public:
+		property List<String^>^ Paths
+		{
+			List<String^>^ get();
+		}
+
+		property List<MContentElement^>^ Content
+		{
+			List<MContentElement^>^ get();
+		}
 
 	public:
 		MContentManager(ContentManager* contentManager);

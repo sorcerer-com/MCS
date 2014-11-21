@@ -5,6 +5,7 @@
 using namespace Engine;
 using namespace System;
 using namespace System::ComponentModel;
+using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
 
 
@@ -15,6 +16,7 @@ namespace MEngine {
 	public:
 		virtual event PropertyChangedEventHandler^ PropertyChanged;
 
+	protected:
 		void OnPropertyChanged(String^ info)
 		{
 			PropertyChanged(this, gcnew PropertyChangedEventArgs(info));

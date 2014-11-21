@@ -16,7 +16,7 @@ namespace Engine {
 	private:
 		struct PackageInfo
 		{
-			map < string, vector < uint > > Paths;
+			map < string, set < uint > > Paths;
 			vector < pair< long long, long long > > FreeSpaces;
 		};
 
@@ -64,6 +64,7 @@ namespace Engine {
 		bool DeleteElement(uint id);
 		ContentElement* GetElement(uint id, bool load);
 		ContentElement* GetElement(const string& fullName, bool load);
+		vector<ContentElement*> GetElements();
 		void SaveElement(uint id);
 		
 	private:

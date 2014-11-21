@@ -56,17 +56,17 @@
                 </Grid.ColumnDefinitions>
                 
                 <Image Grid.Column="0" Source="/Images/ContentWindow/Search.png" Width="20" Margin="1"/>
-                <TextBox Grid.Column="1" Margin="1"/>
+                <TextBox Grid.Column="1" Margin="1" Text="{Binding Path=Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <Button Grid.Column="2" Margin="3 1">
                     <Image Source="/Images/ContentWindow/Clear.png" Width="15"/>
                 </Button>
             </Grid>
             
             <!-- Content List -->
-            <ListBox Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ItemsSource="{Binding Path=Content}" SelectionMode="Extended" AllowDrop="True">
+            <ListView Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ItemsSource="{Binding Path=Contents}" SelectionMode="Extended" AllowDrop="True">
 
-                <ListBox.ContextMenu>
+                <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Open" FontWeight="Bold"/>
                         <MenuItem Header="Clone" InputGestureText="F3"/>
@@ -85,24 +85,18 @@
                         <MenuItem Header="Create Terrain"/>
                         <MenuItem Header="Setup As Ocean" Visibility="Collapsed"/>
                     </ContextMenu>
-                </ListBox.ContextMenu>
+                </ListView.ContextMenu>
 
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-
-                <ListBox.ItemTemplate>
+                <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Width="60" Height="60" Margin="5" ToolTip="{Binding Path=Info}">
-                            <Image Source="{Binding Path=Image}" Width="32" Height="32" Margin="5"/>
-                            <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Margin="3" ToolTip="{Binding Path=Element.Info}">
+                            <Image Source="{Binding Path=Image}" Width="16" Height="16" Margin="5"/>
+                            <TextBlock Text="{Binding Path=Element.Name}" TextWrapping="Wrap" TextAlignment="Center"/>
                         </StackPanel>
                     </DataTemplate>
-                </ListBox.ItemTemplate>
+                </ListView.ItemTemplate>
 
-            </ListBox>
+            </ListView>
         </Grid>
 
         <GridSplitter Grid.Column="3" 

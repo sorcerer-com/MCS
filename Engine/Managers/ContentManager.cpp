@@ -63,9 +63,7 @@ namespace Engine {
 			if (elem && !ifile.fail())
 			{
 				elem->IsLoaded = true;
-				this->thread->mutex("contentMutex").lock();
-				this->content[elem->ID] = elem;
-				this->thread->mutex("contentMutex").unlock();
+				this->AddElement(elem);
 			}
 			else
 			{
@@ -156,11 +154,11 @@ namespace Engine {
 					string npath = path.substr(oldPath.size());
 					npath = newPath + npath;
 
-					newInfo.Paths[npath].insert(newInfo.Paths[npath].end(), pair.second.begin(), pair.second.end());
+					newInfo.Paths[npath].insert(pair.second.begin(), pair.second.end());
 					forDelete.push_back(path);
 
 					// change elements paths
-					vector<uint>& ids = newInfo.Paths[npath];
+					set<uint>& ids = newInfo.Paths[npath];
 					for (auto& id : ids)
 					{
 						ContentElement* element = this->GetElement(id, true);
@@ -226,7 +224,7 @@ namespace Engine {
 			string currPath = pair.first;
 			if (currPath.find(path) == 0)
 			{
-				vector<uint>& ids = info.Paths[currPath];
+				set<uint>& ids = info.Paths[currPath];
 				for (auto& id : ids)
 					this->DeleteElement(id);
 
@@ -260,8 +258,9 @@ namespace Engine {
 		for (auto& pair : this->packageInfos)
 		{
 			for (auto& pair2 : pair.second.Paths)
-				result.push_back(pair.first + "#" + pair2.first);
+				result.push_back(pair.first + "#" + pair2.first + "\\");
 		}
+
 		return result;
 	}
 
@@ -270,19 +269,21 @@ namespace Engine {
 	ContentElement* ContentManager::AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id /* = 0 */)
 	{
 		ContentElement *element = NULL;
-		/* TODO: add content elements
+		// TODO: add different content types and remove:
+		element = new ContentElement(this, type, name, package, path);
+		/*
 		if (type == EMesh)
-			element = new Mesh(this, name, path);
+			element = new Mesh(this, name, package, path);
 		else if (type == EMaterial)
-			element = new Material(this, name, path);
+			element = new Material(this, name, package, path);
 		else if (type == ETexture)
-			element = new Texture(this, name, path);
+			element = new Texture(this, name, package, path);
 		else if (type == EUIScreen)
-			element = new UIScreen(this, name, path);
+			element = new UIScreen(this, name, package, path);
 		else if (type == ESkeleton)
-			element = new Skeleton(this, name, path);
+			element = new Skeleton(this, name, package, path);
 		else if (type == ESound)
-			element = new Sound(this, name, path);*/
+			element = new Sound(this, name, package, path);*/
 
 		if (element != NULL)
 		{
@@ -310,7 +311,7 @@ namespace Engine {
 
 		this->thread->mutex("contentMutex").lock();
 		this->content[element->ID] = element;
-		this->packageInfos[element->Package].Paths[element->Path].push_back(element->ID);
+		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
 		this->thread->mutex("contentMutex").unlock();
 
 		this->addRequest(ESaveElement, element->ID);
@@ -342,12 +343,11 @@ namespace Engine {
 		}
 
 		this->thread->mutex("contentMutex").lock();
-		vector<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
-		auto it = find(ids.begin(), ids.end(), id);
-		ids.erase(it);
+		set<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
+		ids.erase(ids.find(id));
 		element->Package = ContentElement::GetPackage(newFullPath);
 		element->Path = ContentElement::GetPath(newFullPath);
-		this->packageInfos[element->Package].Paths[element->Path].push_back(element->ID);
+		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
 		this->thread->mutex("contentMutex").unlock();
 
 		Scene::Log(ELog, "ContentManager", "Move content element '" + element->Name + "' (" + to_string(id) + ") to '" + newFullPath + "'");
@@ -370,9 +370,8 @@ namespace Engine {
 		}
 
 		ContentElement* element = this->GetElement(id, false);
-		vector<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
-		auto it = find(ids.begin(), ids.end(), id);
-		ids.erase(it);
+		set<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
+		ids.erase(ids.find(id));
 		this->addRequest(EEraseElement, id, true);
 		this->content.erase(id);
 
@@ -416,7 +415,7 @@ namespace Engine {
 			return NULL;
 		}
 
-		vector<uint>& ids = info.Paths[path];
+		set<uint>& ids = info.Paths[path];
 		for (auto& id : ids)
 		{
 			ContentElement* elem = this->GetElement(id, false);
@@ -425,6 +424,15 @@ namespace Engine {
 		}
 
 		return NULL;
+	}
+	
+	vector<ContentElement*> ContentManager::GetElements()
+	{
+		vector<ContentElement*> result;
+		for (auto& pair : this->content)
+			result.push_back(pair.second);
+
+		return result;
 	}
 	
 	void ContentManager::SaveElement(uint id)
@@ -568,7 +576,7 @@ namespace Engine {
 			if (element && !ifile.fail())
 			{
 				this->content[element->ID] = element;
-				this->packageInfos[element->Package].Paths[element->Path].push_back(element->ID);
+				this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
 			}
 		}
 

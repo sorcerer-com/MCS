@@ -67,32 +67,18 @@ namespace MEngine {
 			String^ get() { return gcnew String(element->GetFullName().c_str()); }
 		}
 
+
 		property long Size
 		{
-			long get() { return (long)element->Size(); }
+			long get() { return this->IsLoaded ? (long)element->Size() : 0; }
 		}
 
-
-		property String^ Image
+		property long IsLoaded
 		{
-			String^ get()
-			{
-				if (this->Type == EContentElementType::Mesh)
-					return  "/Images/ContentWindow/Mesh.png";
-				else if (this->Type == EContentElementType::Material)
-					return  "/Images/ContentWindow/Material.png";
-				else if (this->Type == EContentElementType::Texture)
-					return  "/Images/ContentWindow/Texture.png";
-				else if (this->Type == EContentElementType::UIScreen)
-					return  "/Images/ContentWindow/UIScreen.png";
-				else if (this->Type == EContentElementType::Skeleton)
-					return  "/Images/ContentWindow/Skeleton.png";
-				else if (this->Type == EContentElementType::Sound)
-					return  "/Images/ContentWindow/Sound.png";
-				return "";
-			}
+			long get() { return (long)element->IsLoaded; }
 		}
 
+		
 		property String^ Info
 		{
 			String^ get()
@@ -125,6 +111,23 @@ namespace MEngine {
 			if (elem == nullptr)
 				return false;
 			return this->ID.Equals(elem->ID);
+		}
+
+
+
+		static String^ GetPackage(String^ fullName)
+		{
+			return gcnew String(ContentElement::GetPackage(to_string(fullName)).c_str());
+		}
+
+		static String^ GetPath(String^ fullName)
+		{
+			return gcnew String(ContentElement::GetPath(to_string(fullName)).c_str());
+		}
+
+		static String^ GetName(String^ fullName)
+		{
+			return gcnew String(ContentElement::GetName(to_string(fullName)).c_str());
 		}
 
 
