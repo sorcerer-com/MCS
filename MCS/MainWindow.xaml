@@ -33,7 +33,7 @@
                 </Button>
             </ToolBar>
             <ToolBar Band="1" BandIndex="2" IsManipulationEnabled="True">
-                <Button ToolTip="Log (F8)" Command="{Binding Path=Commands.LogWindowCommand}">
+                <Button ToolTip="Log (F8)" Command="{Binding Path=LogWindowCommand}">
                     <Image Source="/Images/MainWindow/Log.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Change Renderer (F9)">
@@ -55,7 +55,7 @@
                 </RadioButton>
             </ToolBar>
             <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
-                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=Commands.ContentWindowCommand}" CommandParameter="{Binding Path=Scene.ContentManager}">
+                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=ContentWindowCommand}" CommandParameter="{Binding Path=Scene.ContentManager}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Environment (Ctrl+E)">

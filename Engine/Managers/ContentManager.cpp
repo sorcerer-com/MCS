@@ -383,7 +383,7 @@ namespace Engine {
 
 	ContentElement* ContentManager::GetElement(uint id, bool load) // TODO: handle<ContentElement> or shared_ptr<ContentElement> and in doSerialization check if count == 1 then unload
 	{
-		if (this->content.find(id) == this->content.end())
+		if (!this->ContainElement(id))
 		{
 			Scene::Log(EWarning, "ContentManager", "Try to get non existent content element (" + to_string(id) + ")");
 			return NULL;

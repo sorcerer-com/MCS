@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace MCS.Commands
+namespace MCS.Managers
 {
     public class DelegateCommand : ICommand
     {
