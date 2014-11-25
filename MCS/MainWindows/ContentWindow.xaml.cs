@@ -1,8 +1,10 @@
-﻿using MEngine;
+﻿using MCS.Managers;
+using MEngine;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 
 namespace MCS.MainWindows
 {
@@ -11,7 +13,6 @@ namespace MCS.MainWindows
     /// </summary>
     public partial class ContentWindow : Window, INotifyPropertyChanged
     {
-
         public MContentManager ContentManager { get; private set; }
 
 
@@ -19,11 +20,13 @@ namespace MCS.MainWindows
 
         public struct TreeItem
         {
+            public string FullPath { get; private set; }
             public string Image { get; private set; }
             public Dictionary<string, TreeItem> Children { get; private set; }
 
-            public TreeItem(string image) : this()
+            public TreeItem(string fullPath, string image) : this()
             {
+                this.FullPath = fullPath;
                 this.Image = image;
                 this.Children = new Dictionary<string, TreeItem>();
             }
@@ -43,7 +46,6 @@ namespace MCS.MainWindows
 
         #endregion
 
-
         public Dictionary<string, TreeItem> PathsTree
         {
             get
@@ -57,14 +59,14 @@ namespace MCS.MainWindows
                     string path = MContentElement.GetPath(fullPath);
 
                     if (!result.ContainsKey(package))
-                        result.Add(package, new TreeItem("/Images/ContentWindow/package.png"));
+                        result.Add(package, new TreeItem(package + "#", "/Images/ContentWindow/package.png"));
                     
                     TreeItem curr = result[package];
                     string[] folders = path.Split(new char[] { '\\' }, System.StringSplitOptions.RemoveEmptyEntries);
                     foreach(string folder in folders)
                     {
                         if (!curr.Children.ContainsKey(folder))
-                            curr.Children.Add(folder, new TreeItem("/Images/ContentWindow/folder.png"));
+                            curr.Children.Add(folder, new TreeItem(curr.FullPath + folder + "\\", "/Images/ContentWindow/folder.png"));
                         curr = curr.Children[folder];
                     }
                 }
@@ -83,9 +85,12 @@ namespace MCS.MainWindows
                 List<MContentElement> elements = this.ContentManager.Content;
                 foreach(MContentElement element in elements)
                 {
-                    if (!element.FullName.ToLowerInvariant().Contains(filter) &&
-                        !element.ID.ToString().ToLowerInvariant().Contains(filter) &&
-                        !element.Type.ToString().ToLowerInvariant().Contains(filter))
+                    if (!element.FullName.ToLowerInvariant().Contains(this.Filter) &&
+                        !element.ID.ToString().ToLowerInvariant().Contains(this.Filter) &&
+                        !element.Type.ToString().ToLowerInvariant().Contains(this.Filter))
+                        continue;
+
+                    if (!string.IsNullOrEmpty(this.SelectedFullPath) && !element.FullPath.Equals(this.SelectedFullPath))
                         continue;
 
                     string image = string.Empty;
@@ -116,9 +121,50 @@ namespace MCS.MainWindows
             set
             {
                 this.filter = value.ToLowerInvariant();
+                this.OnPropertyChanged("Filter");
                 this.OnPropertyChanged("Contents");
             }
         }
+
+        private string selectedFullPath;
+        public string SelectedFullPath
+        {
+            get { return this.selectedFullPath; }
+            set
+            {
+                this.selectedFullPath = value;
+                this.OnPropertyChanged("SelectedFullPath");
+                this.OnPropertyChanged("Contents");
+            }
+        }
+
+        #region Commands
+
+        public ICommand ClearFilterCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                    {
+                        this.SelectedFullPath = string.Empty;
+                        this.Filter = string.Empty;
+                    });
+            }
+        }
+
+
+        public ICommand CreatePackageCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    MessageBox.Show("test");
+                });
+            }
+        }
+
+        #endregion
 
 
         public ContentWindow(MContentManager contentManager)
@@ -129,10 +175,17 @@ namespace MCS.MainWindows
             this.ContentManager = contentManager;
 
             this.filter = string.Empty;
+            this.selectedFullPath = string.Empty;
+        }
+
+
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            KeyValuePair<string, TreeItem> selectedItem = (KeyValuePair<string, TreeItem>)e.NewValue;
+            this.SelectedFullPath = selectedItem.Value.FullPath;
         }
 
         // TODO: drop
-        // TODO: on path change - change the content
 
 
         public event PropertyChangedEventHandler PropertyChanged;

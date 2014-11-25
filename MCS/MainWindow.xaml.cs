@@ -22,7 +22,6 @@ namespace MCS
             get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow), o); }); }
         }
 
-
         public ICommand ContentWindowCommand
         {
             get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), o); }); }

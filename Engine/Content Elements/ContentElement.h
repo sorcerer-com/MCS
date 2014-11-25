@@ -37,6 +37,7 @@ namespace Engine {
 		ContentElement(ContentManager* owner, istream& file);
 		virtual ~ContentElement();
 
+		string GetFullPath() const;
 		string GetFullName() const;
 
 		virtual long long Size() const;

@@ -46,9 +46,14 @@ namespace Engine {
 	}
 
 
+	string ContentElement::GetFullPath() const
+	{
+		return this->Package + "#" + this->Path + "\\";
+	}
+
 	string ContentElement::GetFullName() const
 	{
-		return this->Package + "#" + this->Path + "\\" + this->Name;
+		return this->GetFullPath() + this->Name;
 	}
 
 

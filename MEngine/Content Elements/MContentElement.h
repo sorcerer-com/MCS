@@ -62,6 +62,12 @@ namespace MEngine {
 			String^ get() { return gcnew String(element->Path.c_str()); }
 		}
 
+
+		property String^ FullPath
+		{
+			String^ get() { return gcnew String(element->GetFullPath().c_str()); }
+		}
+
 		property String^ FullName
 		{
 			String^ get() { return gcnew String(element->GetFullName().c_str()); }
