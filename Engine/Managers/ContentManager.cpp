@@ -115,9 +115,9 @@ namespace Engine {
 		{
 			string package = ContentElement::GetPackage(fullPath);
 			string path = ContentElement::GetPath(fullPath);
-			this->thread->mutex("contentMutex").lock();
+
+			lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 			this->packageInfos[package].Paths[path];
-			this->thread->mutex("contentMutex").unlock();
 
 			this->addRequest(ESaveDatabase);
 
@@ -231,17 +231,15 @@ namespace Engine {
 				forDelete.push_back(currPath);
 			}
 		}
-		this->thread->mutex("contentMutex").lock();
+
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 		for (auto& path : forDelete)
 			info.Paths.erase(path);
-		this->thread->mutex("contentMutex").unlock();
 
 		// delete package if it's deleted
 		if (info.Paths.size() == 0)
 		{
-			this->thread->mutex("contentMutex").lock();
 			this->packageInfos.erase(package);
-			this->thread->mutex("contentMutex").unlock();
 
 			string packFile = CONTENT_FOLDER;
 			packFile += "\\" + package + ".mpk";
@@ -309,10 +307,9 @@ namespace Engine {
 		if (this->ContainElement(element->ID) || this->GetElement(element->GetFullName(), false) != NULL)
 			Scene::Log(EWarning, "ContentManager", "Add content element '" + element->GetFullName() + "' (" + to_string(element->ID) + ") that already exists");
 
-		this->thread->mutex("contentMutex").lock();
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 		this->content[element->ID] = element;
 		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
-		this->thread->mutex("contentMutex").unlock();
 
 		this->addRequest(ESaveElement, element->ID);
 		this->addRequest(ESaveDatabase);
@@ -342,13 +339,12 @@ namespace Engine {
 			return false;
 		}
 
-		this->thread->mutex("contentMutex").lock();
+		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 		set<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
 		ids.erase(ids.find(id));
 		element->Package = ContentElement::GetPackage(newFullPath);
 		element->Path = ContentElement::GetPath(newFullPath);
 		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
-		this->thread->mutex("contentMutex").unlock();
 
 		Scene::Log(ELog, "ContentManager", "Move content element '" + element->Name + "' (" + to_string(id) + ") to '" + newFullPath + "'");
 		return true;
@@ -659,9 +655,9 @@ namespace Engine {
 		{
 			delete element;
 			elem->IsLoaded = true;
-			this->thread->mutex("contentMutex").lock();
+
+			lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 			this->content[elem->ID] = elem;
-			this->thread->mutex("contentMutex").unlock();
 		}
 		else
 		{
