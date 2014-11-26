@@ -20,7 +20,7 @@ namespace MEngine {
 		Sound
 	};
 
-	public ref class MContentElement : NotifyPropertyChanged
+	public ref class MContentElement
 	{
 	protected:
 		ContentManager* owner;

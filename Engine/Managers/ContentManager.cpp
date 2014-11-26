@@ -146,15 +146,15 @@ namespace Engine {
 			PackageInfo& newInfo = this->packageInfos[newPackage];
 			
 			vector<string> forDelete;
-			for (auto& pair : oldInfo.Paths)
+			for (auto it = oldInfo.Paths.rbegin(); it != oldInfo.Paths.rend(); ++it)
 			{
-				string path = pair.first;
+				string path = (*it).first;
 				if (path.find(oldPath) == 0)
 				{
 					string npath = path.substr(oldPath.size());
 					npath = newPath + npath;
 
-					newInfo.Paths[npath].insert(pair.second.begin(), pair.second.end());
+					newInfo.Paths[npath].insert((*it).second.begin(), (*it).second.end());
 					forDelete.push_back(path);
 
 					// change elements paths
@@ -245,6 +245,7 @@ namespace Engine {
 			packFile += "\\" + package + ".mpk";
 			remove(packFile.c_str());
 		}
+		this->addRequest(ESaveDatabase);
 
 		Scene::Log(ELog, "ContentManager", "Delete path '" + fullPath + "'");
 		return true;
@@ -345,6 +346,8 @@ namespace Engine {
 		element->Package = ContentElement::GetPackage(newFullPath);
 		element->Path = ContentElement::GetPath(newFullPath);
 		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
+		
+		this->addRequest(ESaveDatabase);
 
 		Scene::Log(ELog, "ContentManager", "Move content element '" + element->Name + "' (" + to_string(id) + ") to '" + newFullPath + "'");
 		return true;

@@ -17,9 +17,9 @@
             <TreeView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Create Package" Command="{Binding Path=CreatePackageCommand}"/>
-                    <MenuItem Header="Create Folder"/>
-                    <MenuItem Header="Rename"/>
-                    <MenuItem Header="Delete"/>
+                    <MenuItem Header="Create Folder" Command="{Binding Path=CreateFolderCommand}"/>
+                    <MenuItem Header="Rename" Command="{Binding Path=RenamePathCommand}"/>
+                    <MenuItem Header="Delete" Command="{Binding Path=DeletePathCommand}"/>
                 </ContextMenu>
             </TreeView.ContextMenu>
 

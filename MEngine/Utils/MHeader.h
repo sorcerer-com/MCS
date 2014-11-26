@@ -10,18 +10,6 @@ using namespace System::Collections::Specialized;
 
 
 namespace MEngine {
-
-	public ref class NotifyPropertyChanged : INotifyPropertyChanged
-	{
-	public:
-		virtual event PropertyChangedEventHandler^ PropertyChanged;
-
-	protected:
-		void OnPropertyChanged(String^ info)
-		{
-			PropertyChanged(this, gcnew PropertyChangedEventArgs(info));
-		}
-	};
 	
 	static inline string to_string(String^ str)
 	{

@@ -1,0 +1,32 @@
+﻿<Window x:Class="MCS.Dialogs.TextDialogBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TextDialogBox" Width="Auto" Height="Auto" SizeToContent="WidthAndHeight" 
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" WindowStyle="ToolWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            
+            <Label Content="{Binding Path=Label}" Grid.Column="0" Margin="5"/>
+            <TextBox Text="{Binding Path=Text}" Grid.Column="1" Margin="5" MinWidth="75" KeyDown="nameTextBox_KeyDown"/>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Content="OK" Grid.Column="0" Margin="5" Command="{Binding Path=OkButtonCommand}"/>
+            <Button Content="Cancel" Grid.Column="1" Margin="5" Command="{Binding Path=CancelButtonCommand}"/>
+        </Grid>
+    </Grid>
+</Window>

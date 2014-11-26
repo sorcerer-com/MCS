@@ -1,4 +1,5 @@
-﻿using MCS.Managers;
+﻿using MCS.Dialogs;
+using MCS.Managers;
 using MEngine;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,12 +21,15 @@ namespace MCS.MainWindows
 
         public struct TreeItem
         {
+            public string Name { get; private set; }
             public string FullPath { get; private set; }
             public string Image { get; private set; }
             public Dictionary<string, TreeItem> Children { get; private set; }
 
-            public TreeItem(string fullPath, string image) : this()
+            public TreeItem(string name, string fullPath, string image)
+                : this()
             {
+                this.Name = name;
                 this.FullPath = fullPath;
                 this.Image = image;
                 this.Children = new Dictionary<string, TreeItem>();
@@ -37,7 +41,8 @@ namespace MCS.MainWindows
             public string Image { get; private set; }
             public MContentElement Element { get; private set; }
 
-            public ContentItem(string image, MContentElement element) : this()
+            public ContentItem(string image, MContentElement element)
+                : this()
             {
                 this.Image = image;
                 this.Element = element;
@@ -59,14 +64,14 @@ namespace MCS.MainWindows
                     string path = MContentElement.GetPath(fullPath);
 
                     if (!result.ContainsKey(package))
-                        result.Add(package, new TreeItem(package + "#", "/Images/ContentWindow/package.png"));
+                        result.Add(package, new TreeItem(package, package + "#", "/Images/ContentWindow/package.png"));
                     
                     TreeItem curr = result[package];
                     string[] folders = path.Split(new char[] { '\\' }, System.StringSplitOptions.RemoveEmptyEntries);
                     foreach(string folder in folders)
                     {
                         if (!curr.Children.ContainsKey(folder))
-                            curr.Children.Add(folder, new TreeItem(curr.FullPath + folder + "\\", "/Images/ContentWindow/folder.png"));
+                            curr.Children.Add(folder, new TreeItem(folder, curr.FullPath + folder + "\\", "/Images/ContentWindow/folder.png"));
                         curr = curr.Children[folder];
                     }
                 }
@@ -90,7 +95,7 @@ namespace MCS.MainWindows
                         !element.Type.ToString().ToLowerInvariant().Contains(this.Filter))
                         continue;
 
-                    if (!string.IsNullOrEmpty(this.SelectedFullPath) && !element.FullPath.Equals(this.SelectedFullPath))
+                    if (this.SelectedTreeItem != null && !element.FullPath.Equals(this.SelectedTreeItem.Value.FullPath))
                         continue;
 
                     string image = string.Empty;
@@ -126,14 +131,14 @@ namespace MCS.MainWindows
             }
         }
 
-        private string selectedFullPath;
-        public string SelectedFullPath
+        private TreeItem? selectedTreeItem;
+        public TreeItem? SelectedTreeItem
         {
-            get { return this.selectedFullPath; }
+            get { return this.selectedTreeItem; }
             set
             {
-                this.selectedFullPath = value;
-                this.OnPropertyChanged("SelectedFullPath");
+                this.selectedTreeItem = value;
+                this.OnPropertyChanged("SelectedTreeItem");
                 this.OnPropertyChanged("Contents");
             }
         }
@@ -146,12 +151,12 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                     {
-                        this.SelectedFullPath = string.Empty;
+                        this.SelectedTreeItem = null;
                         this.Filter = string.Empty;
                     });
             }
         }
-
+        
 
         public ICommand CreatePackageCommand
         {
@@ -159,7 +164,86 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    MessageBox.Show("test");
+                    string packageName = TextDialogBox.Show("Create Package", "Name");
+                    if (!string.IsNullOrEmpty(packageName))
+                    {
+                        if (!this.ContentManager.CreatePath(packageName + "#"))
+                            MessageBox.Show("Cannot create the package '" + packageName + "'!", "Create package", MessageBoxButton.OK, MessageBoxImage.Error);
+                        
+                        this.OnPropertyChanged("PathsTree");
+                    }
+                });
+            }
+        }
+
+        public ICommand CreateFolderCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (this.SelectedTreeItem == null)
+                        return;
+
+                    string folderName = TextDialogBox.Show("Create Folder", "Name");
+                    if (!string.IsNullOrEmpty(folderName))
+                    {
+                        if (!this.ContentManager.CreatePath(this.SelectedTreeItem.Value.FullPath + folderName + "\\"))
+                            MessageBox.Show("Cannot create the folder '" + folderName + "'!", "Create folder", MessageBoxButton.OK, MessageBoxImage.Error);
+                        
+                        this.OnPropertyChanged("PathsTree");
+                    }
+                });
+            }
+        }
+
+        public ICommand RenamePathCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (this.SelectedTreeItem == null)
+                        return;
+
+                    string folderName = TextDialogBox.Show("Create Folder", "Name", this.SelectedTreeItem.Value.Name);
+                    if (!string.IsNullOrEmpty(folderName))
+                    {
+                        string oldPath = this.SelectedTreeItem.Value.FullPath;
+                        string newPath = oldPath.Substring(0, oldPath.Length - this.SelectedTreeItem.Value.Name.Length - 1) + folderName;
+                        if (oldPath.EndsWith("#"))
+                            newPath += "#";
+                        else
+                            newPath += "\\";
+
+                        if (!this.ContentManager.RenamePath(oldPath, newPath))
+                            MessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        this.OnPropertyChanged("PathsTree");
+                    }
+                });
+            }
+        }
+
+        public ICommand DeletePathCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (this.SelectedTreeItem == null)
+                        return;
+
+                    string path = this.SelectedTreeItem.Value.FullPath;
+                    MessageBoxResult res = MessageBox.Show("Are you sure that you want to delete '" + path + "'?", "Delete path", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        if (!this.ContentManager.DeletePath(path))
+                            MessageBox.Show("Cannot delete path '" + path + "'!", "Delete path", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        this.OnPropertyChanged("PathsTree");
+                        this.OnPropertyChanged("Contents");
+                    }
                 });
             }
         }
@@ -175,14 +259,14 @@ namespace MCS.MainWindows
             this.ContentManager = contentManager;
 
             this.filter = string.Empty;
-            this.selectedFullPath = string.Empty;
+            this.selectedTreeItem = null;
         }
 
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             KeyValuePair<string, TreeItem> selectedItem = (KeyValuePair<string, TreeItem>)e.NewValue;
-            this.SelectedFullPath = selectedItem.Value.FullPath;
+            this.SelectedTreeItem = selectedItem.Value;
         }
 
         // TODO: drop

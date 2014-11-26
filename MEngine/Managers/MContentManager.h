@@ -11,7 +11,7 @@
 
 namespace MEngine {
 
-	public ref class MContentManager : NotifyPropertyChanged
+	public ref class MContentManager
 	{
 	private:
 		ContentManager* contentManager;

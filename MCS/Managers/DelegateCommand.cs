@@ -10,11 +10,19 @@ namespace MCS.Managers
 
         public event EventHandler CanExecuteChanged;
 
-        public DelegateCommand(Action<object> callback, Predicate<object> canExecuteCallback = null)
+
+        public DelegateCommand(Action<object> callback)
+        {
+            this.callback = callback;
+            this.canExecuteCallback = (p => true);
+        }
+
+        public DelegateCommand(Action<object> callback, Predicate<object> canExecuteCallback)
         {
             this.callback = callback;
             this.canExecuteCallback = canExecuteCallback ?? (p => true);
         }
+
 
         public void UpdateCanExecute()
         {
@@ -31,6 +39,7 @@ namespace MCS.Managers
             this.callback(parameter);
         }
 
+
         protected virtual void OnCanExecuteChanged(EventArgs eventArgs)
         {
             if (this.CanExecuteChanged != null)
@@ -38,5 +47,6 @@ namespace MCS.Managers
                 this.CanExecuteChanged(this, eventArgs);
             }
         }
+
     }
 }
