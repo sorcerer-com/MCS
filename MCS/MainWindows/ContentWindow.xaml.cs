@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace MCS.MainWindows
@@ -15,6 +16,8 @@ namespace MCS.MainWindows
     public partial class ContentWindow : Window, INotifyPropertyChanged
     {
         public MContentManager ContentManager { get; private set; }
+
+        public static List<MContentElement> SelectedElements = new List<MContentElement>();
 
 
         #region Helpers Structures
@@ -158,6 +161,7 @@ namespace MCS.MainWindows
         }
         
 
+        // Path commands
         public ICommand CreatePackageCommand
         {
             get
@@ -248,6 +252,97 @@ namespace MCS.MainWindows
             }
         }
 
+
+        // Content element commands
+        public ICommand CloneElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (ContentWindow.SelectedElements.Count != 1)
+                        return;
+
+                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    string newName = TextDialogBox.Show("Clone", "Name", elem.Name + "2");
+                    if (!string.IsNullOrEmpty(newName))
+                    {
+                        if (this.ContentManager.CloneElement(elem.ID, newName) == null)
+                            MessageBox.Show("Cannot clone content element '" + elem.Name + "' to '" + newName + "'!", "Clone element", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        this.OnPropertyChanged("Contents");
+                    }
+                });
+            }
+        }
+
+        public ICommand RenameElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (ContentWindow.SelectedElements.Count != 1)
+                        return;
+
+                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    string newName = TextDialogBox.Show("Clone", "Name", elem.Name);
+                    if (!string.IsNullOrEmpty(newName))
+                    {
+                        if (this.ContentManager.RenameElement(elem.ID, newName))
+                            MessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        this.OnPropertyChanged("Contents");
+                    }
+                });
+            }
+        }
+
+        public ICommand MoveElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (ContentWindow.SelectedElements.Count != 1)
+                        return;
+
+                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    string newFullPath = TextDialogBox.Show("Move", "Name", elem.FullPath);
+                    if (!string.IsNullOrEmpty(newFullPath))
+                    {
+                        if (!this.ContentManager.MoveElement(elem.ID, newFullPath))
+                            MessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        this.OnPropertyChanged("Contents");
+                    }
+                });
+            }
+        }
+
+        public ICommand DeleteElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (ContentWindow.SelectedElements.Count != 1)
+                        return;
+
+                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    MessageBoxResult res = MessageBox.Show("Are you sure that you want to delete '" + elem.Name + "'?", "Delete element", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        if (!this.ContentManager.DeleteElement(elem.ID))
+                            MessageBox.Show("Cannot delete content element '" + elem.Name + "'!", "Delete element", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        ContentWindow.SelectedElements.Clear();
+                        this.OnPropertyChanged("Contents");
+                    }
+                });
+            }
+        }
+
         #endregion
 
 
@@ -269,7 +364,17 @@ namespace MCS.MainWindows
             this.SelectedTreeItem = selectedItem.Value;
         }
 
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            foreach (ContentItem item in e.RemovedItems)
+                ContentWindow.SelectedElements.Remove(item.Element);
+
+            foreach (ContentItem item in e.AddedItems)
+                ContentWindow.SelectedElements.Add(item.Element);
+        }
+
         // TODO: drop
+        // TODO: move/copy by drag
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -278,5 +383,6 @@ namespace MCS.MainWindows
         {
 			this.PropertyChanged(this, new PropertyChangedEventArgs(info));
         }
+
     }
 }

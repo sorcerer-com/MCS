@@ -36,17 +36,9 @@ namespace MCS.Managers
             if (window == null)
                 throw new Exception("Cannot construct window from type: " + windowType + " with parametar: " + param);
 
+            window.Owner = Application.Current.MainWindow;
             window.Show();
             windows[windowType.Name] = window;
-        }
-
-        public static void Close()
-        {
-            foreach (Window window in windows.Values)
-            {
-                if (window != null)
-                    window.Close();
-            }
         }
     }
 }

@@ -48,7 +48,10 @@ namespace Engine {
 
 	string ContentElement::GetFullPath() const
 	{
-		return this->Package + "#" + this->Path + "\\";
+		string fullPath = this->Package + "#";
+		if (this->Path != "")
+			fullPath += this->Path + "\\";
+		return fullPath;
 	}
 
 	string ContentElement::GetFullName() const
@@ -103,7 +106,7 @@ namespace Engine {
 		if (end != string::npos)
 			return fullName.substr(start, end - start);
 		else
-			return fullName.substr(start);
+			return "";
 	}
 
 	string ContentElement::GetName(const string& fullName)

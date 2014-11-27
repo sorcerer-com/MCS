@@ -93,6 +93,7 @@ namespace MEngine {
 			return false;
 
 		elem->Name = to_string(newName);
+		this->contentManager->SaveElement(elem->ID);
 		return true;
 	}
 

@@ -29,17 +29,17 @@ namespace Engine {
 		}
 
 		template <class Fn, class... Args>
-		void worker(Fn&& fn, Args&&... args)
+		inline void worker(Fn&& fn, Args&&... args)
 		{
 			this->m_worker = thread(fn, args...);
 		}
 
-		bool interrupted()
+		inline bool interrupted()
 		{
 			return this->m_interrupt;
 		}
 
-		void join(bool itr = true)
+		inline void join(bool itr = true)
 		{
 			this->m_interrupt = itr;
 
@@ -47,12 +47,12 @@ namespace Engine {
 				this->m_worker.join();
 		}
 
-		void defMutex(const string& name)
+		inline void defMutex(const string& name)
 		{
 			this->m_mutices[name];
 		}
 
-		mutex& mutex(const string& name)
+		inline mutex& mutex(const string& name)
 		{
 			if (this->m_mutices.find(name) == this->m_mutices.end())
 				throw "Try to access invalid mutex";

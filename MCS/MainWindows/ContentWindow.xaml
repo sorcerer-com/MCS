@@ -63,16 +63,15 @@
             </Grid>
             
             <!-- Content List -->
-            <ListView Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ItemsSource="{Binding Path=Contents}" SelectionMode="Extended" AllowDrop="True">
+            <ListView Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" SelectionMode="Extended" AllowDrop="True"
+                     ItemsSource="{Binding Path=Contents}" SelectionChanged="ListView_SelectionChanged">
 
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Open" FontWeight="Bold"/>
-                        <MenuItem Header="Clone" InputGestureText="F3"/>
-                        <MenuItem Header="Rename" InputGestureText="F2"/>
-                        <MenuItem Header="Move" InputGestureText="F4"/>
-                        <MenuItem Header="Delete" InputGestureText="Del"/>
+                        <MenuItem Header="Clone" InputGestureText="F3" Command="{Binding Path=CloneElementCommand}"/>
+                        <MenuItem Header="Rename" InputGestureText="F2" Command="{Binding Path=RenameElementCommand}"/>
+                        <MenuItem Header="Move" InputGestureText="F4" Command="{Binding Path=MoveElementCommand}"/>
+                        <MenuItem Header="Delete" InputGestureText="Del" Command="{Binding Path=DeleteElementCommand}"/>
                         <MenuItem Header="Export" InputGestureText="F9"/>
                         <Separator/>
                         <MenuItem Header="Add Mesh"/>
@@ -87,11 +86,17 @@
                     </ContextMenu>
                 </ListView.ContextMenu>
 
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="3" ToolTip="{Binding Path=Element.Info}">
-                            <Image Source="{Binding Path=Image}" Width="16" Height="16" Margin="5"/>
-                            <TextBlock Text="{Binding Path=Element.Name}" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Margin="5" ToolTip="{Binding Path=Element.Info}">
+                            <Image Source="{Binding Path=Image}" Width="24" Height="24" Margin="3"/>
+                            <TextBlock Text="{Binding Path=Element.Name}" TextWrapping="Wrap" Margin="3" TextAlignment="Center" VerticalAlignment="Center"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

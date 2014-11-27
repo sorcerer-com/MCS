@@ -333,7 +333,7 @@ namespace Engine {
 		}
 
 		ContentElement* element = this->GetElement(id, false);
-		if (this->GetElement(newFullPath + "\\" + element->Name, false) != NULL)
+		if (this->GetElement(newFullPath + element->Name, false) != NULL)
 		{
 			Scene::Log(EError, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
 				") to path '" + newFullPath + "', but there is already element with the same name");
