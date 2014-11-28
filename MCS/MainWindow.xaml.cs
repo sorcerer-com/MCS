@@ -19,12 +19,12 @@ namespace MCS
 
         public ICommand LogWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow), o); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); }); }
         }
 
         public ICommand ContentWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), o); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), this.Scene.ContentManager); }); }
         }
 
         #endregion
@@ -36,15 +36,20 @@ namespace MCS
             this.DataContext = this;
 
             this.Scene = new MScene();
+
+            WindowsManager.Init();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // TODO: init renders
+            this.KeyDown += WindowsManager.Window_KeyDown;
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            this.KeyDown -= WindowsManager.Window_KeyDown;
+
             this.Scene.Dispose();
         }
     

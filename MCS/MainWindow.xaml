@@ -55,7 +55,7 @@
                 </RadioButton>
             </ToolBar>
             <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
-                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=ContentWindowCommand}" CommandParameter="{Binding Path=Scene.ContentManager}">
+                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=ContentWindowCommand}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Environment (Ctrl+E)">

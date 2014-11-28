@@ -287,7 +287,7 @@ namespace MCS.MainWindows
                         return;
 
                     MContentElement elem = ContentWindow.SelectedElements[0];
-                    string newName = TextDialogBox.Show("Clone", "Name", elem.Name);
+                    string newName = TextDialogBox.Show("Rename", "Name", elem.Name);
                     if (!string.IsNullOrEmpty(newName))
                     {
                         if (!this.ContentManager.RenameElement(elem.ID, newName))
@@ -344,6 +344,33 @@ namespace MCS.MainWindows
             }
         }
 
+        public ICommand ExportElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (ContentWindow.SelectedElements.Count != 1)
+                        return;
+
+                    throw new System.NotImplementedException();
+                });
+            }
+        }
+
+
+        // Add content element commands
+        public ICommand AddMeshElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    throw new System.NotImplementedException();
+                });
+            }
+        }
+
         #endregion
 
 
@@ -376,6 +403,7 @@ namespace MCS.MainWindows
 
         // TODO: drop
         // TODO: move/copy by drag
+        // TODO: preview
 
 
         public event PropertyChangedEventHandler PropertyChanged;

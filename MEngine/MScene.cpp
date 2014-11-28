@@ -19,4 +19,10 @@ namespace MEngine {
 		this->scene = NULL;
 	}
 
+
+	void MScene::Log(ELogType type, String^ category, String^ text)
+	{
+		Scene::Log((LogType)type, to_string(category), to_string(text));
+	}
+
 }

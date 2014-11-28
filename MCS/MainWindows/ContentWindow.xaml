@@ -72,9 +72,9 @@
                         <MenuItem Header="Rename" InputGestureText="F2" Command="{Binding Path=RenameElementCommand}"/>
                         <MenuItem Header="Move" InputGestureText="F4" Command="{Binding Path=MoveElementCommand}"/>
                         <MenuItem Header="Delete" InputGestureText="Del" Command="{Binding Path=DeleteElementCommand}"/>
-                        <MenuItem Header="Export" InputGestureText="F9"/>
+                        <MenuItem Header="Export" InputGestureText="F9" Command="{Binding Path=ExportElementCommand}"/>
                         <Separator/>
-                        <MenuItem Header="Add Mesh"/>
+                        <MenuItem Header="Add Mesh" Command="{Binding Path=AddMeshElementCommand}"/>
                         <MenuItem Header="Add Material"/>
                         <MenuItem Header="Add Texture"/>
                         <MenuItem Header="Add UI Screen"/>

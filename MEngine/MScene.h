@@ -17,6 +17,13 @@ namespace MEngine {
 		Engine
 	};
 
+	public enum class ELogType
+	{
+		Log,
+		Warning,
+		Error
+	};
+
 	public ref class MScene
 	{
 	private:
@@ -30,6 +37,8 @@ namespace MEngine {
 	public:
 		MScene();
 		~MScene();
+
+		static void Log(ELogType type, String^ category, String^ text);
 	};
 
 }
