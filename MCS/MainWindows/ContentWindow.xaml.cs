@@ -87,8 +87,8 @@ namespace MCS.MainWindows
         {
             get
             {
-                ObservableCollection<ContentItem> result =
-                    new ObservableCollection<ContentItem>();
+                List<ContentItem> result =
+                    new List<ContentItem>();
 
                 List<MContentElement> elements = this.ContentManager.Content;
                 foreach(MContentElement element in elements)
@@ -118,7 +118,8 @@ namespace MCS.MainWindows
                     result.Add(new ContentItem(image, element));
                 }
 
-                return result;
+                result.Sort((item1, item2) => item1.Element.Name.CompareTo(item2.Element.Name));
+                return new ObservableCollection<ContentItem>(result);
             }
         }
 
@@ -289,7 +290,7 @@ namespace MCS.MainWindows
                     string newName = TextDialogBox.Show("Clone", "Name", elem.Name);
                     if (!string.IsNullOrEmpty(newName))
                     {
-                        if (this.ContentManager.RenameElement(elem.ID, newName))
+                        if (!this.ContentManager.RenameElement(elem.ID, newName))
                             MessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", MessageBoxButton.OK, MessageBoxImage.Error);
 
                         this.OnPropertyChanged("Contents");

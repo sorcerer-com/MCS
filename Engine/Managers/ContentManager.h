@@ -11,6 +11,8 @@ namespace Engine {
 	class ContentElement;
 	enum ContentElementType;
 
+	using ContentElementPtr = shared_ptr < ContentElement >;
+
 	class ContentManager
 	{
 	private:
@@ -33,7 +35,7 @@ namespace Engine {
 		using RequestQueueType = deque < pair<RequestType, uint> >; // type / id
 
 		using PackageInfoMapType = map < string, PackageInfo > ; // package name / package info
-		using ContentMapType = map < uint, ContentElement* > ; // id / content element
+		using ContentMapType = map < uint, ContentElementPtr >; // id / content element
 		
 	private:
 		shared_ptr<Thread> thread;
@@ -57,14 +59,14 @@ namespace Engine {
 		bool DeletePath(const string& fullPath);
 		vector<string> GetPaths() const;
 
-		ContentElement* AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);
+		ContentElementPtr AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);
 		bool AddElement(ContentElement* element);
 		bool ContainElement(uint id) const;
 		bool MoveElement(uint id, const string& newFullPath);
 		bool DeleteElement(uint id);
-		ContentElement* GetElement(uint id, bool load);
-		ContentElement* GetElement(const string& fullName, bool load);
-		vector<ContentElement*> GetElements();
+		ContentElementPtr GetElement(uint id, bool load, bool waitForLoad = false);
+		ContentElementPtr GetElement(const string& fullName, bool load, bool waitForLoad = false);
+		vector<ContentElementPtr> GetElements();
 		void SaveElement(uint id);
 		
 	private:
@@ -78,7 +80,8 @@ namespace Engine {
 		ContentElement* loadElement(istream& ifile, ContentElementType type);
 		bool saveElement(uint id);
 		bool eraseElement(uint id);
-		void beckupElement(const ContentElement* element);
+		void beckupElement(const ContentElementPtr& element);
+		bool unLoadElement(uint id);
 
 	};
 

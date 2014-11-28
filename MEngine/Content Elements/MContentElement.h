@@ -26,9 +26,9 @@ namespace MEngine {
 		ContentManager* owner;
 		uint id;
 
-		property ContentElement* element
+		property ContentElementPtr element
 		{
-			ContentElement* get() { return this->owner->GetElement(this->id, false); }
+			ContentElementPtr get() { return this->owner->GetElement(this->id, false); }
 		}
 
 	public:
@@ -108,13 +108,20 @@ namespace MEngine {
 
 		virtual String^ ToString() override
 		{
+			if (!this->owner->ContainElement(this->id) || !this->element)
+				return nullptr;
+
 			return this->Type.ToString() + ": " + this->FullName + " (" + this->ID + ")";
 		}
 
 		virtual bool Equals(Object^ obj) override
 		{
+			if (!this->owner->ContainElement(this->id) || !this->element)
+				return false;
+
 			MContentElement^ elem = dynamic_cast<MContentElement^>(obj);
-			if (elem == nullptr)
+			if (elem == nullptr || 
+				!this->owner->ContainElement(elem->id) || !elem->element)
 				return false;
 			return this->ID.Equals(elem->ID);
 		}
@@ -134,12 +141,6 @@ namespace MEngine {
 		static String^ GetName(String^ fullName)
 		{
 			return gcnew String(ContentElement::GetName(to_string(fullName)).c_str());
-		}
-
-
-		static int CompareByName(MContentElement^ elem1, MContentElement^ elem2)
-		{
-			return elem1->Name->CompareTo(elem2->Name);
 		}
 	};
 }

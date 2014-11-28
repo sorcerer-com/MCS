@@ -64,32 +64,32 @@ namespace MEngine {
 
 	MContentElement^ MContentManager::AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id)
 	{
-		ContentElement* elem = this->contentManager->AddElement((ContentElementType)type, to_string(name), to_string(package), to_string(path), id);
+		ContentElementPtr elem = this->contentManager->AddElement((ContentElementType)type, to_string(name), to_string(package), to_string(path), id);
 		return this->getMContentElement(elem);
 	}
 
 	MContentElement^ MContentManager::CloneElement(uint id, String^ newName)
 	{
-		ContentElement* elem = this->contentManager->GetElement(id, true);
-		if (elem == NULL)
+		ContentElementPtr elem = this->contentManager->GetElement(id, true, true);
+		if (!elem)
 			return nullptr;
 
-		elem = elem->Clone();
-		elem->ID = 0;
-		elem->Name = to_string(newName);
-		this->contentManager->AddElement(elem);
+		ContentElement* newElem = elem->Clone();
+		newElem->ID = 0;
+		newElem->Name = to_string(newName);
+		this->contentManager->AddElement(newElem);
 		
-		return this->getMContentElement(elem);
+		return this->getMContentElement(this->contentManager->GetElement(newElem->ID, false));
 	}
 
 	bool MContentManager::RenameElement(uint id, String^ newName)
 	{
-		ContentElement* elem = this->contentManager->GetElement(id, true);
-		if (elem == NULL)
+		ContentElementPtr elem = this->contentManager->GetElement(id, true, true);
+		if (!elem)
 			return false;
 
-		string path = elem->Path + to_string(newName);
-		if (this->contentManager->GetElement(path, false) != NULL)
+		string newFullName = elem->GetFullPath() + to_string(newName);
+		if (this->contentManager->GetElement(newFullName, false))
 			return false;
 
 		elem->Name = to_string(newName);
@@ -112,13 +112,13 @@ namespace MEngine {
 		if (!this->contentManager->ContainElement(id))
 			return nullptr;
 
-		ContentElement* elem = this->contentManager->GetElement(id, true);
+		ContentElementPtr elem = this->contentManager->GetElement(id, true, true);
 		return this->getMContentElement(elem);
 	}
 
 	MContentElement^ MContentManager::GetElement(String^ fullName)
 	{
-		ContentElement* elem = this->contentManager->GetElement(to_string(fullName), true);
+		ContentElementPtr elem = this->contentManager->GetElement(to_string(fullName), true, true);
 		return this->getMContentElement(elem);
 	}
 
@@ -128,14 +128,15 @@ namespace MEngine {
 	}
 
 
-	MContentElement^ MContentManager::getMContentElement(ContentElement* element)
+	MContentElement^ MContentManager::getMContentElement(const ContentElementPtr& element)
 	{
-		if (element == NULL)
+		if (!element)
 			return nullptr;
 
+		// if (!element->IsLoaded) // TODO: remove comment
+		return gcnew MContentElement(element->Owner, element->ID);
+
 		MContentElement^ melement = nullptr;
-		if (!element->IsLoaded)
-			return gcnew MContentElement(element->Owner, element->ID);
 		/* TODO: add content elements 
 		if (element->Type == EMesh)
 			melement = gcnew MMesh(element->GetOwner(), element->ID);

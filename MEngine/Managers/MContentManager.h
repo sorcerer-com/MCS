@@ -46,7 +46,7 @@ namespace MEngine {
 		MContentElement^ GetElement(String^ fullName);
 		void SaveElement(uint id);
 
-		static MContentElement^ getMContentElement(ContentElement* element);
+		static MContentElement^ getMContentElement(const ContentElementPtr& element);
 
 	private:
 
