@@ -356,6 +356,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
+                    // TODO: impelement
                     throw new System.NotImplementedException();
                 });
             }
@@ -369,6 +370,7 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
+                    // TODO: impelement
                     throw new System.NotImplementedException();
                 });
             }
@@ -405,7 +407,6 @@ namespace MCS.MainWindows
         }
 
         // TODO: drop
-        // TODO: move/copy by drag
         // TODO: preview
 
 

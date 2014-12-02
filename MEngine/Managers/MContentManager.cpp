@@ -3,6 +3,9 @@
 #include "stdafx.h"
 #include "MContentManager.h"
 
+#include "..\Content Elements\MContentElement.h"
+#include "..\Content Elements\MMesh.h"
+
 
 namespace MEngine {
 	
@@ -133,13 +136,13 @@ namespace MEngine {
 		if (!element)
 			return nullptr;
 
-		// if (!element->IsLoaded) // TODO: remove comment
-		return gcnew MContentElement(element->Owner, element->ID);
+		if (!element->IsLoaded)
+			return gcnew MContentElement(element->Owner, element->ID);
 
 		MContentElement^ melement = nullptr;
-		/* TODO: add content elements 
 		if (element->Type == EMesh)
-			melement = gcnew MMesh(element->GetOwner(), element->ID);
+			melement = gcnew MMesh(element->Owner, element->ID);
+		/* TODO: add content elements
 		else if (element->Type == EMaterial)
 			melement = gcnew MMaterial(element->GetOwner(), element->ID);
 		else if (element->Type == ETexture)

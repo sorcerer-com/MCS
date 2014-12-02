@@ -6,6 +6,7 @@
     <ClInclude Include="Content Elements\MContentElement.h" />
     <ClInclude Include="Utils\MHeader.h" />
     <ClInclude Include="Managers\MContentManager.h" />
+    <ClInclude Include="Content Elements\MMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

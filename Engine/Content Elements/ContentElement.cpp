@@ -41,10 +41,6 @@ namespace Engine {
 		this->Owner = owner;
 	}
 
-	ContentElement::~ContentElement()
-	{
-	}
-
 
 	string ContentElement::GetFullPath() const
 	{

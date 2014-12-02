@@ -35,7 +35,6 @@ namespace Engine {
 	public:
 		ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path);
 		ContentElement(ContentManager* owner, istream& file);
-		virtual ~ContentElement();
 
 		string GetFullPath() const;
 		string GetFullName() const;

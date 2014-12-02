@@ -6,10 +6,12 @@
 #pragma managed
 
 #include "..\Utils\MHeader.h"
-#include "..\Content Elements\MContentElement.h"
 
 
 namespace MEngine {
+
+	enum class EContentElementType;
+	ref class MContentElement;
 
 	public ref class MContentManager
 	{

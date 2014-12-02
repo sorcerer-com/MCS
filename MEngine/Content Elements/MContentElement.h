@@ -26,9 +26,9 @@ namespace MEngine {
 		ContentManager* owner;
 		uint id;
 
-		property ContentElementPtr element
+		property ContentElement* element
 		{
-			ContentElementPtr get() { return this->owner->GetElement(this->id, false); }
+			ContentElement* get() { return this->owner->GetElement(this->id, false).get(); }
 		}
 
 	public:

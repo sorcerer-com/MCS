@@ -8,6 +8,7 @@
 #include "..\Utils\Thread.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Content Elements\ContentElement.h"
+#include "..\Content Elements\Mesh.h"
 
 
 namespace Engine {
@@ -268,11 +269,9 @@ namespace Engine {
 	ContentElementPtr ContentManager::AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id /* = 0 */)
 	{
 		ContentElement *element = NULL;
-		// TODO: add different content types and remove:
-		element = new ContentElement(this, type, name, package, path);
-		/*
 		if (type == EMesh)
 			element = new Mesh(this, name, package, path);
+		/* TODO: add different content types
 		else if (type == EMaterial)
 			element = new Material(this, name, package, path);
 		else if (type == ETexture)
@@ -701,20 +700,19 @@ namespace Engine {
 	ContentElement* ContentManager::loadElement(istream& ifile, ContentElementType type)
 	{
 		ContentElement* element = NULL;
-		/*if (type == EMesh)
-		element = new Mesh(this, ifile);
+		if (type == EMesh)
+			element = new Mesh(this, ifile);
+		/* TODO: add different content types
 		else if (type == EMaterial)
-		element = new Material(this, ifile);
+			element = new Material(this, ifile);
 		else if (type == ETexture)
-		element = new Texture(this, ifile);
+			element = new Texture(this, ifile);
 		else if (type == EUIScreen)
-		element = new UIScreen(this, ifile);
+			element = new UIScreen(this, ifile);
 		else if (type == ESkeleton)
-		element = new Skeleton(this, ifile);
+			element = new Skeleton(this, ifile);
 		else if (type == ESound)
-		element = new Sound(this, ifile);*/
-		// TODO: add different content types and remove:
-		element = new ContentElement(this, ifile);
+			element = new Sound(this, ifile);*/
 		return element;
 	}
 
