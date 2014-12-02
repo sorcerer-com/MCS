@@ -37,7 +37,7 @@ namespace MCS
 
             this.Scene = new MScene();
 
-            WindowsManager.Init();
+            ConfigManager.LoadConfig();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

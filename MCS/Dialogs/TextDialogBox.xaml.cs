@@ -49,7 +49,7 @@ namespace MCS.Dialogs
         }
 
 
-        private void nameTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 this.OkButtonCommand.Execute(null);

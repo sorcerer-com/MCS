@@ -105,6 +105,7 @@
     <Compile Include="Dialogs\TextDialogBox.xaml.cs">
       <DependentUpon>TextDialogBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Managers\ConfigManager.cs" />
     <Compile Include="Managers\DelegateCommand.cs" />
     <Compile Include="Managers\WindowsManager.cs" />
     <Compile Include="MainWindow.xaml.cs">

@@ -1,4 +1,5 @@
-﻿using MCS.MainWindows;
+﻿using MCS.Dialogs;
+using MCS.MainWindows;
 using MEngine;
 using System;
 using System.Collections.Generic;
@@ -12,21 +13,33 @@ namespace MCS.Managers
 {
     public static class WindowsManager
     {
-        private static string configFileName = "config.xml";
-
-        private static Dictionary<string, Window> windows = new Dictionary<string, Window>();
-        private static Dictionary<Type, Dictionary<Key, string>> hotkeys = new Dictionary<Type, Dictionary<Key, string>>(); // window type / (key / command name)
-
-
-        public static void Init()
+        private struct HotKeyInfo
         {
-            if (!loadHotkeysConfig())
+            public Key Key { get; set; }
+            public bool Shift { get; set; }
+            public bool Ctrl { get; set; }
+            public bool Alt { get; set; }
+
+            public string SourceType { get; set; }
+
+            public string CommandName { get; set; }
+
+            public HotKeyInfo(Key key, bool shift, bool ctrl, bool alt, string sourceType, string commandName)
+                : this()
             {
-                defaultHotkeys();
-                saveHotkeys();
+                this.Key = key;
+                this.Shift = shift;
+                this.Ctrl = ctrl;
+                this.Alt = alt;
+                this.SourceType = sourceType;
+                this.CommandName = commandName;
             }
         }
 
+
+        private static Dictionary<string, Window> windows = new Dictionary<string, Window>();
+        private static Dictionary<Type, List<HotKeyInfo>> hotkeys = new Dictionary<Type, List<HotKeyInfo>>();
+        
 
         public static void ShowWindow(Type windowType, Object param = null)
         {
@@ -66,84 +79,97 @@ namespace MCS.Managers
 
 
         // Hot keys functionality
-        // TODO: key combinations, focus specified command
-        private static bool loadHotkeysConfig()
+        public static void LoadConfig(XmlDocument xmlDoc)
         {
-            if (!File.Exists(configFileName))
-                return false;
-
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(configFileName);
-
             XmlNodeList xmlNodes = xmlDoc.GetElementsByTagName("Hotkeys");
-            if (xmlNodes.Count != 1)
+            if (xmlNodes.Count == 0)
             {
                 MScene.Log(ELogType.Warning, "Editor", "Hotkeys cannot be loaded from config file");
-                return false;
+                defaultHotkeys();
+                return;
             }
-            
+
             XmlNode xmlRoot = xmlNodes.Item(0);
             for (int i = 0; i < xmlRoot.ChildNodes.Count; i++)
             {
                 XmlNode xmlType = xmlRoot.ChildNodes.Item(i);
-                Dictionary<Key, string> keys = new Dictionary<Key, string>();
+                List<HotKeyInfo> keys = new List<HotKeyInfo>();
 
                 for (int j = 0; j < xmlType.ChildNodes.Count; j++)
                 {
                     XmlNode xmlKey = xmlType.ChildNodes.Item(j);
                     string key = xmlKey.Attributes.GetNamedItem("Key").Value;
-                    string command = xmlKey.Attributes.GetNamedItem("Command").Value;
-                    keys.Add((Key)Enum.Parse(typeof(Key), key), command);
+                    string shift = xmlKey.Attributes.GetNamedItem("Shift").Value;
+                    string ctrl = xmlKey.Attributes.GetNamedItem("Ctrl").Value;
+                    string alt = xmlKey.Attributes.GetNamedItem("Alt").Value;
+                    string sourceType = xmlKey.Attributes.GetNamedItem("SourceType").Value;
+                    string commandName = xmlKey.Attributes.GetNamedItem("Command").Value;
+
+                    keys.Add(new HotKeyInfo((Key)Enum.Parse(typeof(Key), key), bool.Parse(shift), bool.Parse(ctrl), bool.Parse(alt), sourceType, commandName));
                 }
 
                 hotkeys.Add(Type.GetType(xmlType.Name), keys);
             }
-
-            return true;
         }
 
         private static void defaultHotkeys()
         {
-            Dictionary<Key, string> keys = null;
+            List<HotKeyInfo> keys = null;
 
-            // Main window
-            keys = new Dictionary<Key, string>();
-            keys.Add(Key.F8, "LogWindowCommand");
-            keys.Add(Key.F3, "ContentWindowCommand");
+            // MainWindow
+            keys = new List<HotKeyInfo>();
+            keys.Add(new HotKeyInfo(Key.F8, false, false, false, "", "LogWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.F3, false, false, false, "", "ContentWindowCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
 
-            // Content window
-            keys = new Dictionary<Key, string>();
-            keys.Add(Key.F3, "CloneElementCommand");
-            keys.Add(Key.F2, "RenameElementCommand");
-            keys.Add(Key.F4, "MoveElementCommand");
-            keys.Add(Key.Delete, "DeleteElementCommand");
-            keys.Add(Key.F9, "ExportElementCommand");
+            // ContentWindow
+            keys = new List<HotKeyInfo>();
+            keys.Add(new HotKeyInfo(Key.F2, false, false, false, "TreeView", "RenamePathCommand"));
+            keys.Add(new HotKeyInfo(Key.Delete, false, false, false, "TreeView", "DeletePathCommand"));
+
+            keys.Add(new HotKeyInfo(Key.F3, false, false, false, "ListView", "CloneElementCommand"));
+            keys.Add(new HotKeyInfo(Key.F2, false, false, false, "ListView", "RenameElementCommand"));
+            keys.Add(new HotKeyInfo(Key.F4, false, false, false, "ListView", "MoveElementCommand"));
+            keys.Add(new HotKeyInfo(Key.Delete, false, false, false, "ListView", "DeleteElementCommand"));
+            keys.Add(new HotKeyInfo(Key.F9, false, false, false, "ListView", "ExportElementCommand"));
             hotkeys.Add(typeof(ContentWindow), keys);
+
+            saveHotkeys();
         }
 
         private static void saveHotkeys()
         {
-            // TODO: change only hotkeys element of the config
-            XmlDocument xmlDoc = new XmlDocument();
-            XmlElement xmlRoot = xmlDoc.CreateElement("Hotkeys");
-            xmlDoc.AppendChild(xmlRoot);
+            XmlDocument xmlDoc = ConfigManager.XmlDoc;
+            XmlNodeList xmlNodes = xmlDoc.GetElementsByTagName("Hotkeys");
+            XmlElement xmlRoot = null;
+            if (xmlNodes.Count == 0)
+            {
+                xmlRoot = xmlDoc.CreateElement("Hotkeys");
+                xmlDoc.DocumentElement.AppendChild(xmlRoot);
+            }
+            else
+                xmlRoot = xmlNodes.Item(0) as XmlElement;
+            xmlRoot.RemoveAll();
 
             foreach(var pair in hotkeys)
             {
                 XmlElement xmlType = xmlDoc.CreateElement(pair.Key.FullName);
                 xmlRoot.AppendChild(xmlType);
 
-                foreach(var pair2 in pair.Value)
+                foreach(var info in pair.Value)
                 {
                     XmlElement xmlKey = xmlDoc.CreateElement("Hotkey");
-                    xmlKey.SetAttribute("Key", pair2.Key.ToString());
-                    xmlKey.SetAttribute("Command", pair2.Value);
+                    xmlKey.SetAttribute("Key", info.Key.ToString());
+                    xmlKey.SetAttribute("Shift", info.Shift.ToString());
+                    xmlKey.SetAttribute("Ctrl", info.Ctrl.ToString());
+                    xmlKey.SetAttribute("Alt", info.Alt.ToString());
+                    xmlKey.SetAttribute("SourceType", info.SourceType);
+                    xmlKey.SetAttribute("Command", info.CommandName);
                     xmlType.AppendChild(xmlKey);
                 }
             }
 
-            xmlDoc.Save(configFileName);
+            ConfigManager.SaveConfig();
         }
 
         public static void Window_KeyDown(object sender, KeyEventArgs e)
@@ -152,26 +178,34 @@ namespace MCS.Managers
             if (!hotkeys.ContainsKey(type))
                 return;
 
-            Dictionary<Key, string> keys = hotkeys[type];
-            if (!keys.ContainsKey(e.Key))
-                return;
-
-            string commandName = keys[e.Key];
-            PropertyInfo pi = type.GetProperty(commandName);
-            if (pi == null)
+            List<HotKeyInfo> keys = hotkeys[type];
+            foreach (var info in keys)
             {
-                MScene.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + commandName + "' associate with hotkey '" + e.Key + "'");
-                return;
-            }
+                if (info.Key != e.Key || 
+                    (Keyboard.IsKeyDown(Key.LeftShift) != info.Shift && Keyboard.IsKeyDown(Key.RightShift) != info.Shift) ||
+                    (Keyboard.IsKeyDown(Key.LeftCtrl) != info.Ctrl && Keyboard.IsKeyDown(Key.RightCtrl) != info.Ctrl) ||
+                    (Keyboard.IsKeyDown(Key.LeftAlt) != info.Alt && Keyboard.IsKeyDown(Key.RightAlt) != info.Alt))
+                    continue;
 
-            ICommand command = pi.GetValue(sender) as ICommand;
-            if (command == null)
-            {
-                MScene.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + commandName + "' associate with hotkey '" + e.Key + "'");
-                return;
-            }
+                if (!string.IsNullOrEmpty(info.SourceType) && !e.Source.GetType().ToString().ToLowerInvariant().Contains(info.SourceType.ToLowerInvariant()))
+                    continue;
 
-            command.Execute(null);
+                PropertyInfo pi = type.GetProperty(info.CommandName);
+                if (pi == null)
+                {
+                    MScene.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + info.CommandName + "' associate with hotkey '" + e.Key + "'");
+                    continue;
+                }
+
+                ICommand command = pi.GetValue(sender) as ICommand;
+                if (command == null)
+                {
+                    MScene.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + info.CommandName + "' associate with hotkey '" + e.Key + "'");
+                    continue;
+                }
+
+                command.Execute(null);
+            }
         }
 
     }

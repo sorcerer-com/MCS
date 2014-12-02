@@ -211,7 +211,7 @@ namespace MCS.MainWindows
                     if (this.SelectedTreeItem == null)
                         return;
 
-                    string folderName = TextDialogBox.Show("Create Folder", "Name", this.SelectedTreeItem.Value.Name);
+                    string folderName = TextDialogBox.Show("Rename", "Name", this.SelectedTreeItem.Value.Name);
                     if (!string.IsNullOrEmpty(folderName))
                     {
                         string oldPath = this.SelectedTreeItem.Value.FullPath;
@@ -220,6 +220,9 @@ namespace MCS.MainWindows
                             newPath += "#";
                         else
                             newPath += "\\";
+
+                        if (oldPath == newPath)
+                            return;
 
                         if (!this.ContentManager.RenamePath(oldPath, newPath))
                             MessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -288,7 +291,7 @@ namespace MCS.MainWindows
 
                     MContentElement elem = ContentWindow.SelectedElements[0];
                     string newName = TextDialogBox.Show("Rename", "Name", elem.Name);
-                    if (!string.IsNullOrEmpty(newName))
+                    if (!string.IsNullOrEmpty(newName) && elem.Name != newName)
                     {
                         if (!this.ContentManager.RenameElement(elem.ID, newName))
                             MessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -310,7 +313,7 @@ namespace MCS.MainWindows
 
                     MContentElement elem = ContentWindow.SelectedElements[0];
                     string newFullPath = TextDialogBox.Show("Move", "Name", elem.FullPath);
-                    if (!string.IsNullOrEmpty(newFullPath))
+                    if (!string.IsNullOrEmpty(newFullPath) && elem.FullPath != newFullPath)
                     {
                         if (!this.ContentManager.MoveElement(elem.ID, newFullPath))
                             MessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", MessageBoxButton.OK, MessageBoxImage.Error);
