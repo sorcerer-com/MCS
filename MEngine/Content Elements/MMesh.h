@@ -2,9 +2,9 @@
 #pragma once
 
 #include "Engine\Content Elements\Mesh.h"
-#include "Engine\Managers\ContentManager.h"
 #pragma managed
 
+#include "MContentElement.h"
 #include "..\Utils\MHeader.h"
 
 
@@ -24,6 +24,17 @@ namespace MEngine {
 		MMesh(ContentManager* owner, uint id) : 
 			MContentElement(owner, id)
 		{
+		}
+
+
+		bool LoadFromOBJFile(String^ filePath)
+		{
+			return this->mesh->LoadFromOBJFile(to_string(filePath));
+		}
+
+		bool SaveToOBJFile(String^ filePath)
+		{
+			return this->mesh->SaveToOBJFile(to_string(filePath));
 		}
 	};
 

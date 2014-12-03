@@ -188,6 +188,8 @@
     <ClInclude Include="Utils\Header.h" />
     <ClInclude Include="Utils\IOUtils.h" />
     <ClInclude Include="Utils\Thread.h" />
+    <ClInclude Include="Utils\Types\Vector3.h" />
+    <ClInclude Include="Utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
