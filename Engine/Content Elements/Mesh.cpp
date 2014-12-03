@@ -14,6 +14,7 @@ namespace Engine {
 	Mesh::Mesh(ContentManager* owner, const string& name, const string& package, const string& path) :
 		ContentElement(owner, EMesh, name, package, path)
 	{
+		this->IsLoaded = true;
 	}
 
 	Mesh::Mesh(ContentManager* owner, istream& file) :
@@ -123,7 +124,7 @@ namespace Engine {
 		ofile.precision(6);
 		ofile.setf(std::ios::fixed, std::ios::floatfield);
 
-		ofile << "# My Game Developer Kit" << endl;
+		ofile << "# My Creative Studio" << endl;
 		ofile << endl;
 
 		int size = (int)this->Vertices.size();

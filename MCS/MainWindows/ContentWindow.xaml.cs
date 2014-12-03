@@ -1,9 +1,11 @@
 ﻿using MCS.Dialogs;
 using MCS.Managers;
 using MEngine;
+using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -63,8 +65,8 @@ namespace MCS.MainWindows
                 List<string> paths = this.ContentManager.Paths;
                 foreach(string fullPath in paths)
                 {
-                    string package = MContentElement.GetPackage(fullPath);
-                    string path = MContentElement.GetPath(fullPath);
+                    string package = MContentManager.GetPackage(fullPath);
+                    string path = MContentManager.GetPath(fullPath);
 
                     if (!result.ContainsKey(package))
                         result.Add(package, new TreeItem(package, package + "#", "/Images/ContentWindow/package.png"));
@@ -347,6 +349,32 @@ namespace MCS.MainWindows
             }
         }
 
+
+        public ICommand ImportElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (this.SelectedTreeItem == null)
+                        return;
+
+                    OpenFileDialog openFileDialog = new OpenFileDialog();
+                    string filter = "All Compatible Files (*.obj, *.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr, *.wav)|*.obj;*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr;*.wav|";
+                    filter += "Object Files (*.obj)|*.obj|";
+                    filter += "Picture Files (*.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr)|*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr|";
+                    filter += "WAVE Files (*.wav)|*.wav|";
+                    filter += "All Files (*.*)|*.*";
+                    openFileDialog.Filter = filter;
+
+                    if (openFileDialog.ShowDialog() == true)
+                        this.import(openFileDialog.FileName);
+
+                    this.OnPropertyChanged("Contents");
+                });
+            }
+        }
+
         public ICommand ExportElementCommand
         {
             get
@@ -356,8 +384,39 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    // TODO: impelement
-                    throw new System.NotImplementedException();
+                    MContentElement elem = ContentWindow.SelectedElements[0];
+
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    saveFileDialog.FileName = elem.Name;
+                    saveFileDialog.RestoreDirectory = true;
+                    saveFileDialog.OverwritePrompt = true;
+                    saveFileDialog.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                    if (elem.Type == EContentElementType.Mesh)
+                    {
+                        saveFileDialog.Filter = "Object Files (*.obj)|*.obj|All Files (*.*)|*.*";
+                        saveFileDialog.DefaultExt = "obj";
+                    }
+                    /* TODO: add other content elements
+                    else if (elem.Type == EContentElementType.Material)
+                    {
+                        saveFileDialog.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+                        saveFileDialog.DefaultExt = "xml";
+                    }
+                    else if (elem.Type == EContentElementType.Texture)
+                    {
+                        saveFileDialog.Filter = "Picture Files (*.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr)|*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr|All Files (*.*)|*.*";
+                        saveFileDialog.DefaultExt = "png";
+                    }
+                    else if (elem.Type == EContentElementType.Sound)
+                    {
+                        saveFileDialog.Filter = "WAVE Files (*.wav)|*.wav|All Files (*.*)|*.*";
+                        saveFileDialog.DefaultExt = "wav";
+                    } // */
+
+                    if (saveFileDialog.ShowDialog() == true)
+                        this.export(saveFileDialog.FileName);
+
                 });
             }
         }
@@ -407,7 +466,69 @@ namespace MCS.MainWindows
         }
 
         // TODO: drop
-        // TODO: preview
+        // TODO: preview and properties
+
+        private void import(string filename)
+        {
+            string ext = Path.GetExtension(filename).ToLowerInvariant();
+            string name = Path.GetFileNameWithoutExtension(filename);
+
+            EContentElementType type;
+            if (ext == ".obj")
+                type = EContentElementType.Mesh;
+            /* TODO: add other content elements
+            else if (textureExts.Contains(ext))
+                type = EContentElementType.Texture;
+            else if (ext == ".wave")
+                type = EContentElementType.Sound; // */
+            else
+                return;
+
+            // if allready exists
+            MContentElement elem = this.ContentManager.GetElement(this.SelectedTreeItem.Value.FullPath + name);
+            uint id = 0;
+            if (elem != null)
+            {
+                id = elem.ID;
+                // TODO: custom message box (YesToAll)
+                MessageBoxResult res = MessageBox.Show("Element '" + name + "' already exists in Content! \nDo you want to replace it?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (res == MessageBoxResult.Yes)
+                    this.ContentManager.DeleteElement(id);
+                else
+                    return;
+            }
+
+            // add element
+            string package = MContentManager.GetPackage(this.SelectedTreeItem.Value.FullPath);
+            string path = MContentManager.GetPath(this.SelectedTreeItem.Value.FullPath);
+            elem = this.ContentManager.AddElement(type, name, package, path, id);
+
+            if (elem != null)
+            {
+                if (type == EContentElementType.Mesh)
+                    ((MMesh)elem).LoadFromOBJFile(filename);
+                /* TODO: add other content elements
+                else if (type == EContentElementType.Texture)
+                    ((MTexture)elem).LoadFromFile(fileDrop);
+                else if (type == EContentElementType.Sound)
+                    ((MSound)elem).LoadFromWAVEFile(fileDrop); // */
+            }
+        }
+
+        private void export(string filename)
+        {
+            MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0].ID);
+
+            if (elem.Type == EContentElementType.Mesh)
+                ((MMesh)elem).SaveToOBJFile(filename);
+            /* TODO: add other content elements
+            else if (elem.Type == EContentElementType.Material)
+                ((MMaterial)elem).SaveToXMLFile(filename);
+            else if (elem.Type == EContentElementType.Texture)
+                ((MTexture)elem).SaveToFile(filename);
+            else if (elem.Type == EContentElementType.Sound)
+                ((MSound)elem).SaveToWAVEFile(filename); // */
+        }
 
 
         public event PropertyChangedEventHandler PropertyChanged;

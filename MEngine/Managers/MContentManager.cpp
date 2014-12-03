@@ -157,4 +157,20 @@ namespace MEngine {
 		return melement;
 	}
 
+
+	String^ MContentManager::GetPackage(String^ fullName)
+	{
+		return gcnew String(ContentManager::GetPackage(to_string(fullName)).c_str());
+	}
+
+	String^ MContentManager::GetPath(String^ fullName)
+	{
+		return gcnew String(ContentManager::GetPath(to_string(fullName)).c_str());
+	}
+
+	String^ MContentManager::GetName(String^ fullName)
+	{
+		return gcnew String(ContentManager::GetName(to_string(fullName)).c_str());
+	}
+
 }

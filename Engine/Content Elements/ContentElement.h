@@ -42,11 +42,6 @@ namespace Engine {
 		virtual long long Size() const;
 		virtual void WriteToFile(ostream& file) const;
 		virtual ContentElement* Clone() const;
-
-	public:
-		static string GetPackage(const string& fullName);
-		static string GetPath(const string& fullName);
-		static string GetName(const string& fullName);
 	};
 
 }

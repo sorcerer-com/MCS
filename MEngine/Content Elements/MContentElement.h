@@ -125,23 +125,6 @@ namespace MEngine {
 				return false;
 			return this->ID.Equals(elem->ID);
 		}
-
-
-
-		static String^ GetPackage(String^ fullName)
-		{
-			return gcnew String(ContentElement::GetPackage(to_string(fullName)).c_str());
-		}
-
-		static String^ GetPath(String^ fullName)
-		{
-			return gcnew String(ContentElement::GetPath(to_string(fullName)).c_str());
-		}
-
-		static String^ GetName(String^ fullName)
-		{
-			return gcnew String(ContentElement::GetName(to_string(fullName)).c_str());
-		}
 	};
 }
 

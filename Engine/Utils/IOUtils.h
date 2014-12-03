@@ -53,7 +53,7 @@ namespace Engine {
 	}
 
 	template <class T>
-	inline void Read(istream& ifile, const vector<T>& value)
+	inline void Read(istream& ifile, vector<T>& value)
 	{
 		long long size = 0;
 		ifile.read((char*)&size, sizeof(size));

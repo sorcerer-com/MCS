@@ -68,11 +68,13 @@
 
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Clone" InputGestureText="F3" Command="{Binding Path=CloneElementCommand}"/>
-                        <MenuItem Header="Rename" InputGestureText="F2" Command="{Binding Path=RenameElementCommand}"/>
-                        <MenuItem Header="Move" InputGestureText="F4" Command="{Binding Path=MoveElementCommand}"/>
-                        <MenuItem Header="Delete" InputGestureText="Del" Command="{Binding Path=DeleteElementCommand}"/>
-                        <MenuItem Header="Export" InputGestureText="F9" Command="{Binding Path=ExportElementCommand}"/>
+                        <MenuItem Header="Clone" Command="{Binding Path=CloneElementCommand}"/>
+                        <MenuItem Header="Rename" Command="{Binding Path=RenameElementCommand}"/>
+                        <MenuItem Header="Move" Command="{Binding Path=MoveElementCommand}"/>
+                        <MenuItem Header="Delete" Command="{Binding Path=DeleteElementCommand}"/>
+                        <Separator/>
+                        <MenuItem Header="Import" Command="{Binding Path=ImportElementCommand}"/>
+                        <MenuItem Header="Export" Command="{Binding Path=ExportElementCommand}"/>
                         <Separator/>
                         <MenuItem Header="Add Mesh" Command="{Binding Path=AddMeshElementCommand}"/>
                         <MenuItem Header="Add Material"/>

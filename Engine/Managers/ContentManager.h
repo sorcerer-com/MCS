@@ -83,6 +83,11 @@ namespace Engine {
 		void beckupElement(const ContentElementPtr& element);
 		bool unLoadElement(uint id);
 
+	public:
+		static string GetPackage(const string& fullName);
+		static string GetPath(const string& fullName);
+		static string GetName(const string& fullName);
+
 	};
 
 }

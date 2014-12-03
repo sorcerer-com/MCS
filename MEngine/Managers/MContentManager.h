@@ -48,9 +48,13 @@ namespace MEngine {
 		MContentElement^ GetElement(String^ fullName);
 		void SaveElement(uint id);
 
+	private:
 		static MContentElement^ getMContentElement(const ContentElementPtr& element);
 
-	private:
+	public:
+		static String^ GetPackage(String^ fullName);
+		static String^ GetPath(String^ fullName);
+		static String^ GetName(String^ fullName);
 
 	};
 }

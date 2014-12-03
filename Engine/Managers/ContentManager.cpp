@@ -62,10 +62,7 @@ namespace Engine {
 			ContentElement* elem = this->loadElement(ifile, type);
 
 			if (elem && !ifile.fail())
-			{
-				elem->IsLoaded = true;
 				this->AddElement(elem);
-			}
 			else
 			{
 				Scene::Log(EError, "ContentManager", "Package file is corrupted: " + filePath);
@@ -114,8 +111,8 @@ namespace Engine {
 
 		if (res)
 		{
-			string package = ContentElement::GetPackage(fullPath);
-			string path = ContentElement::GetPath(fullPath);
+			string package = ContentManager::GetPackage(fullPath);
+			string path = ContentManager::GetPath(fullPath);
 
 			lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 			this->packageInfos[package].Paths[path];
@@ -138,12 +135,12 @@ namespace Engine {
 		{
 			lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 
-			string oldPackage = ContentElement::GetPackage(oldFullPath);
-			string oldPath = ContentElement::GetPath(oldFullPath);
+			string oldPackage = ContentManager::GetPackage(oldFullPath);
+			string oldPath = ContentManager::GetPath(oldFullPath);
 			PackageInfo& oldInfo = this->packageInfos[oldPackage];
 
-			string newPackage = ContentElement::GetPackage(newFullPath);
-			string newPath = ContentElement::GetPath(newFullPath);
+			string newPackage = ContentManager::GetPackage(newFullPath);
+			string newPath = ContentManager::GetPath(newFullPath);
 			PackageInfo& newInfo = this->packageInfos[newPackage];
 			
 			vector<string> forDelete;
@@ -196,8 +193,8 @@ namespace Engine {
 
 	bool ContentManager::ContainPath(const string& fullPath) const
 	{
-		string package = ContentElement::GetPackage(fullPath);
-		string path = ContentElement::GetPath(fullPath);
+		string package = ContentManager::GetPackage(fullPath);
+		string path = ContentManager::GetPath(fullPath);
 		
 		if (this->packageInfos.find(package) == this->packageInfos.end())
 			return false;
@@ -215,8 +212,8 @@ namespace Engine {
 			return false;
 		}
 
-		string package = ContentElement::GetPackage(fullPath);
-		string path = ContentElement::GetPath(fullPath);
+		string package = ContentManager::GetPackage(fullPath);
+		string path = ContentManager::GetPath(fullPath);
 		PackageInfo& info = this->packageInfos[package];
 
 		vector<string> forDelete;
@@ -342,8 +339,8 @@ namespace Engine {
 		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 		set<uint>& ids = this->packageInfos[element->Package].Paths[element->Path];
 		ids.erase(ids.find(id));
-		element->Package = ContentElement::GetPackage(newFullPath);
-		element->Path = ContentElement::GetPath(newFullPath);
+		element->Package = ContentManager::GetPackage(newFullPath);
+		element->Path = ContentManager::GetPath(newFullPath);
 		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
 		
 		this->addRequest(ESaveDatabase);
@@ -396,9 +393,9 @@ namespace Engine {
 
 	ContentElementPtr ContentManager::GetElement(const string& fullname, bool load, bool waitForLoad /* = false */)
 	{
-		string package = ContentElement::GetPackage(fullname);
-		string path = ContentElement::GetPath(fullname);
-		string name = ContentElement::GetName(fullname);
+		string package = ContentManager::GetPackage(fullname);
+		string path = ContentManager::GetPath(fullname);
+		string name = ContentManager::GetName(fullname);
 
 		if (this->packageInfos.find(package) == this->packageInfos.end())
 		{
@@ -449,7 +446,6 @@ namespace Engine {
 			{
 				this->thread->mutex("requestsMutex").lock();
 				auto request = this->requests.front();
-				this->requests.pop_front();
 				this->thread->mutex("requestsMutex").unlock();
 
 				switch (request.first)
@@ -474,33 +470,40 @@ namespace Engine {
 					break;
 				}
 
+				this->thread->mutex("requestsMutex").lock();
+				this->requests.pop_front();
+				this->thread->mutex("requestsMutex").unlock();
+
 				this_thread::sleep_for(chrono::milliseconds(1));
 			}
 
 			this_thread::sleep_for(chrono::milliseconds(100));
 
-			// unload all unused content elements
-			vector<uint> forUnload;
-			for (auto& pair : this->content)
+			//if (Scene::Mode != EEditor)
 			{
-				if (pair.second.unique() && pair.second->IsLoaded)
+				// unload all unused content elements
+				vector<uint> forUnload;
+				for (auto& pair : this->content)
 				{
-					// check if element is in request
-					bool inRequest = false;
-					this->thread->mutex("requestsMutex").lock();
-					for (auto& pair2 : this->requests)
+					if (pair.second.unique() && pair.second->IsLoaded)
 					{
-						if (pair2.second == pair.first)
-							inRequest = true;
-					}
-					this->thread->mutex("requestsMutex").unlock();
+						// check if element is in request
+						bool inRequest = false;
+						this->thread->mutex("requestsMutex").lock();
+						for (auto& pair2 : this->requests)
+						{
+							if (pair2.second == pair.first)
+								inRequest = true;
+						}
+						this->thread->mutex("requestsMutex").unlock();
 
-					if (!inRequest)
-						forUnload.push_back(pair.first);
+						if (!inRequest)
+							forUnload.push_back(pair.first);
+					}
 				}
+				for (auto& id : forUnload)
+					this->unLoadElement(id);
 			}
-			for (auto& id : forUnload)
-				this->unLoadElement(id);
 		}
 	}
 
@@ -522,6 +525,7 @@ namespace Engine {
 
 		if (!skip)
 			this->requests.push_back(pair);
+
 		if (wait)
 		{
 			while (find(this->requests.begin(), this->requests.end(), pair) != this->requests.end())
@@ -678,8 +682,6 @@ namespace Engine {
 
 		if (elem && !ifile.fail())
 		{
-			elem->IsLoaded = true;
-
 			lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 			this->content[elem->ID].reset(elem);
 		}
@@ -856,13 +858,43 @@ namespace Engine {
 			return true;
 
 		ContentElement* elem = new ContentElement(*element);
-		elem->IsLoaded = false;
 		lock_guard<mutex> lck(this->thread->mutex("contentMutex"));
 		this->content[elem->ID].reset(elem);
 
 		Scene::Log(ELog, "ContentManager", "UnLoad content element '" + elem->Name + "'#" +
 			to_string(elem->Version) + " (" + to_string(elem->ID) + ")");
 		return true;
+	}
+
+
+	string ContentManager::GetPackage(const string& fullName)
+	{
+		return fullName.substr(0, fullName.find_last_of("#"));
+	}
+
+	string ContentManager::GetPath(const string& fullName)
+	{
+		size_t start = fullName.find_last_of("#") + 1;
+		size_t end = fullName.find_last_of("\\");
+		if (end != string::npos)
+			return fullName.substr(start, end - start);
+		else
+			return "";
+	}
+
+	string ContentManager::GetName(const string& fullName)
+	{
+		size_t slash = fullName.find_last_of("\\");
+		size_t hash = fullName.find_last_of("#");
+		if (slash != string::npos)
+		{
+			if (slash > hash)
+				return fullName.substr(slash + 1);
+			else
+				return "";
+		}
+		else
+			return fullName.substr(hash + 1);
 	}
 
 }
