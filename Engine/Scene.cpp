@@ -16,14 +16,14 @@ namespace Engine {
 	{
 		ofstream ofile(LOG_FILE);
 		ofile.close();
-		Scene::Log(ELog, "Scene", "Start engine");
+		Scene::Log(ELog, "Scene", "Create engine");
 
 		this->ContentManager = make_shared<Engine::ContentManager>();
 	}
 
 	Scene::~Scene()
 	{
-
+		Scene::Log(ELog, "Scene", "Destroy engine");
 	}
 
 

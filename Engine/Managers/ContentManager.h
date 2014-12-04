@@ -80,7 +80,7 @@ namespace Engine {
 		ContentElement* loadElement(istream& ifile, ContentElementType type);
 		bool saveElement(uint id);
 		bool eraseElement(uint id);
-		void beckupElement(const ContentElementPtr& element);
+		void beckupElement(const ContentElementPtr& element, bool erase);
 		bool unLoadElement(uint id);
 
 	public:
