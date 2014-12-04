@@ -7,6 +7,7 @@
     <ClInclude Include="Utils\MHeader.h" />
     <ClInclude Include="Managers\MContentManager.h" />
     <ClInclude Include="Content Elements\MMesh.h" />
+    <ClInclude Include="Utils\Types\MPoint.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

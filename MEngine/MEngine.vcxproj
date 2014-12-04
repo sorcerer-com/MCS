@@ -212,6 +212,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="MScene.h" />
     <ClInclude Include="Utils\MHeader.h" />
+    <ClInclude Include="Utils\Types\MPoint.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

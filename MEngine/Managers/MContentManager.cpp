@@ -112,16 +112,26 @@ namespace MEngine {
 
 	MContentElement^ MContentManager::GetElement(uint id)
 	{
+		return this->GetElement(id, true);
+	}
+
+	MContentElement^ MContentManager::GetElement(uint id, bool load)
+	{
 		if (!this->contentManager->ContainElement(id))
 			return nullptr;
 
-		ContentElementPtr elem = this->contentManager->GetElement(id, true, true);
+		ContentElementPtr elem = this->contentManager->GetElement(id, load, load);
 		return this->getMContentElement(elem);
 	}
 
 	MContentElement^ MContentManager::GetElement(String^ fullName)
 	{
-		ContentElementPtr elem = this->contentManager->GetElement(to_string(fullName), true, true);
+		return this->GetElement(fullName, true);
+	}
+	
+	MContentElement^ MContentManager::GetElement(String^ fullName, bool load)
+	{
+		ContentElementPtr elem = this->contentManager->GetElement(to_string(fullName), load, load);
 		return this->getMContentElement(elem);
 	}
 

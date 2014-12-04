@@ -15,6 +15,9 @@ namespace MEngine {
 
 	MScene::~MScene()
 	{
+		delete this->ContentManager;
+		this->ContentManager = nullptr;
+
 		delete this->scene;
 		this->scene = NULL;
 	}

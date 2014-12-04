@@ -96,9 +96,9 @@
                 
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="5" ToolTip="{Binding Path=Element.Info}">
+                        <StackPanel Orientation="Horizontal" Margin="5" ToolTip="{Binding Path=Info}">
                             <Image Source="{Binding Path=Image}" Width="24" Height="24" Margin="3"/>
-                            <TextBlock Text="{Binding Path=Element.Name}" TextWrapping="Wrap" Margin="3" TextAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap" Margin="3" TextAlignment="Center" VerticalAlignment="Center"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

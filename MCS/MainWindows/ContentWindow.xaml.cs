@@ -19,7 +19,7 @@ namespace MCS.MainWindows
     {
         public MContentManager ContentManager { get; private set; }
 
-        public static List<MContentElement> SelectedElements = new List<MContentElement>();
+        public static List<uint> SelectedElements = new List<uint>();
 
 
         #region Helpers Structures
@@ -44,13 +44,17 @@ namespace MCS.MainWindows
         public struct ContentItem
         {
             public string Image { get; private set; }
-            public MContentElement Element { get; private set; }
+            public uint ID { get; private set; }
+            public string Name { get; private set; }
+            public string Info { get; private set; }
 
-            public ContentItem(string image, MContentElement element)
+            public ContentItem(string image, uint id, string name, string info)
                 : this()
             {
                 this.Image = image;
-                this.Element = element;
+                this.ID = id;
+                this.Name = name;
+                this.Info = info;
             }
         }
 
@@ -117,10 +121,10 @@ namespace MCS.MainWindows
 				    else if (element.Type == EContentElementType.Sound)
 					    image = "/Images/ContentWindow/Sound.png";
 
-                    result.Add(new ContentItem(image, element));
+                    result.Add(new ContentItem(image, element.ID, element.Name, element.Info));
                 }
 
-                result.Sort((item1, item2) => item1.Element.Name.CompareTo(item2.Element.Name));
+                result.Sort((item1, item2) => item1.Name.CompareTo(item2.Name));
                 return new ObservableCollection<ContentItem>(result);
             }
         }
@@ -269,7 +273,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     string newName = TextDialogBox.Show("Clone", "Name", elem.Name + "2");
                     if (!string.IsNullOrEmpty(newName))
                     {
@@ -291,7 +295,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     string newName = TextDialogBox.Show("Rename", "Name", elem.Name);
                     if (!string.IsNullOrEmpty(newName) && elem.Name != newName)
                     {
@@ -313,7 +317,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     string newFullPath = TextDialogBox.Show("Move", "Name", elem.FullPath);
                     if (!string.IsNullOrEmpty(newFullPath) && elem.FullPath != newFullPath)
                     {
@@ -335,7 +339,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     MessageBoxResult res = MessageBox.Show("Are you sure that you want to delete '" + elem.Name + "'?", "Delete element", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     if (res == MessageBoxResult.Yes)
                     {
@@ -384,7 +388,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = ContentWindow.SelectedElements[0];
+                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
 
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     saveFileDialog.FileName = elem.Name;
@@ -459,10 +463,10 @@ namespace MCS.MainWindows
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             foreach (ContentItem item in e.RemovedItems)
-                ContentWindow.SelectedElements.Remove(item.Element);
+                ContentWindow.SelectedElements.Remove(item.ID);
 
             foreach (ContentItem item in e.AddedItems)
-                ContentWindow.SelectedElements.Add(item.Element);
+                ContentWindow.SelectedElements.Add(item.ID);
         }
 
         // TODO: drop
@@ -485,7 +489,7 @@ namespace MCS.MainWindows
                 return;
 
             // if allready exists
-            MContentElement elem = this.ContentManager.GetElement(this.SelectedTreeItem.Value.FullPath + name);
+            MContentElement elem = this.ContentManager.GetElement(this.SelectedTreeItem.Value.FullPath + name, false);
             uint id = 0;
             if (elem != null)
             {
@@ -512,12 +516,13 @@ namespace MCS.MainWindows
                     ((MTexture)elem).LoadFromFile(fileDrop);
                 else if (type == EContentElementType.Sound)
                     ((MSound)elem).LoadFromWAVEFile(fileDrop); // */
+                this.ContentManager.SaveElement(elem.ID);
             }
         }
 
         private void export(string filename)
         {
-            MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0].ID);
+            MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0]);
 
             if (elem.Type == EContentElementType.Mesh)
                 ((MMesh)elem).SaveToOBJFile(filename);

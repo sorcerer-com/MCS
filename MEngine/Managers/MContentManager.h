@@ -45,7 +45,9 @@ namespace MEngine {
 		bool MoveElement(uint id, String^ newFullPath);
 		bool DeleteElement(uint id);
 		MContentElement^ GetElement(uint id);
+		MContentElement^ GetElement(uint id, bool load);
 		MContentElement^ GetElement(String^ fullName);
+		MContentElement^ GetElement(String^ fullName, bool load);
 		void SaveElement(uint id);
 
 	private:
