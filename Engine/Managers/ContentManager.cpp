@@ -106,88 +106,85 @@ namespace Engine {
 	/* P A T H S */
 	bool ContentManager::CreatePath(const string& fullPath)
 	{
-		bool res = !this->ContainPath(fullPath);
-
-		if (res)
+		if (this->ContainPath(fullPath))
 		{
-			string package = ContentManager::GetPackage(fullPath);
-			string path = ContentManager::GetPath(fullPath);
-
-			lock lck(this->thread->mutex("content"));
-			this->packageInfos[package].Paths[path];
-
-			this->addRequest(ESaveDatabase);
-
-			Scene::Log(ELog, "ContentManager", "Create path '" + fullPath + "'");
-		}
-		else
 			Scene::Log(EError, "ContentManager", "Try to create already exists path '" + fullPath + "'");
+			return false;
+		}
 
-		return res;
+		string package = ContentManager::GetPackage(fullPath);
+		string path = ContentManager::GetPath(fullPath);
+
+		lock lck(this->thread->mutex("content"));
+		this->packageInfos[package].Paths[path];
+
+		this->addRequest(ESaveDatabase);
+
+		Scene::Log(ELog, "ContentManager", "Create path '" + fullPath + "'");
+		return true;
 	}
 
 	bool ContentManager::RenamePath(const string& oldFullPath, const string& newFullPath)
 	{
-		bool res = !this->ContainPath(newFullPath);
-		
-		if (res == true)
+		if (this->ContainPath(newFullPath))
 		{
-			lock lck(this->thread->mutex("content"));
-
-			string oldPackage = ContentManager::GetPackage(oldFullPath);
-			string oldPath = ContentManager::GetPath(oldFullPath);
-			PackageInfo& oldInfo = this->packageInfos[oldPackage];
-
-			string newPackage = ContentManager::GetPackage(newFullPath);
-			string newPath = ContentManager::GetPath(newFullPath);
-			PackageInfo& newInfo = this->packageInfos[newPackage];
-			
-			vector<string> forDelete;
-			for (auto it = oldInfo.Paths.rbegin(); it != oldInfo.Paths.rend(); ++it)
-			{
-				string path = (*it).first;
-				if (path.find(oldPath) == 0)
-				{
-					string npath = path.substr(oldPath.size());
-					npath = newPath + npath;
-
-					newInfo.Paths[npath].insert((*it).second.begin(), (*it).second.end());
-					forDelete.push_back(path);
-
-					// change elements paths
-					set<uint>& ids = newInfo.Paths[npath];
-					for (auto& id : ids)
-					{
-						ContentElementPtr element = this->GetElement(id, true, true);
-						this->eraseElement(id);
-						element->Package = newPackage;
-						element->Path = npath;
-						this->addRequest(ESaveElement, id);
-						this->addRequest(ESaveDatabase);
-					}
-
-					Scene::Log(ELog, "ContentManager", "Rename path '" + oldPackage + "#" + path + "' to '" + newPackage + "#" + npath + "'");
-				}
-			}
-			for (auto& path : forDelete)
-				oldInfo.Paths.erase(path);
-
-			// delete package if it's renamed
-			if (oldInfo.Paths.size() == 0)
-			{
-				this->packageInfos.erase(oldPackage);
-
-				string packFile = CONTENT_FOLDER;
-				packFile += "\\" + oldPackage + ".mpk";
-				remove(packFile.c_str());
-			}
-			
-			this->addRequest(ESaveDatabase);
-		}
-		else
 			Scene::Log(EError, "ContentManager", "Try to rename non existent path '" + oldFullPath + "'");
+			return false;
+		}
+		
+		lock lck(this->thread->mutex("content"));
 
-		return res;
+		string oldPackage = ContentManager::GetPackage(oldFullPath);
+		string oldPath = ContentManager::GetPath(oldFullPath);
+		PackageInfo& oldInfo = this->packageInfos[oldPackage];
+
+		string newPackage = ContentManager::GetPackage(newFullPath);
+		string newPath = ContentManager::GetPath(newFullPath);
+		PackageInfo& newInfo = this->packageInfos[newPackage];
+			
+		vector<string> forDelete;
+		for (auto it = oldInfo.Paths.rbegin(); it != oldInfo.Paths.rend(); ++it)
+		{
+			string path = (*it).first;
+			if (path.find(oldPath) == 0)
+			{
+				string npath = path.substr(oldPath.size());
+				npath = newPath + npath;
+
+				newInfo.Paths[npath].insert((*it).second.begin(), (*it).second.end());
+				forDelete.push_back(path);
+
+				// change elements paths
+				set<uint>& ids = newInfo.Paths[npath];
+				for (auto& id : ids)
+				{
+					ContentElementPtr element = this->GetElement(id, true, true);
+					this->eraseElement(id);
+					element->Package = newPackage;
+					element->Path = npath;
+					this->addRequest(ESaveElement, id);
+					this->addRequest(ESaveDatabase);
+				}
+
+				Scene::Log(ELog, "ContentManager", "Rename path '" + oldPackage + "#" + path + "' to '" + newPackage + "#" + npath + "'");
+			}
+		}
+		for (auto& path : forDelete)
+			oldInfo.Paths.erase(path);
+
+		// delete package if it's renamed
+		if (oldInfo.Paths.size() == 0)
+		{
+			this->packageInfos.erase(oldPackage);
+
+			string packFile = CONTENT_FOLDER;
+			packFile += "\\" + oldPackage + ".mpk";
+			remove(packFile.c_str());
+		}
+			
+		this->addRequest(ESaveDatabase);
+
+		return true;
 	}
 
 	bool ContentManager::ContainPath(const string& fullPath) const
