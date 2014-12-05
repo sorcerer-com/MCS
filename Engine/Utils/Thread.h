@@ -9,12 +9,15 @@
 
 namespace Engine {
 
+	using lock = lock_guard < _Mutex_base > ;
+
 	struct Thread
 	{
 	private:
 		atomic_bool m_interrupt;
 		thread m_worker;
 		map<string, mutex> m_mutices;
+		map<string, recursive_mutex> m_recursive_mutices;
 
 	public:
 		Thread()
@@ -47,17 +50,23 @@ namespace Engine {
 				this->m_worker.join();
 		}
 
-		inline void defMutex(const string& name)
+
+		inline void defMutex(const string& name, bool recursive = false)
 		{
-			this->m_mutices[name];
+			if (!recursive)
+				this->m_mutices[name];
+			else
+				this->m_recursive_mutices[name];
 		}
 
-		inline mutex& mutex(const string& name)
+		inline _Mutex_base& mutex(const string& name)
 		{
-			if (this->m_mutices.find(name) == this->m_mutices.end())
-				throw "Try to access invalid mutex";
+			if (this->m_mutices.find(name) != this->m_mutices.end())
+				return this->m_mutices[name];
+			if (this->m_recursive_mutices.find(name) != this->m_recursive_mutices.end())
+				return this->m_recursive_mutices[name];
 			
-			return this->m_mutices[name];
+			throw "Try to access invalid mutex";
 		}
 
 	};

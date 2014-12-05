@@ -71,8 +71,7 @@ namespace Engine {
 		
 	private:
 		void doSerilization();
-		void addRequest(RequestType type, bool wait);
-		void addRequest(RequestType type, uint id = 0, bool wait = false);
+		void addRequest(RequestType type, uint id = 0);
 
 		void loadDatabase();
 		void saveDatabase();

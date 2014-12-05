@@ -443,6 +443,9 @@ namespace MCS.MainWindows
 
                     if (saveFileDialog.ShowDialog() == true)
                     {
+                        if (File.Exists(saveFileDialog.FileName))
+                            File.Delete(saveFileDialog.FileName);
+
                         foreach(uint selection in ContentWindow.SelectedElements)
                             this.ContentManager.ExportToPackage(saveFileDialog.FileName, selection);
                     }
