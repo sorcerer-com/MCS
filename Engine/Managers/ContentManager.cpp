@@ -162,6 +162,7 @@ namespace Engine {
 					this->eraseElement(id);
 					element->Package = newPackage;
 					element->Path = npath;
+					element->SavedSize = 0;
 					this->addRequest(ESaveElement, id);
 					this->addRequest(ESaveDatabase);
 				}
@@ -461,10 +462,8 @@ namespace Engine {
 					this->loadElement(request.second);
 					break;
 				case ESaveElement:
+					this->eraseElement(request.second, false);
 					this->saveElement(request.second);
-					break;
-				case EEraseElement:
-					this->eraseElement(request.second);
 					break;
 				default:
 					Scene::Log(EWarning, "ContentManager", "Invalid request");
@@ -481,27 +480,30 @@ namespace Engine {
 			this_thread::sleep_for(chrono::milliseconds(100));
 
 			// unload all unused content elements
-			vector<uint> forUnload;
-			for (auto& pair : this->content)
 			{
-				if (pair.second.unique() && pair.second->IsLoaded)
+				lock lck(this->thread->mutex("content"));
+				vector<uint> forUnload;
+				for (auto& pair : this->content)
 				{
-					// check if element is in request
-					bool inRequest = false;
-					this->thread->mutex("requests").lock();
-					for (auto& pair2 : this->requests)
+					if (pair.second.unique() && pair.second->IsLoaded)
 					{
-						if (pair2.second == pair.first)
-							inRequest = true;
-					}
-					this->thread->mutex("requests").unlock();
+						// check if element is in request
+						bool inRequest = false;
+						this->thread->mutex("requests").lock();
+						for (auto& pair2 : this->requests)
+						{
+							if (pair2.second == pair.first)
+								inRequest = true;
+						}
+						this->thread->mutex("requests").unlock();
 
-					if (!inRequest)
-						forUnload.push_back(pair.first);
+						if (!inRequest)
+							forUnload.push_back(pair.first);
+					}
 				}
+				for (auto& id : forUnload)
+					this->unLoadElement(id);
 			}
-			for (auto& id : forUnload)
-				this->unLoadElement(id);
 		}
 	}
 
@@ -695,9 +697,8 @@ namespace Engine {
 		return element;
 	}
 
-	bool ContentManager::saveElement(uint id)
+	bool ContentManager::saveElement(uint id, bool backup /* = true */)
 	{
-		// TODO: what if element already exist what will happen with the old space that is using
 		lock lck(this->thread->mutex("content"));
 
 		ContentElementPtr element = this->GetElement(id, false);
@@ -708,7 +709,8 @@ namespace Engine {
 		}
 
 		// Backup
-		this->beckupElement(element, false);
+		if (backup)
+			this->beckupElement(element, false);
 
 		// Save
 		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + ".mpk";
@@ -733,6 +735,7 @@ namespace Engine {
 			{
 				ofile.seekp((*it).first);
 				(*it).second -= element->Size();
+				(*it).first += element->Size();
 				if ((*it).second == 0)
 					info.FreeSpaces.erase(it);
 				break;
@@ -748,7 +751,7 @@ namespace Engine {
 		return true;
 	}
 
-	bool ContentManager::eraseElement(uint id)
+	bool ContentManager::eraseElement(uint id, bool backup /* = true */)
 	{
 		lock lck(this->thread->mutex("content"));
 
@@ -759,8 +762,13 @@ namespace Engine {
 			return false;
 		}
 
+		long long size = element->SavedSize;
+		if (size == 0)
+			return true;
+
 		// Backup
-		this->beckupElement(element, true);
+		if (backup)
+			this->beckupElement(element, true);
 
 		// Erase
 		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + ".mpk";
@@ -773,7 +781,6 @@ namespace Engine {
 		}
 
 		ofile.seekp(element->PackageOffset);
-		long long size = element->Size();
 		for (int i = 0; i < size; ++i)
 			ofile.write("\0", sizeof(char));
 		ofile.close();
@@ -784,9 +791,16 @@ namespace Engine {
 		for (auto& pair : info.FreeSpaces)
 		{
 			if (pair.first + pair.second == element->PackageOffset)
+				found = true;
+			if (element->PackageOffset + size == pair.first)
+			{
+				pair.first = element->PackageOffset;
+				found = true;
+			}
+
+			if (found)
 			{
 				pair.second += size;
-				found = true;
 				break;
 			}
 		}

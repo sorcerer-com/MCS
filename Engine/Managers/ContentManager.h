@@ -27,8 +27,7 @@ namespace Engine {
 			ELoadDatabase,
 			ESaveDatabase,
 			ELoadElement,
-			ESaveElement,
-			EEraseElement
+			ESaveElement
 		};
 
 	public:
@@ -77,8 +76,8 @@ namespace Engine {
 		void saveDatabase();
 		bool loadElement(uint id);
 		ContentElement* loadElement(istream& ifile, ContentElementType type);
-		bool saveElement(uint id);
-		bool eraseElement(uint id);
+		bool saveElement(uint id, bool backup = true);
+		bool eraseElement(uint id, bool backup = true);
 		void beckupElement(const ContentElementPtr& element, bool erase);
 		bool unLoadElement(uint id);
 

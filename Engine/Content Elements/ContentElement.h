@@ -28,6 +28,7 @@ namespace Engine {
 		string Path;
 
 		long long PackageOffset;
+		long long SavedSize;
 		bool IsLoaded;
 
 		ContentManager* Owner;
@@ -40,7 +41,7 @@ namespace Engine {
 		string GetFullName() const;
 
 		virtual long long Size() const;
-		virtual void WriteToFile(ostream& file) const;
+		virtual void WriteToFile(ostream& file);
 		virtual ContentElement* Clone() const;
 	};
 

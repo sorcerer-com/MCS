@@ -31,7 +31,7 @@ namespace Engine {
 		bool SaveToOBJFile(const string& filePath) const;
 
 		virtual long long Size() const override;
-		virtual void WriteToFile(ostream& file) const override;
+		virtual void WriteToFile(ostream& file) override;
 		virtual ContentElement* Clone() const override;
 	};
 

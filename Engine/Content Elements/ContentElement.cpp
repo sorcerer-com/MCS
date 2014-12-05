@@ -19,6 +19,7 @@ namespace Engine {
 		this->Path = path;
 
 		this->PackageOffset = 0;
+		this->SavedSize = 0;
 		this->IsLoaded = false;
 
 		this->Owner = owner;
@@ -35,6 +36,7 @@ namespace Engine {
 			Read(file, this->Package);
 			Read(file, this->Path);
 			Read(file, this->PackageOffset);
+			Read(file, this->SavedSize);
 		}
 		this->IsLoaded = false;
 
@@ -69,7 +71,7 @@ namespace Engine {
 		return size;
 	}
 
-	void ContentElement::WriteToFile(ostream& file) const
+	void ContentElement::WriteToFile(ostream& file)
 	{
 		Write(file, CURRENT_VERSION);
 		Write(file, this->Type);
@@ -78,6 +80,8 @@ namespace Engine {
 		Write(file, this->Package);
 		Write(file, this->Path);
 		Write(file, this->PackageOffset);
+		this->SavedSize = this->Size();
+		Write(file, this->SavedSize);
 		file.flush();
 	}
 
@@ -86,6 +90,7 @@ namespace Engine {
 		ContentElement* newElem = new ContentElement(*this);
 		newElem->ID = INVALID_ID;
 		newElem->PackageOffset = 0;
+		newElem->SavedSize = 0;
 		return newElem;
 	}
 

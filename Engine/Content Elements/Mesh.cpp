@@ -177,7 +177,7 @@ namespace Engine {
 		return size;
 	}
 
-	void Mesh::WriteToFile(ostream& file) const
+	void Mesh::WriteToFile(ostream& file)
 	{
 		ContentElement::WriteToFile(file);
 
@@ -193,6 +193,7 @@ namespace Engine {
 		Mesh* newElem = new Mesh(*this);
 		newElem->ID = INVALID_ID;
 		newElem->PackageOffset = 0;
+		newElem->SavedSize = 0;
 		return newElem;
 	}
 
