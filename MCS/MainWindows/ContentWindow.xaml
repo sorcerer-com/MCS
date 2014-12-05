@@ -75,6 +75,7 @@
                         <Separator/>
                         <MenuItem Header="Import" Command="{Binding Path=ImportElementCommand}"/>
                         <MenuItem Header="Export" Command="{Binding Path=ExportElementCommand}"/>
+                        <MenuItem Header="Export To Package" Command="{Binding Path=ExportToPackageElementCommand}"/>
                         <Separator/>
                         <MenuItem Header="Add Mesh" Command="{Binding Path=AddMeshElementCommand}"/>
                         <MenuItem Header="Add Material"/>

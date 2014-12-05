@@ -425,6 +425,32 @@ namespace MCS.MainWindows
             }
         }
 
+        public ICommand ExportToPackageElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (ContentWindow.SelectedElements.Count == 0)
+                        return;
+
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
+                    saveFileDialog.FileName = "package.mpk";
+                    saveFileDialog.DefaultExt = "mpk";
+                    saveFileDialog.RestoreDirectory = true;
+                    saveFileDialog.OverwritePrompt = true;
+                    saveFileDialog.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                    if (saveFileDialog.ShowDialog() == true)
+                    {
+                        foreach(uint selection in ContentWindow.SelectedElements)
+                            this.ContentManager.ExportToPackage(saveFileDialog.FileName, selection);
+                    }
+
+                });
+            }
+        }
+
 
         // Add content element commands
         public ICommand AddMeshElementCommand
