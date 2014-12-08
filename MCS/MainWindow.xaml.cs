@@ -1,6 +1,6 @@
 ﻿using MCS.MainWindows;
 using MCS.Managers;
-using MEngine;
+using MyEngine;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -13,7 +13,7 @@ namespace MCS
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MScene Scene { get; private set; }
+        public MEngine Engine { get; private set; }
 
         #region Commands
 
@@ -24,7 +24,7 @@ namespace MCS
 
         public ICommand ContentWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), this.Scene.ContentManager); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), this.Engine.ContentManager); }); }
         }
 
         #endregion
@@ -35,7 +35,7 @@ namespace MCS
             InitializeComponent();
             this.DataContext = this;
 
-            this.Scene = new MScene();
+            this.Engine = new MEngine();
 
             ConfigManager.LoadConfig();
         }
@@ -50,7 +50,7 @@ namespace MCS
         {
             this.KeyDown -= WindowsManager.Window_KeyDown;
 
-            this.Scene.Dispose();
+            this.Engine.Dispose();
         }
     
     }

@@ -2,18 +2,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="MScene.h" />
     <ClInclude Include="Content Elements\MContentElement.h" />
     <ClInclude Include="Utils\MHeader.h" />
     <ClInclude Include="Managers\MContentManager.h" />
     <ClInclude Include="Content Elements\MMesh.h" />
     <ClInclude Include="Utils\Types\MPoint.h" />
+    <ClInclude Include="MEngine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Stdafx.cpp" />
-    <ClCompile Include="MScene.cpp" />
     <ClCompile Include="Managers\MContentManager.cpp" />
+    <ClCompile Include="MEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

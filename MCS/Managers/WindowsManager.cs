@@ -1,6 +1,6 @@
 ﻿using MCS.Dialogs;
 using MCS.MainWindows;
-using MEngine;
+using MyEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -84,7 +84,7 @@ namespace MCS.Managers
             XmlNodeList xmlNodes = xmlDoc.GetElementsByTagName("Hotkeys");
             if (xmlNodes.Count == 0)
             {
-                MScene.Log(ELogType.Warning, "Editor", "Hotkeys cannot be loaded from config file");
+                MEngine.Log(ELogType.Warning, "Editor", "Hotkeys cannot be loaded from config file");
                 defaultHotkeys();
                 return;
             }
@@ -193,14 +193,14 @@ namespace MCS.Managers
                 PropertyInfo pi = type.GetProperty(info.CommandName);
                 if (pi == null)
                 {
-                    MScene.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + info.CommandName + "' associate with hotkey '" + e.Key + "'");
+                    MEngine.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + info.CommandName + "' associate with hotkey '" + e.Key + "'");
                     continue;
                 }
 
                 ICommand command = pi.GetValue(sender) as ICommand;
                 if (command == null)
                 {
-                    MScene.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + info.CommandName + "' associate with hotkey '" + e.Key + "'");
+                    MEngine.Log(ELogType.Warning, "Editor", "Try to execute invalid command '" + info.CommandName + "' associate with hotkey '" + e.Key + "'");
                     continue;
                 }
 

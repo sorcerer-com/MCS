@@ -8,7 +8,7 @@
 #include "..\Utils\MHeader.h"
 
 
-namespace MEngine {
+namespace MyEngine {
 
 	enum class EContentElementType;
 	ref class MContentElement;

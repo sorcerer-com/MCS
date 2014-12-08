@@ -1,35 +1,35 @@
-// Scene.cpp
+// Engine.cpp
 
 #include "stdafx.h"
-#include "Scene.h"
+#include "Engine.h"
 
 #include "Utils\Config.h"
 #include "Managers\ContentManager.h"
 
 
-namespace Engine {
+namespace MyEngine {
 
-	EngineMode Scene::Mode = EEditor;
+	EngineMode Engine::Mode = EEditor;
 
 
-	Scene::Scene()
+	Engine::Engine()
 	{
 		ofstream ofile(LOG_FILE);
 		ofile.close();
-		Scene::Log(ELog, "Scene", "Create engine");
+		Engine::Log(ELog, "Engine", "Create engine");
 
-		this->ContentManager = make_shared<Engine::ContentManager>();
+		this->ContentManager = make_shared<MyEngine::ContentManager>();
 	}
 
-	Scene::~Scene()
+	Engine::~Engine()
 	{
-		Scene::Log(ELog, "Scene", "Destroy engine");
+		Engine::Log(ELog, "Engine", "Destroy engine");
 	}
 
 
-	void Scene::Log(LogType type, const string& category, const string& text)
+	void Engine::Log(LogType type, const string& category, const string& text)
 	{
-		if (Scene::Mode != EEditor) 
+		if (Engine::Mode != EEditor)
 			return;
 
 		ofstream ofile(LOG_FILE, ios_base::app);

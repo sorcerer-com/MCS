@@ -2,14 +2,13 @@
 #pragma once
 #pragma managed
 
-using namespace Engine;
 using namespace System;
 using namespace System::ComponentModel;
 using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
 
 
-namespace MEngine {
+namespace MyEngine {
 	
 	static inline string to_string(String^ str)
 	{

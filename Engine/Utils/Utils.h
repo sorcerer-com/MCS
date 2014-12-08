@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace Engine {
+namespace MyEngine {
 
 	vector<string> split(const string& s, char separator, bool removeEmpty)
 	{

@@ -9,7 +9,7 @@
 #include "..\Utils\Types\MPoint.h"
 
 
-namespace MEngine {
+namespace MyEngine {
 
 	public value struct MTriangle
 	{

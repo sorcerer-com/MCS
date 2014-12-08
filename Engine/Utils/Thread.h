@@ -7,7 +7,7 @@
 #include <mutex>
 
 
-namespace Engine {
+namespace MyEngine {
 
 	using lock = lock_guard < _Mutex_base > ;
 

@@ -6,7 +6,7 @@
 #include "..\Utils\Types\Vector3.h"
 
 
-namespace Engine {
+namespace MyEngine {
 
 	struct Triangle
 	{

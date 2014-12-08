@@ -3,7 +3,7 @@
 
 #include "..\Utils\Header.h"
 
-namespace Engine {
+namespace MyEngine {
 
 	class ContentManager;
 

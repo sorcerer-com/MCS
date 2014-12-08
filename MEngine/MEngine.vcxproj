@@ -210,7 +210,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
     <ClInclude Include="Content Elements\MMesh.h" />
     <ClInclude Include="Managers\MContentManager.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="MScene.h" />
+    <ClInclude Include="MEngine.h" />
     <ClInclude Include="Utils\MHeader.h" />
     <ClInclude Include="Utils\Types\MPoint.h" />
   </ItemGroup>
@@ -223,7 +223,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="MScene.cpp" />
+    <ClCompile Include="MEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

@@ -4,10 +4,9 @@
 #include "..\Utils\Header.h"
 
 
-namespace Engine {
+namespace MyEngine {
 
 	struct Thread;
-	class Scene;
 	class ContentElement;
 	enum ContentElementType;
 

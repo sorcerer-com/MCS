@@ -7,7 +7,7 @@
 #include "..\Utils\IOUtils.h"
 
 
-namespace Engine {
+namespace MyEngine {
 
 	ContentElement::ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path)
 	{

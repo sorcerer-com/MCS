@@ -1,10 +1,10 @@
-// Scene.h
+// Engine.h
 #pragma once
 
 #include "Utils\Header.h"
 
 
-namespace Engine {
+namespace MyEngine {
 
 	class ContentManager;
 
@@ -21,7 +21,7 @@ namespace Engine {
 		EEngine
 	};
 
-	class Scene
+	class Engine
 	{
 	public:
 		shared_ptr<ContentManager> ContentManager;
@@ -29,8 +29,8 @@ namespace Engine {
 		static EngineMode Mode;
 
 	public:
-		Scene();
-		~Scene();
+		Engine();
+		~Engine();
 
 
 		static void Log(LogType type, const string& category, const string& text);

@@ -4,11 +4,10 @@
 #include "Engine\Utils\Types\Vector3.h"
 #pragma managed
 
-using namespace Engine;
 using namespace System;
 
 
-namespace MEngine {
+namespace MyEngine {
 
 	public value struct MPoint
 	{

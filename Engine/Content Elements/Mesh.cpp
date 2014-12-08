@@ -3,13 +3,13 @@
 #include "stdafx.h"
 #include "Mesh.h"
 
-#include "..\Scene.h"
+#include "..\Engine.h"
 #include "..\Utils\Config.h"
 #include "..\Utils\Utils.h"
 #include "..\Utils\IOUtils.h"
 
 
-namespace Engine {
+namespace MyEngine {
 
 	Mesh::Mesh(ContentManager* owner, const string& name, const string& package, const string& path) :
 		ContentElement(owner, EMesh, name, package, path)
@@ -36,7 +36,7 @@ namespace Engine {
 		ifstream ifile(filePath);
 		if (!ifile || !ifile.is_open())
 		{
-			Scene::Log(EError, "Mesh", "Cannot load obj file: " + filePath);
+			Engine::Log(EError, "Mesh", "Cannot load obj file: " + filePath);
 			ifile.close();
 			return false;
 		}
@@ -108,7 +108,7 @@ namespace Engine {
 
 		ifile.close();
 
-		Scene::Log(ELog, "Mesh", "Load obj file: " + filePath);
+		Engine::Log(ELog, "Mesh", "Load obj file: " + filePath);
 		return true;
 	}
 
@@ -117,7 +117,7 @@ namespace Engine {
 		ofstream ofile(filePath);
 		if (!ofile || !ofile.is_open())
 		{
-			Scene::Log(EError, "Mesh", "Cannot save obj file: " + filePath);
+			Engine::Log(EError, "Mesh", "Cannot save obj file: " + filePath);
 			ofile.close();
 			return false;
 		}
@@ -160,7 +160,7 @@ namespace Engine {
 			ofile << endl;
 		}
 
-		Scene::Log(ELog, "Mesh", "Save obj file: " + filePath);
+		Engine::Log(ELog, "Mesh", "Save obj file: " + filePath);
 		ofile.close();
 
 		return true;

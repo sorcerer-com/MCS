@@ -7,7 +7,7 @@
 #include "..\Content Elements\MMesh.h"
 
 
-namespace MEngine {
+namespace MyEngine {
 	
 	List<String^>^ MContentManager::Paths::get()
 	{

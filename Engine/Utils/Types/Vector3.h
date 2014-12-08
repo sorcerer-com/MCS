@@ -4,7 +4,7 @@
 #include <math.h>
 
 
-namespace Engine {
+namespace MyEngine {
 
 	struct Vector3
 	{

@@ -1,15 +1,13 @@
-// MScene.h
+// MEngine.h
 #pragma once
 
-#include "Engine\Scene.h"
+#include "Engine\Engine.h"
 #pragma managed
 
 #include "Managers\MContentManager.h"
 
-using namespace Engine;
 
-
-namespace MEngine {
+namespace MyEngine {
 
 	public enum class EEngineMode
 	{
@@ -24,10 +22,10 @@ namespace MEngine {
 		Error
 	};
 
-	public ref class MScene
+	public ref class MEngine
 	{
 	private:
-		Scene* scene;
+		Engine* engine;
 
 	public:
 		property MContentManager^ ContentManager;
@@ -35,8 +33,8 @@ namespace MEngine {
 		static EEngineMode Mode;
 
 	public:
-		MScene();
-		~MScene();
+		MEngine();
+		~MEngine();
 
 		static void Log(ELogType type, String^ category, String^ text);
 	};
