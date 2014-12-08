@@ -370,9 +370,10 @@ namespace MCS.MainWindows
                     filter += "WAVE Files (*.wav)|*.wav|";
                     filter += "All Files (*.*)|*.*";
                     openFileDialog.Filter = filter;
+                    openFileDialog.Multiselect = true;
 
                     if (openFileDialog.ShowDialog() == true)
-                        this.import(openFileDialog.FileName);
+                        this.import(openFileDialog.FileNames);
 
                     this.OnPropertyChanged("Contents");
                 });
@@ -498,54 +499,65 @@ namespace MCS.MainWindows
                 ContentWindow.SelectedElements.Add(item.ID);
         }
 
-        // TODO: drop
+        private void ListView_Drop(object sender, DragEventArgs e)
+        {
+            string[] fileDrops = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (fileDrops != null)
+                this.import(fileDrops);
+        }
+
         // TODO: preview and properties
 
-        private void import(string filename)
+        private void import(string[] filenames)
         {
-            string ext = Path.GetExtension(filename).ToLowerInvariant();
-            string name = Path.GetFileNameWithoutExtension(filename);
+            List<string> textureExts = new List<string> { ".bmp", ".jpg", ".gif", ".png", ".tiff", ".hdr" };
 
-            EContentElementType type;
-            if (ext == ".obj")
-                type = EContentElementType.Mesh;
-            /* TODO: add other content elements
-            else if (textureExts.Contains(ext))
-                type = EContentElementType.Texture;
-            else if (ext == ".wave")
-                type = EContentElementType.Sound; // */
-            else
-                return;
-
-            // if allready exists
-            MContentElement elem = this.ContentManager.GetElement(this.SelectedTreeItem.Value.FullPath + name, false);
-            uint id = 0;
-            if (elem != null)
+            foreach (string filename in filenames)
             {
-                id = elem.ID;
-                // TODO: custom message box (YesToAll)
-                MessageBoxResult res = MessageBox.Show("Element '" + name + "' already exists in Content! \nDo you want to replace it?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (res == MessageBoxResult.Yes)
-                    this.ContentManager.DeleteElement(id);
-                else
-                    return;
-            }
+                string ext = Path.GetExtension(filename).ToLowerInvariant();
+                string name = Path.GetFileNameWithoutExtension(filename);
 
-            // add element
-            string package = MContentManager.GetPackage(this.SelectedTreeItem.Value.FullPath);
-            string path = MContentManager.GetPath(this.SelectedTreeItem.Value.FullPath);
-            elem = this.ContentManager.AddElement(type, name, package, path, id);
-
-            if (elem != null)
-            {
-                if (type == EContentElementType.Mesh)
-                    ((MMesh)elem).LoadFromOBJFile(filename);
+                EContentElementType type;
+                if (ext == ".obj")
+                    type = EContentElementType.Mesh;
                 /* TODO: add other content elements
-                else if (type == EContentElementType.Texture)
-                    ((MTexture)elem).LoadFromFile(fileDrop);
-                else if (type == EContentElementType.Sound)
-                    ((MSound)elem).LoadFromWAVEFile(fileDrop); // */
-                this.ContentManager.SaveElement(elem.ID);
+                else if (textureExts.Contains(ext))
+                    type = EContentElementType.Texture;
+                else if (ext == ".wave")
+                    type = EContentElementType.Sound; // */
+                else
+                    continue;
+
+                // if allready exists
+                MContentElement elem = this.ContentManager.GetElement(this.SelectedTreeItem.Value.FullPath + name, false);
+                uint id = 0;
+                if (elem != null)
+                {
+                    id = elem.ID;
+                    // TODO: custom message box (YesToAll)
+                    MessageBoxResult res = MessageBox.Show("Element '" + name + "' already exists in Content! \nDo you want to replace it?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (res == MessageBoxResult.Yes)
+                        this.ContentManager.DeleteElement(id);
+                    else
+                        continue;
+                }
+
+                // add element
+                string package = MContentManager.GetPackage(this.SelectedTreeItem.Value.FullPath);
+                string path = MContentManager.GetPath(this.SelectedTreeItem.Value.FullPath);
+                elem = this.ContentManager.AddElement(type, name, package, path, id);
+
+                if (elem != null)
+                {
+                    if (type == EContentElementType.Mesh)
+                        ((MMesh)elem).LoadFromOBJFile(filename);
+                    /* TODO: add other content elements
+                    else if (type == EContentElementType.Texture)
+                        ((MTexture)elem).LoadFromFile(fileDrop);
+                    else if (type == EContentElementType.Sound)
+                        ((MSound)elem).LoadFromWAVEFile(fileDrop); // */
+                    this.ContentManager.SaveElement(elem.ID);
+                }
             }
         }
 

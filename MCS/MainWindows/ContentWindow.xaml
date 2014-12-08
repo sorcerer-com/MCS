@@ -64,7 +64,7 @@
             
             <!-- Content List -->
             <ListView Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" SelectionMode="Extended" AllowDrop="True"
-                     ItemsSource="{Binding Path=Contents}" SelectionChanged="ListView_SelectionChanged">
+                     ItemsSource="{Binding Path=Contents}" SelectionChanged="ListView_SelectionChanged" Drop="ListView_Drop">
 
                 <ListView.ContextMenu>
                     <ContextMenu>
