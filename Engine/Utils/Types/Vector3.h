@@ -28,7 +28,7 @@ namespace MyEngine {
 
 		inline float length(void) const
 		{
-			return sqrt(x * x + y * y + z * z);
+			return sqrtf(x * x + y * y + z * z);
 		}
 
 		inline float lengthSqr(void) const
@@ -192,7 +192,7 @@ namespace MyEngine {
 		float k = 1 - (ior * ior) * (1 - NdotI * NdotI);
 		if (k < 0)
 			return Vector3(0, 0, 0);
-		return ior * i - (ior * NdotI + (float)sqrt(k)) * n;
+		return ior * i - (ior * NdotI + (float)sqrtf(k)) * n;
 	}
 
 	inline void orthonormedSystem(const Vector3& a, Vector3& b, Vector3& c)

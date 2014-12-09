@@ -11,6 +11,9 @@ namespace MyEngine {
 
 	ContentElement::ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path)
 	{
+		if (!owner)
+			throw "ArgumentNullException: owner";
+
 		this->Version = CURRENT_VERSION;
 		this->Type = type;
 		this->ID = INVALID_ID;
@@ -27,6 +30,9 @@ namespace MyEngine {
 
 	ContentElement::ContentElement(ContentManager* owner, istream& file)
 	{
+		if (!owner)
+			throw "ArgumentNullException: owner";
+
 		Read(file, this->Version);
 		if (this->Version >= 1)
 		{

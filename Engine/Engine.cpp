@@ -5,6 +5,7 @@
 
 #include "Utils\Config.h"
 #include "Managers\ContentManager.h"
+#include "Managers\SceneManager.h"
 
 
 namespace MyEngine {
@@ -19,6 +20,7 @@ namespace MyEngine {
 		Engine::Log(ELog, "Engine", "Create engine");
 
 		this->ContentManager = make_shared<MyEngine::ContentManager>();
+		this->SceneManager = make_shared<MyEngine::SceneManager>();
 	}
 
 	Engine::~Engine()

@@ -281,7 +281,10 @@ namespace MyEngine {
 		{
 			element->ID = id;
 			if (!this->AddElement(element))
+			{
+				delete element;
 				return ContentElementPtr();
+			}
 		}
 		return this->content[element->ID];
 	}
@@ -308,7 +311,7 @@ namespace MyEngine {
 		this->addRequest(ESaveElement, element->ID);
 		this->addRequest(ESaveDatabase);
 
-		Engine::Log(ELog, "ContentManager", "Add content element '" + element->Name + "'#" +	to_string(element->Version) + " (" + to_string(element->ID) + ")");
+		Engine::Log(ELog, "ContentManager", "Add content element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
 		return true;
 	}
 

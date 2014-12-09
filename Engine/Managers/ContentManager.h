@@ -39,10 +39,8 @@ namespace MyEngine {
 		shared_ptr<Thread> thread;
 		RequestQueueType requests;
 
-
 		PackageInfoMapType packageInfos;
 		ContentMapType content;
-
 		// TODO: instances
 	public:
 		ContentManager();
