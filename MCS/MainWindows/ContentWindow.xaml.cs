@@ -1,7 +1,7 @@
 ﻿using MCS.Dialogs;
 using MCS.Managers;
-using MyEngine;
 using Microsoft.Win32;
+using MyEngine;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -179,7 +179,7 @@ namespace MCS.MainWindows
                     if (!string.IsNullOrEmpty(packageName))
                     {
                         if (!this.ContentManager.CreatePath(packageName + "#"))
-                            MessageBox.Show("Cannot create the package '" + packageName + "'!", "Create package", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot create the package '" + packageName + "'!", "Create package", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                         
                         this.OnPropertyChanged("PathsTree");
                     }
@@ -200,7 +200,7 @@ namespace MCS.MainWindows
                     if (!string.IsNullOrEmpty(folderName))
                     {
                         if (!this.ContentManager.CreatePath(this.SelectedTreeItem.Value.FullPath + folderName + "\\"))
-                            MessageBox.Show("Cannot create the folder '" + folderName + "'!", "Create folder", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot create the folder '" + folderName + "'!", "Create folder", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                         
                         this.OnPropertyChanged("PathsTree");
                     }
@@ -231,7 +231,7 @@ namespace MCS.MainWindows
                             return;
 
                         if (!this.ContentManager.RenamePath(oldPath, newPath))
-                            MessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
 
                         this.OnPropertyChanged("PathsTree");
                     }
@@ -249,11 +249,11 @@ namespace MCS.MainWindows
                         return;
 
                     string path = this.SelectedTreeItem.Value.FullPath;
-                    MessageBoxResult res = MessageBox.Show("Are you sure that you want to delete '" + path + "'?", "Delete path", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (res == MessageBoxResult.Yes)
+                    ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Are you sure that you want to delete '" + path + "'?", "Delete path", ExtendedMessageBoxButton.YesNo, ExtendedMessageBoxImage.Question);
+                    if (res == ExtendedMessageBoxResult.Yes)
                     {
                         if (!this.ContentManager.DeletePath(path))
-                            MessageBox.Show("Cannot delete path '" + path + "'!", "Delete path", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot delete path '" + path + "'!", "Delete path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
 
                         this.OnPropertyChanged("PathsTree");
                         this.OnPropertyChanged("Contents");
@@ -278,7 +278,7 @@ namespace MCS.MainWindows
                     if (!string.IsNullOrEmpty(newName))
                     {
                         if (this.ContentManager.CloneElement(elem.ID, newName) == null)
-                            MessageBox.Show("Cannot clone content element '" + elem.Name + "' to '" + newName + "'!", "Clone element", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot clone content element '" + elem.Name + "' to '" + newName + "'!", "Clone element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
 
                         this.OnPropertyChanged("Contents");
                     }
@@ -300,7 +300,7 @@ namespace MCS.MainWindows
                     if (!string.IsNullOrEmpty(newName) && elem.Name != newName)
                     {
                         if (!this.ContentManager.RenameElement(elem.ID, newName))
-                            MessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
 
                         this.OnPropertyChanged("Contents");
                     }
@@ -322,7 +322,7 @@ namespace MCS.MainWindows
                     if (!string.IsNullOrEmpty(newFullPath) && elem.FullPath != newFullPath)
                     {
                         if (!this.ContentManager.MoveElement(elem.ID, newFullPath))
-                            MessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ExtendedMessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
 
                         this.OnPropertyChanged("Contents");
                     }
@@ -336,18 +336,24 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count != 1)
+                    if (ContentWindow.SelectedElements.Count == 0)
                         return;
 
-                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
-                    MessageBoxResult res = MessageBox.Show("Are you sure that you want to delete '" + elem.Name + "'?", "Delete element", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (res == MessageBoxResult.Yes)
+                    ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
+                    ExtendedMessageBoxButton button = ContentWindow.SelectedElements.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
+                    foreach (var id in ContentWindow.SelectedElements)
                     {
-                        if (!this.ContentManager.DeleteElement(elem.ID))
-                            MessageBox.Show("Cannot delete content element '" + elem.Name + "'!", "Delete element", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MContentElement elem = this.ContentManager.GetElement(id, false);
+                        if (res != ExtendedMessageBoxResult.YesToAll && res != ExtendedMessageBoxResult.NoToAll)
+                            res = ExtendedMessageBox.Show("Are you sure that you want to delete '" + elem.Name + "'?", "Delete element", button, ExtendedMessageBoxImage.Question);
+                        if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
+                        {
+                            if (!this.ContentManager.DeleteElement(elem.ID))
+                                ExtendedMessageBox.Show("Cannot delete content element '" + elem.Name + "'!", "Delete element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
 
-                        ContentWindow.SelectedElements.Clear();
-                        this.OnPropertyChanged("Contents");
+                            ContentWindow.SelectedElements.Clear();
+                            this.OnPropertyChanged("Contents");
+                        }
                     }
                 });
             }
@@ -512,6 +518,8 @@ namespace MCS.MainWindows
         {
             List<string> textureExts = new List<string> { ".bmp", ".jpg", ".gif", ".png", ".tiff", ".hdr" };
 
+            ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
+            ExtendedMessageBoxButton button = filenames.Length > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
             foreach (string filename in filenames)
             {
                 string ext = Path.GetExtension(filename).ToLowerInvariant();
@@ -534,9 +542,9 @@ namespace MCS.MainWindows
                 if (elem != null)
                 {
                     id = elem.ID;
-                    // TODO: custom message box (YesToAll)
-                    MessageBoxResult res = MessageBox.Show("Element '" + name + "' already exists in Content! \nDo you want to replace it?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (res == MessageBoxResult.Yes)
+                    if (res != ExtendedMessageBoxResult.YesToAll && res != ExtendedMessageBoxResult.NoToAll)
+                        res = ExtendedMessageBox.Show("Element '" + name + "' already exists in Content! \nDo you want to replace it?", "Confirm", button, ExtendedMessageBoxImage.Question);
+                    if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
                         this.ContentManager.DeleteElement(id);
                     else
                         continue;

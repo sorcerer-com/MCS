@@ -19,8 +19,7 @@ namespace MCS.Dialogs
         {
             get { return new DelegateCommand((o) => { this.DialogResult = true; }); }
         }
-
-
+        
         public ICommand CancelButtonCommand
         {
             get { return new DelegateCommand((o) => { this.DialogResult = false; }); }
@@ -58,6 +57,11 @@ namespace MCS.Dialogs
         }
 
 
+        public static string Show(string title, string label)
+        {
+            return TextDialogBox.Show(title, label, "");
+        }
+
         public static string Show(string title, string label, string text)
         {
             TextDialogBox dialog = new TextDialogBox(title, label, text);
@@ -75,11 +79,6 @@ namespace MCS.Dialogs
             else if (result == false)
                 return string.Empty;
             return null;
-        }
-
-        public static string Show(string title, string label)
-        {
-            return TextDialogBox.Show(title, label, "");
         }
 
     }
