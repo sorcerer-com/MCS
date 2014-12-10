@@ -22,13 +22,13 @@
         <!-- Top ToolBar -->
         <ToolBarTray VerticalAlignment="Top" Grid.Row="0" IsManipulationEnabled="True">
             <ToolBar Band="1" BandIndex="1" IsManipulationEnabled="True">
-                <Button ToolTip="New (Ctrl+N)">
+                <Button ToolTip="New (Ctrl+N)" Command="{Binding Path=NewSceneCommand}">
                     <Image Source="/Images/MainWindow/New.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Open (Ctrl+O)">
+                <Button ToolTip="Open (Ctrl+O)" Command="{Binding Path=OpenSceneCommand}">
                     <Image Source="/Images/MainWindow/Open.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Save (Ctrl+S)">
+                <Button ToolTip="Save (Ctrl+S)" Command="{Binding Path=SaveSceneCommand}">
                     <Image Source="/Images/MainWindow/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
             </ToolBar>
@@ -97,10 +97,10 @@
 
             <Image.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Rename"/>
-                    <MenuItem Header="Clone"/>
-                    <MenuItem Header="Delete"/>
-                    <MenuItem Header="Properties"/>
+                    <MenuItem Header="Clone" Command="{Binding Path=CloneElementCommand}"/>
+                    <MenuItem Header="Rename" Command="{Binding Path=RenameElementCommand}"/>
+                    <MenuItem Header="Delete" Command="{Binding Path=DeleteElementCommand}"/>
+                    <MenuItem Header="Properties" Command="{Binding Path=PropertiesElementCommand}"/>
                     <Separator/>
                     <MenuItem Header="Add Camera"/>
                     <MenuItem Header="Add Light"/>

@@ -78,6 +78,7 @@ namespace MCS.Managers
         }
 
 
+        // TODO: add hotkey to control's tooltip
         // Hot keys functionality
         public static void LoadConfig(XmlDocument xmlDoc)
         {
@@ -118,6 +119,9 @@ namespace MCS.Managers
 
             // MainWindow
             keys = new List<HotKeyInfo>();
+            keys.Add(new HotKeyInfo(Key.N, false, true, false, "", "NewSceneCommand"));
+            keys.Add(new HotKeyInfo(Key.O, false, true, false, "", "OpenSceneCommand"));
+            keys.Add(new HotKeyInfo(Key.S, false, true, false, "", "SaveSceneCommand"));
             keys.Add(new HotKeyInfo(Key.F8, false, false, false, "", "LogWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F3, false, false, false, "", "ContentWindowCommand"));
             hotkeys.Add(typeof(MainWindow), keys);

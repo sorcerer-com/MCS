@@ -263,7 +263,7 @@ namespace MCS.MainWindows
         }
 
 
-        // Content element commands
+        // Content Element commands
         public ICommand CloneElementCommand
         {
             get
@@ -465,7 +465,7 @@ namespace MCS.MainWindows
         }
 
 
-        // Add content element commands
+        // Add Content Element commands
         public ICommand AddMeshElementCommand
         {
             get

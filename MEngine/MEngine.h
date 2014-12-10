@@ -30,7 +30,7 @@ namespace MyEngine {
 
 	public:
 		property MContentManager^ ContentManager;
-		property MSceneManager^ SceneManagaer;
+		property MSceneManager^ SceneManager;
 
 		static EEngineMode Mode;
 
