@@ -350,10 +350,13 @@ namespace MCS.MainWindows
                         {
                             if (!this.ContentManager.DeleteElement(elem.ID))
                                 ExtendedMessageBox.Show("Cannot delete content element '" + elem.Name + "'!", "Delete element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-
-                            ContentWindow.SelectedElements.Clear();
-                            this.OnPropertyChanged("Contents");
                         }
+                    }
+
+                    if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
+                    {
+                        ContentWindow.SelectedElements.Clear();
+                        this.OnPropertyChanged("Contents");
                     }
                 });
             }

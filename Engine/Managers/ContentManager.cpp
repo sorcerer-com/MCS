@@ -5,6 +5,7 @@
 
 #include "..\Engine.h"
 #include "..\Utils\Config.h"
+#include "..\Utils\Utils.h"
 #include "..\Utils\Thread.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Content Elements\ContentElement.h"
@@ -52,8 +53,6 @@ namespace MyEngine {
 				if (ifile.eof())
 					break;
 			}
-			if (version == 0u)
-				break;
 			ContentElementType type = EMesh;
 			Read(ifile, type);
 			const streamoff offset = -(streamoff)(sizeof(version) + sizeof(type));
@@ -179,7 +178,7 @@ namespace MyEngine {
 			this->packageInfos.erase(oldPackage);
 
 			string packFile = CONTENT_FOLDER;
-			packFile += "\\" + oldPackage + ".mpk";
+			packFile += "\\" + oldPackage + PACKAGE_EXT;
 			remove(packFile.c_str());
 		}
 			
@@ -237,7 +236,7 @@ namespace MyEngine {
 			this->packageInfos.erase(package);
 
 			string packFile = CONTENT_FOLDER;
-			packFile += "\\" + package + ".mpk";
+			packFile += "\\" + package + PACKAGE_EXT;
 			remove(packFile.c_str());
 		}
 		this->addRequest(ESaveDatabase);
@@ -649,7 +648,7 @@ namespace MyEngine {
 			return true;
 
 		// Load
-		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + ".mpk";
+		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + PACKAGE_EXT;
 		ifstream ifile(filePath, ios_base::in | ios_base::binary);
 		if (!ifile || !ifile.is_open())
 		{
@@ -716,7 +715,7 @@ namespace MyEngine {
 			this->beckupElement(element, false);
 
 		// Save
-		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + ".mpk";
+		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + PACKAGE_EXT;
 		fstream ofile(filePath, ios_base::in | ios_base::out | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
@@ -774,7 +773,7 @@ namespace MyEngine {
 			this->beckupElement(element, true);
 
 		// Erase
-		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + ".mpk";
+		string filePath = string(CONTENT_FOLDER) + string("\\") + element->Package + PACKAGE_EXT;
 		fstream ofile(filePath, ios_base::in | ios_base::out | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
@@ -818,28 +817,19 @@ namespace MyEngine {
 
 	void ContentManager::beckupElement(const ContentElementPtr& element, bool erase)
 	{
-		stringstream backupPath;
-		backupPath << BACKUP_FOLDER << "\\";
-		auto now = chrono::system_clock::now();
-		time_t time = chrono::system_clock::to_time_t(now);
-		tm local_tm;
-		localtime_s(&local_tm, &time);
-		backupPath << setfill('0');
-		backupPath << setw(4) << local_tm.tm_year + 1900 << "-";
-		backupPath << setw(2) << local_tm.tm_mon + 1 << "-";
-		backupPath << setw(2) << local_tm.tm_mday << "_";
-		backupPath << setw(2) << local_tm.tm_hour << ".";
-		backupPath << setw(2) << local_tm.tm_min << ".";
-		backupPath << setw(2) << local_tm.tm_sec << "_";
-		backupPath << setw(0);
-		backupPath << element->Package << "_" << element->Name;
-		if (erase) backupPath << "_erase";
-		backupPath << ".mpk";
+		if (Engine::Mode == EEngine)
+			return;
 
-		this->ExportToPackage(backupPath.str(), element->ID);
+		string backupPath = BACKUP_FOLDER + string("\\");
+		backupPath += dateTimeFileName();
+		backupPath += "_" + element->Package + "_" + element->Name;
+		if (erase) backupPath += "_erase";
+		backupPath += PACKAGE_EXT;
+
+		this->ExportToPackage(backupPath, element->ID);
 
 		Engine::Log(ELog, "ContentManager", "Backup content element '" + element->Name + "'#" +
-			to_string(element->Version) + " (" + to_string(element->ID) + ") to: " + backupPath.str());
+			to_string(element->Version) + " (" + to_string(element->ID) + ") to: " + backupPath);
 	}
 
 	bool ContentManager::unLoadElement(uint id)

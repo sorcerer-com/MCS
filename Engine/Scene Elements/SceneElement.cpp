@@ -15,9 +15,9 @@ namespace MyEngine {
 			throw "ArgumentNullException: owner";
 
 		this->Version = CURRENT_VERSION;
+		this->Type = type;
 		this->ID = INVALID_ID;
 		this->Name = name;
-		this->Type = type;
 		this->ContentID = contentID;
 		this->MaterialID = INVALID_ID;
 		this->Visible = true;
@@ -36,9 +36,9 @@ namespace MyEngine {
 		Read(file, this->Version);
 		if (this->Version >= 1)
 		{
+			Read(file, this->Type);
 			Read(file, this->ID);
 			Read(file, this->Name);
-			Read(file, this->Type);
 			Read(file, this->ContentID);
 			Read(file, this->MaterialID);
 			Read(file, this->Visible);
@@ -54,9 +54,9 @@ namespace MyEngine {
 	void SceneElement::WriteToFile(ostream& file) const
 	{
 		Write(file, CURRENT_VERSION);
+		Write(file, this->Type);
 		Write(file, this->ID);
 		Write(file, this->Name);
-		Write(file, this->Type);
 		Write(file, this->ContentID);
 		Write(file, this->MaterialID);
 		Write(file, this->Visible);

@@ -10,3 +10,6 @@
 #define CONTENT_DB_FILE "content.mdb"
 
 #define BACKUP_FOLDER "Backups"
+
+#define PACKAGE_EXT ".mpk"
+#define SCENE_EXT ".msn"

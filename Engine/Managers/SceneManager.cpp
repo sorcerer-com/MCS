@@ -5,6 +5,8 @@
 
 #include "..\Engine.h"
 #include "..\Utils\Config.h"
+#include "..\Utils\Utils.h"
+#include "..\Utils\IOUtils.h"
 #include "..\Scene Elements\SceneElement.h"
 
 
@@ -25,12 +27,107 @@ namespace MyEngine {
 
 	bool SceneManager::Save(const string& filePath)
 	{
+		// Backup
+		if (Engine::Mode != EEngine)
+		{
+			string fileName = filePath.substr(filePath.find_last_of("\\") + 1, filePath.find_last_of(".") - filePath.find_last_of("\\") - 1);
+			string backupPath = BACKUP_FOLDER + string("\\");
+			backupPath += dateTimeFileName();
+			backupPath += "_" + fileName + SCENE_EXT;
+
+			ifstream src(filePath.c_str(), std::ios::binary);
+			if (src.is_open())
+			{
+				ofstream dst(backupPath.c_str(), std::ios::binary);
+				dst << src.rdbuf();
+
+				Engine::Log(ELog, "Scene", "Backup scene file: " + filePath + " to: " + backupPath);
+			}
+		}
+
+		// Save
+		ofstream ofile(filePath, ios_base::out | ios_base::binary);
+		if (!ofile || !ofile.is_open())
+		{
+			Engine::Log(EError, "Scene", "Cannot save scene file: " + filePath);
+			ofile.close();
+			return false;
+		}
+
+		// version
+		Write(ofile, CURRENT_VERSION);
+
+		// scene elements
+		Write(ofile, (int)this->sceneElements.size());
+		for (auto& sce : this->sceneElements)
+			sce.second->WriteToFile(ofile);
+
+		ofile.close();
+
 		Engine::Log(ELog, "Scene", "Save scene to file: " + filePath);
 		return true;
 	}
 
 	bool SceneManager::Load(const string& filePath)
 	{
+		this->New();
+
+		ifstream ifile(filePath, ios_base::in | ios_base::binary);
+		if (!ifile || !ifile.is_open())
+		{
+			Engine::Log(EError, "Scene", "Cannot load scene file: " + filePath);
+			ifile.close();
+			return false;
+		}
+
+		// version
+		int ver = CURRENT_VERSION;
+		Read(ifile, ver);
+		if (ver >= 1)
+		{
+			// scene elements count
+			int size = 0;
+			Read(ifile, size);
+
+			// scene elements
+			for (int i = 0; i < size; i++)
+			{
+				uint version = 0u;
+				Read(ifile, version);
+				if (version == 0u)
+				{
+					Engine::Log(EError, "Scene", "Scene file is corrupted");
+					ifile.close();
+					return false;
+				}
+
+				SceneElementType type = ECamera;
+				Read(ifile, type);
+				const streamoff offset = -(streamoff)(sizeof(version) + sizeof(type));
+				ifile.seekg(offset, ios_base::cur);
+
+				SceneElement* element = NULL;
+				/* TODO: add different scene elements types
+				if (type == ELight)
+					element = new Light(this, ifile);
+				else if (element->Type == ECharacter)
+					element = new Character(this, ifile);
+				else*/
+					element = new SceneElement(this, ifile);
+
+				if (element && !ifile.fail())
+					this->AddElement(element);
+				else
+				{
+					Engine::Log(EError, "Scene", "Scene file is corrupted");
+					ifile.close();
+					return false;
+				}
+			}
+		}
+
+		ifile.close();
+
 		Engine::Log(ELog, "Scene", "Load scene from file: " + filePath);
 		return true;
 	}

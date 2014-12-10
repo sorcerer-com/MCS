@@ -10,6 +10,7 @@
 
 namespace MyEngine {
 
+	/* E N G I N E */
 	EngineMode Engine::Mode = EEditor;
 
 
@@ -31,7 +32,7 @@ namespace MyEngine {
 
 	void Engine::Log(LogType type, const string& category, const string& text)
 	{
-		if (Engine::Mode != EEditor)
+		if (Engine::Mode == EEngine)
 			return;
 
 		ofstream ofile(LOG_FILE, ios_base::app);

@@ -21,11 +21,12 @@ namespace MyEngine {
 	{
 	public:
 		uint Version;
+		SceneElementType Type;
 		uint ID;
 		string Name;
-		SceneElementType Type;
 		uint ContentID;
 		uint MaterialID;
+		// TODO: textures?
 		bool Visible;
 		Vector3 Position;
 		Quaternion Rotation;
