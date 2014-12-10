@@ -11,10 +11,14 @@ namespace MyEngine {
 		this->engine = new Engine();
 
 		this->ContentManager = gcnew MContentManager(this->engine->ContentManager.get());
+		this->SceneManagaer = gcnew MSceneManager(this->engine->SceneManager.get());
 	}
 
 	MEngine::~MEngine()
 	{
+		delete this->SceneManagaer;
+		this->SceneManagaer = nullptr;
+
 		delete this->ContentManager;
 		this->ContentManager = nullptr;
 

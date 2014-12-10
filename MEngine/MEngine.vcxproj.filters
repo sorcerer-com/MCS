@@ -8,12 +8,15 @@
     <ClInclude Include="Content Elements\MMesh.h" />
     <ClInclude Include="Utils\Types\MPoint.h" />
     <ClInclude Include="MEngine.h" />
+    <ClInclude Include="Scene Elements\MSceneElement.h" />
+    <ClInclude Include="Managers\MSceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Stdafx.cpp" />
     <ClCompile Include="Managers\MContentManager.cpp" />
     <ClCompile Include="MEngine.cpp" />
+    <ClCompile Include="Managers\MSceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

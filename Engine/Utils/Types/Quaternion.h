@@ -60,7 +60,7 @@ namespace MyEngine {
 			scale(multiplier);
 		}
 
-		Vector3 getAxisAngle(void) const
+		Vector3 toAxisAngle(void) const
 		{
 			float angle = 2 * acosf(w);
 			Vector3 res(x, y, z);

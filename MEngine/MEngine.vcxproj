@@ -209,6 +209,8 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
     <ClInclude Include="Content Elements\MContentElement.h" />
     <ClInclude Include="Content Elements\MMesh.h" />
     <ClInclude Include="Managers\MContentManager.h" />
+    <ClInclude Include="Managers\MSceneManager.h" />
+    <ClInclude Include="Scene Elements\MSceneElement.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="MEngine.h" />
     <ClInclude Include="Utils\MHeader.h" />
@@ -217,6 +219,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Managers\MContentManager.cpp" />
+    <ClCompile Include="Managers\MSceneManager.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -5,6 +5,7 @@
 #pragma managed
 
 #include "Managers\MContentManager.h"
+#include "Managers\MSceneManager.h"
 
 
 namespace MyEngine {
@@ -29,6 +30,7 @@ namespace MyEngine {
 
 	public:
 		property MContentManager^ ContentManager;
+		property MSceneManager^ SceneManagaer;
 
 		static EEngineMode Mode;
 

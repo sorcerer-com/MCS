@@ -125,6 +125,7 @@ namespace MyEngine {
 				return false;
 			return this->ID.Equals(elem->ID);
 		}
+
 	};
 }
 

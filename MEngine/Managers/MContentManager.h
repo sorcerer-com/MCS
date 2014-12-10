@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Engine\Managers\ContentManager.h"
-
 #pragma managed
 
 #include "..\Utils\MHeader.h"
