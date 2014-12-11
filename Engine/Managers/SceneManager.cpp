@@ -59,7 +59,7 @@ namespace MyEngine {
 
 		// scene elements
 		Write(ofile, (int)this->sceneElements.size());
-		for (auto& sce : this->sceneElements)
+		for (const auto& sce : this->sceneElements)
 			sce.second->WriteToFile(ofile);
 
 		ofile.close();

@@ -14,7 +14,7 @@ namespace MyEngine {
 		List<String^>^ collection = gcnew List<String^>();
 
 		auto paths = this->contentManager->GetPaths();
-		for (auto& path : paths)
+		for (const auto& path : paths)
 			collection->Add(gcnew String(path.c_str()));
 
 		return collection;
@@ -25,7 +25,7 @@ namespace MyEngine {
 		List<MContentElement^>^ collection = gcnew List<MContentElement^>();
 
 		auto elements = this->contentManager->GetElements();
-		for (auto& element : elements)
+		for (const auto& element : elements)
 			collection->Add(MContentManager::getMContentElement(element));
 
 		return collection;

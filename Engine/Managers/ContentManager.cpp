@@ -154,8 +154,8 @@ namespace MyEngine {
 				forDelete.push_back(path);
 
 				// change elements paths
-				set<uint>& ids = newInfo.Paths[npath];
-				for (auto& id : ids)
+				const set<uint>& ids = newInfo.Paths[npath];
+				for (const auto& id : ids)
 				{
 					ContentElementPtr element = this->GetElement(id, true, true);
 					this->eraseElement(id);
@@ -169,7 +169,7 @@ namespace MyEngine {
 				Engine::Log(ELog, "ContentManager", "Rename path '" + oldPackage + "#" + path + "' to '" + newPackage + "#" + npath + "'");
 			}
 		}
-		for (auto& path : forDelete)
+		for (const auto& path : forDelete)
 			oldInfo.Paths.erase(path);
 
 		// delete package if it's renamed
@@ -214,20 +214,20 @@ namespace MyEngine {
 		PackageInfo& info = this->packageInfos[package];
 
 		vector<string> forDelete;
-		for (auto& pair : info.Paths)
+		for (const auto& pair : info.Paths)
 		{
 			string currPath = pair.first;
 			if (currPath.find(path) == 0)
 			{
 				set<uint> ids = info.Paths[currPath];
-				for (auto& id : ids)
+				for (const auto& id : ids)
 					this->DeleteElement(id);
 
 				forDelete.push_back(currPath);
 			}
 		}
 
-		for (auto& path : forDelete)
+		for (const auto& path : forDelete)
 			info.Paths.erase(path);
 
 		// delete package if it's deleted
@@ -248,9 +248,9 @@ namespace MyEngine {
 	vector<string> ContentManager::GetPaths() const
 	{
 		vector<string> result;
-		for (auto& pair : this->packageInfos)
+		for (const auto& pair : this->packageInfos)
 		{
-			for (auto& pair2 : pair.second.Paths)
+			for (const auto& pair2 : pair.second.Paths)
 				result.push_back(pair.first + "#" + pair2.first + "\\");
 		}
 
@@ -406,7 +406,7 @@ namespace MyEngine {
 			Engine::Log(EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
 			return ContentElementPtr();
 		}
-		PackageInfo& info = this->packageInfos[package];
+		const PackageInfo& info = this->packageInfos[package];
 
 		if (info.Paths.find(path) == info.Paths.end())
 		{
@@ -414,8 +414,8 @@ namespace MyEngine {
 			return ContentElementPtr();
 		}
 
-		set<uint>& ids = info.Paths[path];
-		for (auto& id : ids)
+		const set<uint>& ids = info.Paths[path];
+		for (const auto& id : ids)
 		{
 			ContentElementPtr elem = this->GetElement(id, false);
 			if (elem->Name.compare(name) == 0)
@@ -428,7 +428,7 @@ namespace MyEngine {
 	vector<ContentElementPtr> ContentManager::GetElements()
 	{
 		vector<ContentElementPtr> result;
-		for (auto& pair : this->content)
+		for (const auto& pair : this->content)
 			result.push_back(pair.second);
 
 		return result;
@@ -485,14 +485,14 @@ namespace MyEngine {
 			{
 				lock lck(this->thread->mutex("content"));
 				vector<uint> forUnload;
-				for (auto& pair : this->content)
+				for (const auto& pair : this->content)
 				{
 					if (pair.second.unique() && pair.second->IsLoaded)
 					{
 						// check if element is in request
 						bool inRequest = false;
 						this->thread->mutex("requests").lock();
-						for (auto& pair2 : this->requests)
+						for (const auto& pair2 : this->requests)
 						{
 							if (pair2.second == pair.first)
 								inRequest = true;
@@ -503,7 +503,7 @@ namespace MyEngine {
 							forUnload.push_back(pair.first);
 					}
 				}
-				for (auto& id : forUnload)
+				for (const auto& id : forUnload)
 					this->unLoadElement(id);
 			}
 		}
@@ -607,17 +607,17 @@ namespace MyEngine {
 
 		// Package Infos
 		Write(ofile, this->packageInfos.size());
-		for (auto& pair : this->packageInfos)
+		for (const auto& pair : this->packageInfos)
 		{
 			Write(ofile, pair.first);
-			PackageInfo& info = pair.second;
+			const PackageInfo& info = pair.second;
 
 			Write(ofile, info.Paths.size());
-			for (auto& pair2 : info.Paths)
+			for (const auto& pair2 : info.Paths)
 				Write(ofile, pair2.first);
 
 			Write(ofile, info.FreeSpaces.size());
-			for (auto& pair2 : info.FreeSpaces)
+			for (const auto& pair2 : info.FreeSpaces)
 			{
 				Write(ofile, pair2.first);
 				Write(ofile, pair2.second);
@@ -626,7 +626,7 @@ namespace MyEngine {
 		
 		// Content Elements
 		Write(ofile, this->content.size());
-		for (auto& pair : this->content)
+		for (const auto& pair : this->content)
 		{
 			ContentElementPtr element = pair.second;
 			element->ContentElement::WriteToFile(ofile);
