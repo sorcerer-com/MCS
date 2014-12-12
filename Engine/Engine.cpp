@@ -6,6 +6,7 @@
 #include "Utils\Config.h"
 #include "Managers\ContentManager.h"
 #include "Managers\SceneManager.h"
+#include "Renderers\IrrRenderer.h"
 
 
 namespace MyEngine {
@@ -20,8 +21,10 @@ namespace MyEngine {
 		ofile.close();
 		Engine::Log(ELog, "Engine", "Create engine");
 
-		this->ContentManager = make_shared<MyEngine::ContentManager>();
-		this->SceneManager = make_shared<MyEngine::SceneManager>();
+		this->ContentManager = make_shared<MyEngine::ContentManager>(this);
+		this->SceneManager = make_shared<MyEngine::SceneManager>(this);
+
+		this->ViewPortRenderer = make_shared<IrrRenderer>(this);
 	}
 
 	Engine::~Engine()

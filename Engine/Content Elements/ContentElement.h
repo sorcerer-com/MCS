@@ -20,6 +20,8 @@ namespace MyEngine {
 	class ContentElement
 	{
 	public:
+		ContentManager* Owner;
+
 		uint Version;
 		ContentElementType Type;
 		uint ID;
@@ -30,8 +32,6 @@ namespace MyEngine {
 		long long PackageOffset;
 		long long SavedSize;
 		bool IsLoaded;
-
-		ContentManager* Owner;
 
 	public:
 		ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path);

@@ -74,6 +74,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -85,6 +86,7 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -191,7 +193,7 @@
   <ItemGroup>
     <Resource Include="Images\MainWindow\Animations.png" />
     <Resource Include="Images\MainWindow\BuildLightMaps.png" />
-    <Resource Include="Images\MainWindow\Change.PNG" />
+    <Resource Include="Images\MainWindow\Render.PNG" />
     <Resource Include="Images\MainWindow\Contents.PNG" />
     <Resource Include="Images\MainWindow\Cursor.PNG" />
     <Resource Include="Images\MainWindow\Environment.png" />
@@ -231,7 +233,6 @@
   <ItemGroup>
     <Resource Include="Images\ContentWindow\clear.png" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

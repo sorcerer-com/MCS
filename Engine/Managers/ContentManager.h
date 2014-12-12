@@ -6,6 +6,7 @@
 
 namespace MyEngine {
 
+	class Engine;
 	struct Thread;
 	class ContentElement;
 	enum ContentElementType;
@@ -34,6 +35,8 @@ namespace MyEngine {
 
 		using PackageInfoMapType = map < string, PackageInfo > ; // package name / package info
 		using ContentMapType = map < uint, ContentElementPtr >; // id / content element
+
+		Engine* Owner;
 		
 	private:
 		shared_ptr<Thread> thread;
@@ -42,8 +45,9 @@ namespace MyEngine {
 		PackageInfoMapType packageInfos;
 		ContentMapType content;
 		// TODO: instances
+
 	public:
-		ContentManager();
+		ContentManager(Engine* owner);
 		~ContentManager();
 
 		bool ImportPackage(const string& filePath);

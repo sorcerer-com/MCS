@@ -13,8 +13,13 @@
 namespace MyEngine {
 
 	/* S C E N E   M A N A G E R */
-	SceneManager::SceneManager()
+	SceneManager::SceneManager(Engine* owner)
 	{
+		if (!owner)
+			throw "ArgumentNullException: owner";
+
+		this->Owner = owner;
+
 		this->New();
 	}
 

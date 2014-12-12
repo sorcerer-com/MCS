@@ -6,6 +6,7 @@
 
 namespace MyEngine {
 
+	class Engine;
 	class SceneElement;
 	enum SceneElementType;
 
@@ -16,12 +17,14 @@ namespace MyEngine {
 	public:
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
 
+		Engine* Owner;
+
 	private:
 		SceneMapType sceneElements;
 		// TODO: layers
 
 	public:
-		SceneManager();
+		SceneManager(Engine* owner);
 
 		void New();
 		bool Save(const string& filePath);

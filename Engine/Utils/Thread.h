@@ -2,6 +2,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <thread>
 #include <atomic>
 #include <mutex>
@@ -14,58 +15,69 @@ namespace MyEngine {
 	struct Thread
 	{
 	private:
-		atomic_bool m_interrupt;
-		thread m_worker;
-		map<string, mutex> m_mutices;
-		map<string, recursive_mutex> m_recursive_mutices;
+		atomic_bool interrupt;
+		vector<thread> workers;
+		map<string, mutex> mutices;
+		map<string, recursive_mutex> recursive_mutices;
 
 	public:
 		Thread()
 		{
-			this->m_interrupt = false;
+			this->interrupt = false;
 		}
 
 		template <class Fn, class... Args>
-		Thread(Fn&& fn, Args&&... args) : Thread()
+		inline void defWorker(Fn&& fn, Args&&... args)
 		{
-			this->worker(fn, args);
+			this->workers.push_back(thread(fn, args...));
 		}
 
-		template <class Fn, class... Args>
-		inline void worker(Fn&& fn, Args&&... args)
+		inline thread& worker(int idx)
 		{
-			this->m_worker = thread(fn, args...);
+			if (idx >= this->workers.size())
+				throw "Try to access invalid worker";
+
+			return this->workers[idx];
+		}
+
+		inline size_t workersCount()
+		{
+			return this->workers.size();
 		}
 
 		inline bool interrupted()
 		{
-			return this->m_interrupt;
+			return this->interrupt;
 		}
 
 		inline void join(bool itr = true)
 		{
-			this->m_interrupt = itr;
+			this->interrupt = itr;
 
-			if (itr && this->m_worker.joinable())
-				this->m_worker.join();
+			if (itr)
+			{
+				for (auto& worker : this->workers)
+					if (worker.joinable())
+						worker.join();
+			}
 		}
 
 
 		inline void defMutex(const string& name, bool recursive = false)
 		{
 			if (!recursive)
-				this->m_mutices[name];
+				this->mutices[name];
 			else
-				this->m_recursive_mutices[name];
+				this->recursive_mutices[name];
 		}
 
 		inline _Mutex_base& mutex(const string& name)
 		{
-			if (this->m_mutices.find(name) != this->m_mutices.end())
-				return this->m_mutices[name];
-			if (this->m_recursive_mutices.find(name) != this->m_recursive_mutices.end())
-				return this->m_recursive_mutices[name];
-			
+			if (this->mutices.find(name) != this->mutices.end())
+				return this->mutices[name];
+			if (this->recursive_mutices.find(name) != this->recursive_mutices.end())
+				return this->recursive_mutices[name];
+
 			throw "Try to access invalid mutex";
 		}
 

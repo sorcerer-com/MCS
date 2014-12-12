@@ -172,6 +172,8 @@
     <ClCompile Include="Managers\ContentManager.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
+    <ClCompile Include="Renderers\IrrRenderer.cpp" />
+    <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Scene Elements\SceneElement.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -186,6 +188,8 @@
     <ClInclude Include="Managers\ContentManager.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Managers\SceneManager.h" />
+    <ClInclude Include="Renderers\IrrRenderer.h" />
+    <ClInclude Include="Renderers\Renderer.h" />
     <ClInclude Include="Scene Elements\SceneElement.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Utils\Config.h" />

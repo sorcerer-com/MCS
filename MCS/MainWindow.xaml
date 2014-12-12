@@ -33,14 +33,6 @@
                 </Button>
             </ToolBar>
             <ToolBar Band="1" BandIndex="2" IsManipulationEnabled="True">
-                <Button ToolTip="Log (F8)" Command="{Binding Path=LogWindowCommand}">
-                    <Image Source="/Images/MainWindow/Log.png" Style="{StaticResource toolbarButtonImageStyle}"/>
-                </Button>
-                <Button ToolTip="Change Renderer (F9)">
-                    <Image Source="/Images/MainWindow/Change.png" Style="{StaticResource toolbarButtonImageStyle}"/>
-                </Button>
-            </ToolBar>
-            <ToolBar Band="1" BandIndex="3" IsManipulationEnabled="True">
                 <RadioButton GroupName="Cursors" IsChecked="True">
                     <Image Source="/Images/MainWindow/Cursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
@@ -54,7 +46,10 @@
                     <Image Source="/Images/MainWindow/ScaleCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
             </ToolBar>
-            <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
+            <ToolBar Band="1" BandIndex="3" IsManipulationEnabled="True">
+                <Button ToolTip="Log (F8)" Command="{Binding Path=LogWindowCommand}">
+                    <Image Source="/Images/MainWindow/Log.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
                 <Button ToolTip="Content Browser (F3)" Command="{Binding Path=ContentWindowCommand}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
@@ -74,7 +69,10 @@
                     <Image Source="/Images/MainWindow/Scripts.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
             </ToolBar>
-            <ToolBar Band="1" BandIndex="5" IsManipulationEnabled="True">
+            <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
+                <Button ToolTip="Render (F9)">
+                    <Image Source="/Images/MainWindow/Render.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
                 <Button ToolTip="Build Light Maps (F6)">
                     <Image Source="/Images/MainWindow/BuildLightMaps.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
@@ -93,9 +91,9 @@
         </ToolBarTray>
 
         <!-- Render image -->
-        <Image Name="renderImage" Stretch="Fill" Grid.Row="1" Focusable="True" Source="/Images/MainWindow/scale.png">
+        <WindowsFormsHost Name="render" Grid.Row="1" Focusable="True">
 
-            <Image.ContextMenu>
+            <WindowsFormsHost.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Clone" Command="{Binding Path=CloneElementCommand}"/>
                     <MenuItem Header="Rename" Command="{Binding Path=RenameElementCommand}"/>
@@ -109,9 +107,9 @@
                     <MenuItem Header="Add Water"/>
                     <MenuItem Header="Add Character"/>
                 </ContextMenu>
-            </Image.ContextMenu>
+            </WindowsFormsHost.ContextMenu>
 
-        </Image>
+        </WindowsFormsHost>
 
         <!-- Bottom StatusBar -->
         <StatusBar Grid.Row="2" Height="30" VerticalAlignment="Top">

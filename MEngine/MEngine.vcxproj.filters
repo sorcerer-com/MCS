@@ -10,6 +10,7 @@
     <ClInclude Include="MEngine.h" />
     <ClInclude Include="Scene Elements\MSceneElement.h" />
     <ClInclude Include="Managers\MSceneManager.h" />
+    <ClInclude Include="Renderers\MRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

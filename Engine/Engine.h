@@ -8,6 +8,7 @@ namespace MyEngine {
 
 	class ContentManager;
 	class SceneManager;
+	class Renderer;
 
 	enum LogType
 	{
@@ -27,6 +28,8 @@ namespace MyEngine {
 	public:
 		shared_ptr<ContentManager> ContentManager;
 		shared_ptr<SceneManager> SceneManager;
+
+		shared_ptr<Renderer> ViewPortRenderer;
 
 		static EngineMode Mode;
 

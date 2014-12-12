@@ -181,7 +181,13 @@ namespace MCS
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // TODO: init renders
+            this.render.Child = new System.Windows.Forms.UserControl();
+            this.render.Child.Resize += (s, ee) =>
+            {
+                this.Engine.ViewPortRenderer.ReSize(this.render.Child.Width, this.render.Child.Height);
+            };
+            this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
+
             this.KeyDown += WindowsManager.Window_KeyDown;
         }
 

@@ -14,6 +14,8 @@ namespace MyEngine {
 		if (!owner)
 			throw "ArgumentNullException: owner";
 
+		this->Owner = owner;
+
 		this->Version = CURRENT_VERSION;
 		this->Type = type;
 		this->ID = INVALID_ID;
@@ -24,8 +26,6 @@ namespace MyEngine {
 		this->PackageOffset = 0;
 		this->SavedSize = 0;
 		this->IsLoaded = false;
-
-		this->Owner = owner;
 	}
 
 	ContentElement::ContentElement(ContentManager* owner, istream& file)

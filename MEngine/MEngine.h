@@ -6,6 +6,7 @@
 
 #include "Managers\MContentManager.h"
 #include "Managers\MSceneManager.h"
+#include"Renderers\MRenderer.h"
 
 
 namespace MyEngine {
@@ -31,6 +32,8 @@ namespace MyEngine {
 	public:
 		property MContentManager^ ContentManager;
 		property MSceneManager^ SceneManager;
+
+		property MRenderer^ ViewPortRenderer;
 
 		static EEngineMode Mode;
 

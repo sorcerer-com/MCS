@@ -15,10 +15,15 @@
 namespace MyEngine {
 
 	/* C O N T E N T   M A N A G E R */
-	ContentManager::ContentManager()
+	ContentManager::ContentManager(Engine* owner)
 	{
+		if (!owner)
+			throw "ArgumentNullException: owner";
+
+		this->Owner = owner;
+
 		this->thread = make_shared<Thread>();
-		this->thread->worker(&ContentManager::doSerilization, this);
+		this->thread->defWorker(&ContentManager::doSerilization, this);
 		this->thread->defMutex("requests");
 		this->thread->defMutex("content", true);
 
@@ -406,7 +411,7 @@ namespace MyEngine {
 			Engine::Log(EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
 			return ContentElementPtr();
 		}
-		const PackageInfo& info = this->packageInfos[package];
+		PackageInfo& info = this->packageInfos[package];
 
 		if (info.Paths.find(path) == info.Paths.end())
 		{
@@ -414,7 +419,7 @@ namespace MyEngine {
 			return ContentElementPtr();
 		}
 
-		const set<uint>& ids = info.Paths[path];
+		set<uint>& ids = info.Paths[path];
 		for (const auto& id : ids)
 		{
 			ContentElementPtr elem = this->GetElement(id, false);
