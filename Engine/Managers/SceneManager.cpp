@@ -9,6 +9,9 @@
 #include "..\Utils\IOUtils.h"
 #include "..\Scene Elements\SceneElement.h"
 
+#include "..\Managers\ContentManager.h"
+#include "..\Content Elements\ContentElement.h"
+
 
 namespace MyEngine {
 
@@ -158,6 +161,16 @@ namespace MyEngine {
 			return SceneElementPtr();
 		}
 		return this->sceneElements[element->ID];
+	}
+	
+	SceneElementPtr SceneManager::AddElement(SceneElementType type, const string& name, const string& contentFullName, uint id /* = 0 */)
+	{
+		ContentElementPtr celem = this->Owner->ContentManager->GetElement(contentFullName, false);
+		uint contentID = 0;
+		if (celem != NULL)
+			contentID = celem->ID;
+
+		return this->AddElement(type, name, contentID, id);
 	}
 
 	bool SceneManager::AddElement(SceneElement* element)

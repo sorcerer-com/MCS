@@ -29,7 +29,7 @@ namespace MyEngine {
 	}
 
 
-	bool IrrRenderer::Init(void* params) // TODO: may be used it like array?
+	bool IrrRenderer::Init(void* params)
 	{
 		this->windowHandle = params;
 
@@ -44,11 +44,11 @@ namespace MyEngine {
 		this->Width = width;
 		this->Height = height;
 		this->Resized = true;
-		Engine::Log(ELog, "GLRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
+		Engine::Log(ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
 	}
 
 
-	void IrrRenderer::init()
+	bool IrrRenderer::init()
 	{
 		irr::SIrrlichtCreationParameters param;
 		param.DriverType = irr::video::EDT_OPENGL;
@@ -58,6 +58,12 @@ namespace MyEngine {
 		param.ZBufferBits = 32;
 
 		this->device = irr::createDeviceEx(param);
+		if (!this->device)
+		{
+			Engine::Log(EError, "IrrRenderer", "Cannot init IrrLicht Renderer");
+			return false;
+		}
+
 		this->driver = this->device->getVideoDriver();
 		this->smgr = this->device->getSceneManager();
 		this->guienv = this->device->getGUIEnvironment();
@@ -65,7 +71,7 @@ namespace MyEngine {
 		// TODO: remove:
 		irr::scene::ICameraSceneNode* cam = smgr->addCameraSceneNode();
 		cam->setTarget(irr::core::vector3df(0, 0, 0));
-		cam->setFOV(76);
+		cam->setFOV(irr::core::HALF_PI);
 
 		irr::scene::ISceneNodeAnimator* anim =
 			smgr->createFlyCircleAnimator(irr::core::vector3df(0, 15, 0), 30.0f);
@@ -74,11 +80,13 @@ namespace MyEngine {
 
 		irr::scene::ISceneNode* cube = smgr->addCubeSceneNode(10);
 		cube->setMaterialFlag(irr::video::EMF_LIGHTING, false);
+		return true;
 	}
 
 	void IrrRenderer::render()
 	{
-		this->init();
+		if (!this->init())
+			return;
 
 		while (!this->thread->interrupted())
 		{

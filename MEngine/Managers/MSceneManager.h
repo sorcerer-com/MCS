@@ -25,7 +25,7 @@ namespace MyEngine {
 		bool Save(String^ filePath);
 
 		MSceneElement^ AddElement(ESceneElementType type, String^ name, uint contentID);
-		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ path);
+		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName);
 		MSceneElement^ CloneElement(MSceneElement^ element, String^ newName);
 		bool ContainElement(uint id);
 		bool RenameElement(String^ oldName, String^ newName);

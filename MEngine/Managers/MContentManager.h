@@ -48,11 +48,10 @@ namespace MyEngine {
 		MContentElement^ GetElement(String^ fullName);
 		MContentElement^ GetElement(String^ fullName, bool load);
 		void SaveElement(uint id);
-
-	private:
+		
+	public:
 		static MContentElement^ getMContentElement(const ContentElementPtr& element);
 
-	public:
 		static String^ GetPackage(String^ fullName);
 		static String^ GetPath(String^ fullName);
 		static String^ GetName(String^ fullName);

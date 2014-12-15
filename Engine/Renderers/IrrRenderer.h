@@ -44,7 +44,7 @@ namespace MyEngine {
 		virtual void ReSize(int width, int height) override;
 
 	private:
-		void init();
+		bool init();
 		void render();
 
 	};

@@ -31,6 +31,7 @@ namespace MyEngine {
 		bool Load(const string& filePath);
 
 		SceneElementPtr AddElement(SceneElementType type, const string& name, uint contentID, uint id = 0);
+		SceneElementPtr AddElement(SceneElementType type, const string& name, const string& contentFullName, uint id = 0);
 		bool AddElement(SceneElement* element);
 		bool ContainElement(uint id) const;
 		bool DeleteElement(uint id);

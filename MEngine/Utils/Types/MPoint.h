@@ -49,18 +49,6 @@ namespace MyEngine {
 			Set(X * m, Y * m, Z * m);
 		}
 
-		/* TODO: there isn't Matrix yet
-		MPoint Rotate(MPoint angle, MPoint center)
-		{
-			Matrix3 ma3x(1.0f);
-			ma3x = Matrix3::makeRotationMatrix(AXIS_Y, (float)DegToRad(angle.Y)) *
-				Matrix3::makeRotationMatrix(AXIS_X, (float)DegToRad(angle.X)) *
-				Matrix3::makeRotationMatrix(AXIS_Z, (float)DegToRad(angle.Z)) * ma3x;
-			Vector3 vec = (*this - center).ToVector3();
-			vec = ma3x * vec;
-			return MPoint(vec) + center;
-		} */
-
 		static MPoint operator -(MPoint p)
 		{
 			return MPoint(-p.X, -p.Y, -p.Z);

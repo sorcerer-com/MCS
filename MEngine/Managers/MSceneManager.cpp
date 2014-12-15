@@ -36,16 +36,10 @@ namespace MyEngine {
 		return this->getMSceneElement(elem);
 	}
 
-	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, String^ path)
+	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, String^ contentFullName)
 	{
-		/* TODO: how to get content manager
-		ContentElementPtr celem = this->scene->ContentManager.GetElement(string(StringToCharPtr(path)), false);
-		uint contentID = 0;
-		if (celem != NULL)
-			contentID = celem->ID;
-
-		return this->AddElement(type, name, contentID);*/
-		return nullptr;
+		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), to_string(contentFullName));
+		return this->getMSceneElement(elem);
 	}
 
 	MSceneElement^ MSceneManager::CloneElement(MSceneElement^ element, String^ newName)

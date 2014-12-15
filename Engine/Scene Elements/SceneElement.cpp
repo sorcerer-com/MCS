@@ -6,6 +6,10 @@
 #include "..\Utils\Config.h"
 #include "..\Utils\IOUtils.h"
 
+#include "..\Managers\SceneManager.h"
+#include "..\Engine.h"
+#include "..\Managers\ContentManager.h"
+
 
 namespace MyEngine {
 
@@ -48,6 +52,17 @@ namespace MyEngine {
 		}
 
 		this->Owner = owner;
+	}
+
+
+	ContentElementPtr SceneElement::GetContent() const
+	{
+		return this->Owner->Owner->ContentManager->GetElement(this->ContentID, true, true);
+	}
+
+	ContentElementPtr SceneElement::GetMaterial() const
+	{
+		return this->Owner->Owner->ContentManager->GetElement(this->MaterialID, true, true);
 	}
 
 

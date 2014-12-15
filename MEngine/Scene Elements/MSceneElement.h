@@ -8,6 +8,9 @@
 #include "..\Utils\MHeader.h"
 #include "..\Utils\Types\MPoint.h"
 
+#include "..\Managers\MContentManager.h"
+#include "..\Content Elements\MContentElement.h"
+
 
 namespace MyEngine {
 	
@@ -51,19 +54,17 @@ namespace MyEngine {
 			String^ get() { return gcnew String(element->Name.c_str()); }
 		}
 
-		/* TODO: how to get ContentManager
 		property MContentElement^ Content
 		{
-			MContentElement^ get() { return MContentManager::getMContentElement(this->owner->ContentManager.GetElement(element->ContentID, true)); }
+			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetContent()); }
 			void set(MContentElement^ value) { if (value != nullptr) element->ContentID = value->ID; else element->ContentID = 0; }
 		}
 
 		property MContentElement^ Material
 		{
-			MContentElement^ get() { return MContentManager::getMContentElement(this->owner->ContentManager.GetElement(element->MaterialID, true)); }
+			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetMaterial()); }
 			void set(MContentElement^ value) { if (value != nullptr) element->MaterialID = value->ID; else element->MaterialID = 0; }
 		}
-		*/
 
 		property bool Visible
 		{

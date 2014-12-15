@@ -9,6 +9,9 @@ namespace MyEngine {
 
 	class SceneManager;
 
+	class ContentElement;
+	using ContentElementPtr = shared_ptr < ContentElement >;
+
 	enum SceneElementType
 	{
 		ECamera,
@@ -37,6 +40,9 @@ namespace MyEngine {
 	public:
 		SceneElement(SceneManager* owner, SceneElementType type, const string& name, uint contentID);
 		SceneElement(SceneManager* owner, istream& file);
+
+		ContentElementPtr GetContent() const;
+		ContentElementPtr GetMaterial() const;
 
 		virtual void WriteToFile(ostream& file) const;
 		virtual SceneElement* Clone() const;

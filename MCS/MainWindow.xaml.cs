@@ -19,6 +19,9 @@ namespace MCS
     {
         public MEngine Engine { get; private set; }
 
+        private bool sceneSaved; // TODO: on scene changed
+        private string sceneFilePath;
+
         public static List<uint> SelectedElements = new List<uint>();
 
         #region Commands
@@ -30,8 +33,14 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    // TODO: is saved?
-                    this.Engine.SceneManager.New();
+                    if (this.checkSceneSaved())
+                    {
+                        this.Engine.SceneManager.New();
+
+                        this.sceneSaved = true;
+                        this.sceneFilePath = string.Empty;
+                        this.updateTitle();
+                    }
                 });
             }
         }
@@ -42,16 +51,25 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
+                    if (!this.checkSceneSaved())
+                        return;
+
                     OpenFileDialog ofd = new OpenFileDialog();
                     ofd.InitialDirectory = System.Environment.CurrentDirectory + "\\Scenes";
-                    ofd.Filter = "My Level Files (*.mlv)|*.mlv|All Files (*.*)|*.*";
-                    ofd.DefaultExt = "mlv";
+                    ofd.Filter = "My Scene Files (*.msn)|*.msn|All Files (*.*)|*.*";
+                    ofd.DefaultExt = "msn";
                     ofd.RestoreDirectory = true;
                     if (ofd.ShowDialog() == true)
                     {
-                        // TODO: is saved?
                         if (!this.Engine.SceneManager.Load(ofd.FileName))
+                        {
                             ExtendedMessageBox.Show("Cannot open scene file: \n " + ofd.FileName + "!", "Open scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
+                            return;
+                        }
+
+                        this.sceneSaved = true;
+                        this.sceneFilePath = ofd.FileName;
+                        this.updateTitle();
                     }
                 });
             }
@@ -63,23 +81,37 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    // TODO: if there isn't path to the scene or Save As - ask
-                    SaveFileDialog sfd = new SaveFileDialog();
-                    sfd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + @"\Levels";
-                    sfd.Filter = "My Level Files (*.mlv)|*.mlv|All Files (*.*)|*.*";
-                    sfd.DefaultExt = "mlv";
-                    sfd.RestoreDirectory = true;
-                    sfd.OverwritePrompt = true;
-                    if (sfd.ShowDialog() == true)
-                        if (!this.Engine.SceneManager.Save(sfd.FileName))
-                            ExtendedMessageBox.Show("Cannot save scene to file: \n " + sfd.FileName + "!", "Save scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
+                    // if there isn't path to the scene or Save As - ask
+                    if (string.IsNullOrEmpty(this.sceneFilePath) || Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    {
+                        SaveFileDialog sfd = new SaveFileDialog();
+                        sfd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Scenes";
+                        sfd.Filter = "My Scene Files (*.msn)|*.msn|All Files (*.*)|*.*";
+                        sfd.DefaultExt = "msn";
+                        sfd.RestoreDirectory = true;
+                        sfd.OverwritePrompt = true;
+                        if (sfd.ShowDialog() == true)
+                            this.sceneFilePath = sfd.FileName;
+                        else
+                            return;
+                    }
+
+                    // save scene
+                    if (!this.Engine.SceneManager.Save(this.sceneFilePath))
+                    {
+                        ExtendedMessageBox.Show("Cannot save scene to file: \n " + this.sceneFilePath + "!", "Save scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
+                        return;
+                    }
+
+                    this.sceneSaved = true;
+                    this.updateTitle();
                 });
             }
         }
 
         public ICommand LogWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); this.sceneSaved = false; this.updateTitle(); }); }
         }
 
         public ICommand ContentWindowCommand
@@ -176,6 +208,9 @@ namespace MCS
 
             this.Engine = new MEngine();
 
+            this.sceneSaved = true;
+            this.sceneFilePath = string.Empty;
+
             ConfigManager.LoadConfig();
         }
 
@@ -195,7 +230,40 @@ namespace MCS
         {
             this.KeyDown -= WindowsManager.Window_KeyDown;
 
+            // check for saving
+            if (!this.checkSceneSaved())
+            {
+                e.Cancel = true;
+                return;
+            }
+
             this.Engine.Dispose();
+        }
+
+
+        private void updateTitle()
+        {
+            this.Title = "My Creative Studio";
+            if (!string.IsNullOrEmpty(this.sceneFilePath))
+                this.Title += " - " + Path.GetFileNameWithoutExtension(this.sceneFilePath);
+            if (!this.sceneSaved)
+                this.Title += "*";
+        }
+
+        private bool checkSceneSaved()
+        {
+            if (!this.sceneSaved)
+            {
+                ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Do you want to save changes?", "Confirm", ExtendedMessageBoxButton.YesNoCancel, ExtendedMessageBoxImage.Question);
+                if (res == ExtendedMessageBoxResult.Yes)
+                {
+                    this.SaveSceneCommand.Execute(null);
+                    return true;
+                }
+                else if (res != ExtendedMessageBoxResult.No) // Cancel
+                    return false;
+            }
+            return true;
         }
     
     }
