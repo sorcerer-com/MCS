@@ -97,6 +97,7 @@ namespace MyEngine {
 		newElem->ID = INVALID_ID;
 		newElem->PackageOffset = 0;
 		newElem->SavedSize = 0;
+		newElem->IsLoaded = false;
 		return newElem;
 	}
 

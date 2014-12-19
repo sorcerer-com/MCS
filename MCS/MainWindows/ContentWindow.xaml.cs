@@ -157,7 +157,6 @@ namespace MCS.MainWindows
         {
             get 
             {
-                // TODO: bug when load mesh it gets wrong id
                 if (ContentWindow.SelectedElements.Count > 0)
                     return this.ContentManager.GetElement(ContentWindow.SelectedElements[0], true);
 
@@ -584,6 +583,8 @@ namespace MCS.MainWindows
                     this.ContentManager.SaveElement(elem.ID);
                 }
             }
+
+            this.OnPropertyChanged("Contents");
         }
 
         private void export(string filename)

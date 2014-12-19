@@ -487,7 +487,7 @@ namespace MyEngine {
 			this_thread::sleep_for(chrono::milliseconds(100));
 
 			// unload all unused content elements
-			if (Engine::Mode != EEditor) // TODO: is it needed?
+			if (Engine::Mode != EEditor)
 			{
 				lock lck(this->thread->mutex("content"));
 				vector<uint> forUnload;
@@ -523,7 +523,7 @@ namespace MyEngine {
 		auto it = find(this->requests.begin(), this->requests.end(), pair);
 
 		bool skip = false;
-		if (it != this->requests.end() || (type == ESaveDatabase && this->requests.size() > 0 && this->requests.back() == pair))
+		if ((type != ESaveDatabase && it != this->requests.end()) || (type == ESaveDatabase && this->requests.size() > 0 && this->requests.back() == pair))
 			skip = true;
 
 		if (!skip)
@@ -547,7 +547,7 @@ namespace MyEngine {
 		}
 
 		// Package Infos
-		long long size = 0;
+		int size = 0;
 		Read(ifile, size);
 		for (int i = 0; i < size; ++i)
 		{
@@ -556,7 +556,7 @@ namespace MyEngine {
 			PackageInfo info;
 
 			string str;
-			long long size2 = 0;
+			int size2 = 0;
 			Read(ifile, size2);
 			for (int j = 0; j < size2; ++j)
 			{
@@ -612,17 +612,17 @@ namespace MyEngine {
 		}
 
 		// Package Infos
-		Write(ofile, this->packageInfos.size());
+		Write(ofile, (int)this->packageInfos.size());
 		for (const auto& pair : this->packageInfos)
 		{
 			Write(ofile, pair.first);
 			const PackageInfo& info = pair.second;
 
-			Write(ofile, info.Paths.size());
+			Write(ofile, (int)info.Paths.size());
 			for (const auto& pair2 : info.Paths)
 				Write(ofile, pair2.first);
 
-			Write(ofile, info.FreeSpaces.size());
+			Write(ofile, (int)info.FreeSpaces.size());
 			for (const auto& pair2 : info.FreeSpaces)
 			{
 				Write(ofile, pair2.first);
@@ -631,11 +631,13 @@ namespace MyEngine {
 		}
 		
 		// Content Elements
-		Write(ofile, this->content.size());
+		Write(ofile, (int)this->content.size());
 		for (const auto& pair : this->content)
 		{
 			ContentElementPtr element = pair.second;
+			long long savedSize = element->SavedSize;
 			element->ContentElement::WriteToFile(ofile);
+			element->SavedSize = savedSize;
 		}
 
 		ofile.close();
@@ -814,7 +816,7 @@ namespace MyEngine {
 		}
 		if (!found)
 			info.FreeSpaces.push_back(make_pair(element->PackageOffset, size));
-		sort(info.FreeSpaces.begin(), info.FreeSpaces.end(), [](pair<long long, long long> a, pair<long long, long long> b){ return a.second < b.second; });
+		sort(info.FreeSpaces.begin(), info.FreeSpaces.end(), [](const pair<long long, long long>& a, const pair<long long, long long>& b){ return a.second < b.second; });
 
 		Engine::Log(ELog, "ContentManager", "Erase content element '" + element->Name + "'#" +
 			to_string(element->Version) + " (" + to_string(element->ID) + ")");

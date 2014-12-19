@@ -13,7 +13,7 @@ namespace MyEngine {
 
 	inline void Write(ostream& ofile, const string& value)
 	{
-		long long size = value.size();
+		int size = (int)value.size();
 		ofile.write((char*)&size, sizeof(size));
 
 		const char *str = value.c_str();
@@ -23,7 +23,7 @@ namespace MyEngine {
 	template <class T>
 	inline void Write(ostream& ofile, const vector<T>& value)
 	{
-		long long size = (int)value.size();
+		int size = (int)value.size();
 		ofile.write((char*)&size, sizeof(size));
 		for (int i = 0; i < size; i++)
 			ofile.write((char*)&value[i], sizeof(value[i]));
@@ -42,7 +42,7 @@ namespace MyEngine {
 
 	inline void Read(istream& ifile, string& value)
 	{
-		long long size = 0;
+		int size = 0;
 		ifile.read((char*)&size, sizeof(size));
 
 		char *str = new char[(size_t)size + 1];
@@ -55,7 +55,7 @@ namespace MyEngine {
 	template <class T>
 	inline void Read(istream& ifile, vector<T>& value)
 	{
-		long long size = 0;
+		int size = 0;
 		ifile.read((char*)&size, sizeof(size));
 
 		value.reserve((size_t)size);
