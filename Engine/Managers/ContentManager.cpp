@@ -487,6 +487,7 @@ namespace MyEngine {
 			this_thread::sleep_for(chrono::milliseconds(100));
 
 			// unload all unused content elements
+			if (Engine::Mode != EEditor) // TODO: is it needed?
 			{
 				lock lck(this->thread->mutex("content"));
 				vector<uint> forUnload;

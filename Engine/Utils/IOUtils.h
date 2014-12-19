@@ -45,7 +45,7 @@ namespace MyEngine {
 		long long size = 0;
 		ifile.read((char*)&size, sizeof(size));
 
-		char *str = new char[size + 1];
+		char *str = new char[(size_t)size + 1];
 		ifile.read((char*)str, size * sizeof(char));
 		str[size] = '\0';
 		value = str;
@@ -58,7 +58,7 @@ namespace MyEngine {
 		long long size = 0;
 		ifile.read((char*)&size, sizeof(size));
 
-		value.reserve(size);
+		value.reserve((size_t)size);
 		for (int i = 0; i < size; i++)
 		{
 			T t;

@@ -27,6 +27,7 @@ namespace MyEngine {
 		}
 
 	public:
+		[MPropertyAttribute(Group = "Shape")]
 		property List<MPoint>^ Vertices
 		{
 			List<MPoint>^ get()
@@ -40,6 +41,7 @@ namespace MyEngine {
 			}
 		}
 
+		[MPropertyAttribute(Group = "Shape")]
 		property List<MPoint>^ Normals
 		{
 			List<MPoint>^ get()
@@ -53,6 +55,7 @@ namespace MyEngine {
 			}
 		}
 
+		[MPropertyAttribute(Group = "Shape")]
 		property List<MPoint>^ TexCoords
 		{
 			List<MPoint>^ get()
@@ -66,6 +69,7 @@ namespace MyEngine {
 			}
 		}
 
+		[MPropertyAttribute(Group = "Shape")]
 		property List<MTriangle>^ Triangles
 		{
 			List<MTriangle>^ get()

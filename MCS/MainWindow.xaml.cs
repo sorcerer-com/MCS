@@ -15,14 +15,40 @@ namespace MCS
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public MEngine Engine { get; private set; }
+
+        public static List<uint> SelectedElements = new List<uint>();
+
 
         private bool sceneSaved; // TODO: on scene changed
         private string sceneFilePath;
 
-        public static List<uint> SelectedElements = new List<uint>();
+        public MSceneElement SelectedElement
+        {
+            get
+            {
+                if (MainWindow.SelectedElements.Count > 0)
+                    return this.Engine.SceneManager.GetElement(ContentWindow.SelectedElements[0]);
+
+                return null;
+            }
+        }
+
+        public MCS.Controls.PropertyGrid.GetListDelegate GetSelectedContentElementsList
+        {
+            get
+            {
+                return (s) =>
+                    {
+                        List<object> res = new List<object>();
+                        foreach (var id in ContentWindow.SelectedElements)
+                            res.Add(this.Engine.ContentManager.GetElement(id));
+                        return res;
+                    };
+            }
+        }
 
         #region Commands
 
@@ -111,7 +137,7 @@ namespace MCS
 
         public ICommand LogWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); this.sceneSaved = false; this.updateTitle(); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); }); }
         }
 
         public ICommand ContentWindowCommand
@@ -137,13 +163,10 @@ namespace MCS
                         MSceneElement newMse = this.Engine.SceneManager.CloneElement(mse, mse.Name + "2");
                         newSelectedElements.Add(newMse);
                     }
-                    /* TODO: fix selection
-                    this.selectElement(null, false);
+                    this.selectElement(null);
 
                     foreach (MSceneElement mse in newSelectedElements)
-                        this.selectElement(mse, false);
-                    this.saved = false;
-                     */
+                        this.selectElement(mse);
                 });
             }
         }
@@ -163,12 +186,6 @@ namespace MCS
                     {
                         if (!this.Engine.SceneManager.RenameElement(mse.Name, newName))
                             ExtendedMessageBox.Show("Cannot rename scene element '" + mse.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-                        else
-                        {
-                            // refresh scene elements in object list
-                            MainWindow.SelectedElements.Clear();
-                            //this.saved = false;
-                        }
                     }
                 });
             }
@@ -180,8 +197,12 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    // TODO: implement
-                    throw new System.NotImplementedException();
+                    if (MainWindow.SelectedElements.Count == 0)
+                        return;
+
+                    foreach (uint id in MainWindow.SelectedElements)
+                        this.Engine.SceneManager.DeleteElement(id);
+                    this.selectElement(null);
                 });
             }
         }
@@ -264,6 +285,66 @@ namespace MCS
                     return false;
             }
             return true;
+        }
+
+        private void selectElement(MSceneElement mse, bool deselect = false)
+        {
+            // TODO: test selection
+            if (mse == null) // deselect all
+            {
+                MainWindow.SelectedElements.Clear();
+                //this.objectsComboBox.SelectedIndex = -1;
+                //this.scaleValueBox.Value = 0.0;
+                //this.showProperties(mse, false);
+                //this.selectedCursor = ECursorType.Select;
+            }
+            else
+            {
+                if (!deselect) // select
+                {
+                    MainWindow.SelectedElements.Add(mse.ID);
+                    //MPoint scale = mse.Scale;
+                    //this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
+                    //if (MScene.SelectedElements.Count == 1)
+                    //    this.objectsComboBox.SelectedItem = mse;
+                }
+                else // deselect
+                {
+                    for (int i = 0; i < MainWindow.SelectedElements.Count; i++)
+                        if (MainWindow.SelectedElements[i] == mse.ID)
+                        {
+                            MainWindow.SelectedElements.RemoveAt(i);
+                            break;
+                        }
+
+                    /*
+                    if (MainWindow.SelectedElements.Count > 0)
+                    {
+                        this.objectsComboBox.SelectedItem = MScene.SelectedElements[0];
+                        MPoint scale = MScene.SelectedElements[0].Scale;
+                        this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
+                    }
+                    else
+                    {
+                        this.objectsComboBox.SelectedIndex = -1;
+                        this.scaleValueBox.Value = 0.0;
+                        this.selectedCursor = ECursorType.Select;
+                    }*/
+                }
+                //this.showProperties(mse, false);
+            }
+            //this.updateCursor(false);
+
+            this.OnPropertyChanged("SelectedElement");
+        }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string info)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, new PropertyChangedEventArgs(info));
         }
     
     }

@@ -37,16 +37,19 @@ namespace MyEngine {
 			uint get() { return element->Version; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property EContentElementType Type
 		{
 			EContentElementType get() { return (EContentElementType)element->Type; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property uint ID
 		{
 			uint get() { return element->ID; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property String^ Name
 		{
 			String^ get() { return gcnew String(element->Name.c_str()); }
@@ -63,6 +66,7 @@ namespace MyEngine {
 		}
 
 
+		[MPropertyAttribute(Group = "Base")]
 		property String^ FullPath
 		{
 			String^ get() { return gcnew String(element->GetFullPath().c_str()); }
@@ -74,23 +78,25 @@ namespace MyEngine {
 		}
 
 
+		[MPropertyAttribute(Group = "Base")]
 		property long Size
 		{
 			long get() { return this->IsLoaded ? (long)element->Size() : 0; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property long IsLoaded
 		{
 			long get() { return (long)element->IsLoaded; }
 		}
 
-		
+
 		property String^ Info
 		{
 			String^ get()
 			{
 				return this->Type.ToString() +
-					"\nID: " + this->ID +
+					"\nID: " + this->ID.ToString() +
 					"\nName: " + this->Name + "#" + this->Version +
 					"\nPackage: " + this->Package +
 					"\nPath: " + this->Path +

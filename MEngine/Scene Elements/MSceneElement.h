@@ -39,51 +39,60 @@ namespace MyEngine {
 			uint get() { return element->Version; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property ESceneElementType Type
 		{
 			ESceneElementType get() { return (ESceneElementType)element->Type; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property uint ID
 		{
 			uint get() { return element->ID; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property String^ Name
 		{
 			String^ get() { return gcnew String(element->Name.c_str()); }
 		}
 
+		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Content
 		{
 			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetContent()); }
 			void set(MContentElement^ value) { if (value != nullptr) element->ContentID = value->ID; else element->ContentID = 0; }
 		}
 
+		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Material
 		{
 			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetMaterial()); }
 			void set(MContentElement^ value) { if (value != nullptr) element->MaterialID = value->ID; else element->MaterialID = 0; }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
 		property bool Visible
 		{
 			bool get() { return element->Visible; }
 			void set(bool value) { element->Visible = value; }
 		}
 
+		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Position
 		{
 			MPoint get() { return MPoint(element->Position); }
 			void set(MPoint value) { element->Position = value.ToVector3(); }
 		}
 
+		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Rotation
 		{
 			MPoint get() { return MPoint(element->Rotation.toAxisAngle()); }
 			void set(MPoint value) { element->Rotation = value.ToVector3(); }
 		}
 
+		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Scale
 		{
 			MPoint get() { return MPoint(element->Scale); }

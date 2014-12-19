@@ -153,6 +153,18 @@ namespace MCS.MainWindows
             }
         }
 
+        public MContentElement SelectedElement
+        {
+            get 
+            {
+                // TODO: bug when load mesh it gets wrong id
+                if (ContentWindow.SelectedElements.Count > 0)
+                    return this.ContentManager.GetElement(ContentWindow.SelectedElements[0], true);
+
+                return null;
+            }
+        }
+
         #region Commands
 
         public ICommand ClearFilterCommand
@@ -506,6 +518,8 @@ namespace MCS.MainWindows
 
             foreach (ContentItem item in e.AddedItems)
                 ContentWindow.SelectedElements.Add(item.ID);
+
+            this.OnPropertyChanged("SelectedElement");
         }
 
         private void ListView_Drop(object sender, DragEventArgs e)
@@ -515,7 +529,7 @@ namespace MCS.MainWindows
                 this.import(fileDrops);
         }
 
-        // TODO: preview and properties
+        // TODO: preview
 
         private void import(string[] filenames)
         {
@@ -587,12 +601,13 @@ namespace MCS.MainWindows
                 ((MSound)elem).SaveToWAVEFile(filename); // */
         }
 
-
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string info)
         {
-			this.PropertyChanged(this, new PropertyChangedEventArgs(info));
+            if (this.PropertyChanged != null)
+			    this.PropertyChanged(this, new PropertyChangedEventArgs(info));
         }
 
     }

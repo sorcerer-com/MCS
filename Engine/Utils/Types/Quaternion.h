@@ -62,6 +62,9 @@ namespace MyEngine {
 
 		Vector3 toAxisAngle(void) const
 		{
+			if (w == 1.0f)
+				return Vector3();
+
 			float angle = 2 * acosf(w);
 			Vector3 res(x, y, z);
 			res *= 1.0f / sqrtf(1 - w * w);

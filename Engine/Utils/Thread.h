@@ -34,7 +34,7 @@ namespace MyEngine {
 
 		inline thread& worker(int idx)
 		{
-			if (idx >= this->workers.size())
+			if (idx >= (int)this->workers.size())
 				throw "Try to access invalid worker";
 
 			return this->workers[idx];
