@@ -477,17 +477,6 @@ namespace MCS.MainWindows
 
 
         // Add Content Element commands
-        public ICommand AddMeshElementCommand
-        {
-            get
-            {
-                return new DelegateCommand((o) =>
-                {
-                    // TODO: impelement
-                    throw new System.NotImplementedException();
-                });
-            }
-        }
 
         #endregion
 
@@ -527,8 +516,6 @@ namespace MCS.MainWindows
             if (fileDrops != null)
                 this.import(fileDrops);
         }
-
-        // TODO: preview
 
         private void import(string[] filenames)
         {

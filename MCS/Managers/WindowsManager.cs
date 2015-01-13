@@ -16,21 +16,21 @@ namespace MCS.Managers
         private struct HotKeyInfo
         {
             public Key Key { get; set; }
-            public bool Shift { get; set; }
             public bool Ctrl { get; set; }
             public bool Alt { get; set; }
+            public bool Shift { get; set; }
 
             public string SourceType { get; set; }
 
             public string CommandName { get; set; }
 
-            public HotKeyInfo(Key key, bool shift, bool ctrl, bool alt, string sourceType, string commandName)
+            public HotKeyInfo(Key key, bool ctrl, bool alt, bool shift, string sourceType, string commandName)
                 : this()
             {
                 this.Key = key;
-                this.Shift = shift;
                 this.Ctrl = ctrl;
                 this.Alt = alt;
+                this.Shift = shift;
                 this.SourceType = sourceType;
                 this.CommandName = commandName;
             }
@@ -78,7 +78,6 @@ namespace MCS.Managers
         }
 
 
-        // TODO: add hotkey to control's tooltip
         // Hot keys functionality
         public static void LoadConfig(XmlDocument xmlDoc)
         {
@@ -100,13 +99,13 @@ namespace MCS.Managers
                 {
                     XmlNode xmlKey = xmlType.ChildNodes.Item(j);
                     string key = xmlKey.Attributes.GetNamedItem("Key").Value;
-                    string shift = xmlKey.Attributes.GetNamedItem("Shift").Value;
                     string ctrl = xmlKey.Attributes.GetNamedItem("Ctrl").Value;
                     string alt = xmlKey.Attributes.GetNamedItem("Alt").Value;
+                    string shift = xmlKey.Attributes.GetNamedItem("Shift").Value;
                     string sourceType = xmlKey.Attributes.GetNamedItem("SourceType").Value;
                     string commandName = xmlKey.Attributes.GetNamedItem("Command").Value;
 
-                    keys.Add(new HotKeyInfo((Key)Enum.Parse(typeof(Key), key), bool.Parse(shift), bool.Parse(ctrl), bool.Parse(alt), sourceType, commandName));
+                    keys.Add(new HotKeyInfo((Key)Enum.Parse(typeof(Key), key), bool.Parse(ctrl), bool.Parse(alt), bool.Parse(shift), sourceType, commandName));
                 }
 
                 hotkeys.Add(Type.GetType(xmlType.Name), keys);
@@ -119,9 +118,9 @@ namespace MCS.Managers
 
             // MainWindow
             keys = new List<HotKeyInfo>();
-            keys.Add(new HotKeyInfo(Key.N, false, true, false, "", "NewSceneCommand"));
-            keys.Add(new HotKeyInfo(Key.O, false, true, false, "", "OpenSceneCommand"));
-            keys.Add(new HotKeyInfo(Key.S, false, true, false, "", "SaveSceneCommand"));
+            keys.Add(new HotKeyInfo(Key.N, true, false, false, "", "NewSceneCommand"));
+            keys.Add(new HotKeyInfo(Key.O, true, false, false, "", "OpenSceneCommand"));
+            keys.Add(new HotKeyInfo(Key.S, true, false, false, "", "SaveSceneCommand"));
             keys.Add(new HotKeyInfo(Key.F8, false, false, false, "", "LogWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F3, false, false, false, "", "ContentWindowCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
@@ -164,9 +163,9 @@ namespace MCS.Managers
                 {
                     XmlElement xmlKey = xmlDoc.CreateElement("Hotkey");
                     xmlKey.SetAttribute("Key", info.Key.ToString());
-                    xmlKey.SetAttribute("Shift", info.Shift.ToString());
                     xmlKey.SetAttribute("Ctrl", info.Ctrl.ToString());
                     xmlKey.SetAttribute("Alt", info.Alt.ToString());
+                    xmlKey.SetAttribute("Shift", info.Shift.ToString());
                     xmlKey.SetAttribute("SourceType", info.SourceType);
                     xmlKey.SetAttribute("Command", info.CommandName);
                     xmlType.AppendChild(xmlKey);
@@ -175,6 +174,32 @@ namespace MCS.Managers
 
             ConfigManager.SaveConfig();
         }
+
+        public static string GetHotkey(Type windowType, string commandName)
+        {
+            if (!hotkeys.ContainsKey(windowType))
+                return null;
+
+            List<HotKeyInfo> keys = hotkeys[windowType];
+            foreach (HotKeyInfo info in keys)
+            {
+                if (info.CommandName == commandName)
+                {
+                    string hotkey = string.Empty;
+                    if (info.Ctrl)
+                        hotkey += "Ctrl+";
+                    if (info.Alt)
+                        hotkey += "Alt+";
+                    if (info.Shift)
+                        hotkey += "Shift+";
+                    hotkey += info.Key.ToString();
+                    return hotkey;
+                }
+            }
+
+            return null;
+        }
+
 
         public static void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -186,9 +211,9 @@ namespace MCS.Managers
             foreach (var info in keys)
             {
                 if (info.Key != e.Key || 
-                    (Keyboard.IsKeyDown(Key.LeftShift) != info.Shift && Keyboard.IsKeyDown(Key.RightShift) != info.Shift) ||
                     (Keyboard.IsKeyDown(Key.LeftCtrl) != info.Ctrl && Keyboard.IsKeyDown(Key.RightCtrl) != info.Ctrl) ||
-                    (Keyboard.IsKeyDown(Key.LeftAlt) != info.Alt && Keyboard.IsKeyDown(Key.RightAlt) != info.Alt))
+                    (Keyboard.IsKeyDown(Key.LeftAlt) != info.Alt && Keyboard.IsKeyDown(Key.RightAlt) != info.Alt) ||
+                    (Keyboard.IsKeyDown(Key.LeftShift) != info.Shift && Keyboard.IsKeyDown(Key.RightShift) != info.Shift))
                     continue;
 
                 if (!string.IsNullOrEmpty(info.SourceType) && !e.Source.GetType().ToString().ToLowerInvariant().Contains(info.SourceType.ToLowerInvariant()))

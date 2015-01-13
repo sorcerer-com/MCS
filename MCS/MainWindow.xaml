@@ -27,13 +27,13 @@
         <!-- Top ToolBar -->
         <ToolBarTray VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="3" IsManipulationEnabled="True">
             <ToolBar Band="1" BandIndex="1" IsManipulationEnabled="True">
-                <Button ToolTip="New (Ctrl+N)" Command="{Binding Path=NewSceneCommand}">
+                <Button ToolTip="{Binding Path=NewSceneCommandTooltip}" Command="{Binding Path=NewSceneCommand}">
                     <Image Source="/Images/MainWindow/New.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Open (Ctrl+O)" Command="{Binding Path=OpenSceneCommand}">
+                <Button ToolTip="{Binding Path=OpenSceneCommandTooltip}" Command="{Binding Path=OpenSceneCommand}">
                     <Image Source="/Images/MainWindow/Open.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Save (Ctrl+S)" Command="{Binding Path=SaveSceneCommand}">
+                <Button ToolTip="{Binding Path=SaveSceneCommandTooltip}" Command="{Binding Path=SaveSceneCommand}">
                     <Image Source="/Images/MainWindow/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
             </ToolBar>
@@ -52,10 +52,10 @@
                 </RadioButton>
             </ToolBar>
             <ToolBar Band="1" BandIndex="3" IsManipulationEnabled="True">
-                <Button ToolTip="Log (F8)" Command="{Binding Path=LogWindowCommand}">
+                <Button ToolTip="{Binding Path=LogSceneCommandTooltip}" Command="{Binding Path=LogWindowCommand}">
                     <Image Source="/Images/MainWindow/Log.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Content Browser (F3)" Command="{Binding Path=ContentWindowCommand}">
+                <Button ToolTip="{Binding Path=ContentWindowCommandTooltip}" Command="{Binding Path=ContentWindowCommand}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Environment (Ctrl+E)">
@@ -103,7 +103,6 @@
                     <MenuItem Header="Clone" Command="{Binding Path=CloneElementCommand}"/>
                     <MenuItem Header="Rename" Command="{Binding Path=RenameElementCommand}"/>
                     <MenuItem Header="Delete" Command="{Binding Path=DeleteElementCommand}"/>
-                    <MenuItem Header="Properties" Command="{Binding Path=PropertiesElementCommand}"/>
                     <Separator/>
                     <MenuItem Header="Add Camera"/>
                     <MenuItem Header="Add Light"/>

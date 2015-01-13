@@ -28,6 +28,7 @@ namespace MCS.Controls
         public static readonly RoutedEvent ChangedEvent =
             EventManager.RegisterRoutedEvent("Changed", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PropertyGrid));
 
+
         public object Object
         {
             get { return GetValue(ObjectProperty); }
@@ -196,7 +197,8 @@ namespace MCS.Controls
 
             Label nameLabel = new Label();
             nameLabel.Content = name;
-            nameLabel.ToolTip = desc;
+            if (!string.IsNullOrEmpty(desc))
+                nameLabel.ToolTip = desc;
             nameLabel.Margin = new Thickness(3);
             this.propertiesGrid.Children.Add(nameLabel);
             Grid.SetColumn(nameLabel, 0);

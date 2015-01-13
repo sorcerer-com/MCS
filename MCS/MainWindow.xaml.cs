@@ -70,6 +70,10 @@ namespace MCS
                 });
             }
         }
+        public string NewSceneCommandTooltip
+        {
+            get { return "New (" + WindowsManager.GetHotkey(this.GetType(), "NewSceneCommand") + ")"; }
+        }
 
         public ICommand OpenSceneCommand
         {
@@ -99,6 +103,10 @@ namespace MCS
                     }
                 });
             }
+        }
+        public string OpenSceneCommandTooltip
+        {
+            get { return "Open (" + WindowsManager.GetHotkey(this.GetType(), "OpenSceneCommand") + ")"; }
         }
 
         public ICommand SaveSceneCommand
@@ -134,15 +142,27 @@ namespace MCS
                 });
             }
         }
+        public string SaveSceneCommandTooltip
+        {
+            get { return "Save (" + WindowsManager.GetHotkey(this.GetType(), "SaveSceneCommand") + ")"; }
+        }
 
         public ICommand LogWindowCommand
         {
             get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); }); }
         }
+        public string LogSceneCommandTooltip
+        {
+            get { return "Log (" + WindowsManager.GetHotkey(this.GetType(), "LogWindowCommand") + ")"; }
+        }
 
         public ICommand ContentWindowCommand
         {
             get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), this.Engine.ContentManager); }); }
+        }
+        public string ContentWindowCommandTooltip
+        {
+            get { return "Content Browser (" + WindowsManager.GetHotkey(this.GetType(), "ContentWindowCommand") + ")"; }
         }
 
 
@@ -207,18 +227,6 @@ namespace MCS
             }
         }
 
-        public ICommand PropertiesElementCommand
-        {
-            get
-            {
-                return new DelegateCommand((o) =>
-                {
-                    // TODO: implement
-                    throw new System.NotImplementedException();
-                });
-            }
-        }
-
         #endregion
 
 
@@ -241,6 +249,13 @@ namespace MCS
             this.render.Child.Resize += (s, ee) =>
             {
                 this.Engine.ViewPortRenderer.ReSize(this.render.Child.Width, this.render.Child.Height);
+            };
+            this.render.Child.MouseDown += (s, ee) =>
+            {
+                if (ee.Button == System.Windows.Forms.MouseButtons.Right)
+                {
+                    this.render.ContextMenu.IsOpen = true;
+                }
             };
             this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
 

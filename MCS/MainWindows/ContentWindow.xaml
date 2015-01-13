@@ -78,9 +78,7 @@
                         <MenuItem Header="Export" Command="{Binding Path=ExportElementCommand}"/>
                         <MenuItem Header="Export To Package" Command="{Binding Path=ExportToPackageElementCommand}"/>
                         <Separator/>
-                        <MenuItem Header="Add Mesh" Command="{Binding Path=AddMeshElementCommand}"/>
                         <MenuItem Header="Add Material"/>
-                        <MenuItem Header="Add Texture"/>
                         <MenuItem Header="Add UI Screen"/>
                         <MenuItem Header="Add Skeleton"/>
                         <MenuItem Header="Add Sound"/>
@@ -113,23 +111,9 @@
               VerticalAlignment="Stretch"
               ShowsPreview="true"
               Width="2"/>
+
+        <!-- Properties -->
+        <mc:PropertyGrid Grid.Column="4" Object="{Binding Path=SelectedElement}"/>
         
-        <!-- Viewer and Properties -->
-        <Grid Grid.Column="4">
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-
-            <mc:PropertyGrid Grid.Row="0" Object="{Binding Path=SelectedElement}"/>
-
-            <GridSplitter Grid.Row="1" 
-              HorizontalAlignment="Stretch" 
-              VerticalAlignment="Center"
-              ShowsPreview="true"
-              Height="2"/>
-            
-        </Grid>
     </Grid>
 </Window>

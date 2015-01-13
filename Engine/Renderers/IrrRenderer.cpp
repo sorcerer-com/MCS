@@ -51,6 +51,7 @@ namespace MyEngine {
 	bool IrrRenderer::init()
 	{
 		irr::SIrrlichtCreationParameters param;
+		param.AntiAlias = true;
 		param.DriverType = irr::video::EDT_OPENGL;
 		param.HandleSRGB = true;
 		param.Stencilbuffer = true;
@@ -107,7 +108,12 @@ namespace MyEngine {
 			this->smgr->drawAll();
 			this->guienv->drawAll();
 
-			this->guienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->driver->getFPS()), irr::core::recti(10, 10, 1000, 100), irr::video::SColor(255, 255, 255, 255));
+			if (Engine::Mode != EEngine)
+			{
+				irr::video::SColor white(255, 255, 255, 255);
+				this->guienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->driver->getFPS()), irr::core::recti(10, 10, 0, 0), white);
+				this->guienv->getBuiltInFont()->draw(irr::core::stringw("Primitives: ") + irr::core::stringw(this->driver->getPrimitiveCountDrawn()), irr::core::recti(10, 20, 0, 0), white);
+			}
 
 			this->driver->endScene();
 
@@ -117,4 +123,5 @@ namespace MyEngine {
 		this->device->closeDevice();
 		this->device->drop();
 	}
+
 }
