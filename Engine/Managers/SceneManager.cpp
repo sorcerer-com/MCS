@@ -234,15 +234,23 @@ namespace MyEngine {
 
 	SceneElementPtr SceneManager::GetElement(const string& name)
 	{
-		SceneMapType::const_iterator it;
-		for (it = this->sceneElements.begin(); it != this->sceneElements.end(); it++)
+		for (const auto& pair : this->sceneElements)
 		{
-			if ((*it).second->Name.compare(name) == 0)
-				return (*it).second;
+			if (pair.second->Name.compare(name) == 0)
+				return pair.second;
 		}
 
 		Engine::Log(EError, "Scene", "Try to get non existent scene element '" + name + "'");
 		return NULL;
+	}
+
+	vector<SceneElementPtr> SceneManager::GetElements()
+	{
+		vector<SceneElementPtr> result;
+		for (const auto& pair : this->sceneElements)
+			result.push_back(pair.second);
+
+		return result;
 	}
 
 }

@@ -1,4 +1,4 @@
-// Util.h
+// Config.h
 #pragma once
 
 #define INVALID_ID 0u

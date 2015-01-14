@@ -8,6 +8,18 @@
 
 namespace MyEngine {
 
+	List<MSceneElement^>^ MSceneManager::Elements::get()
+	{
+		List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
+
+		auto elements = this->sceneManager->GetElements();
+		for (const auto& element : elements)
+			collection->Add(MSceneManager::getMSceneElement(element));
+
+		return collection;
+	}
+
+
 	MSceneManager::MSceneManager(SceneManager* sceneManager)
 	{
 		this->sceneManager = sceneManager;

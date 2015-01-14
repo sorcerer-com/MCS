@@ -37,6 +37,7 @@ namespace MyEngine {
 		bool DeleteElement(uint id);
 		SceneElementPtr GetElement(uint id);
 		SceneElementPtr GetElement(const string& name);
+		vector<SceneElementPtr> GetElements();
 
 	};
 

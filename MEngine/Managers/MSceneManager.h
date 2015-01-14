@@ -18,6 +18,12 @@ namespace MyEngine {
 		SceneManager* sceneManager;
 
 	public:
+		property List<MSceneElement^>^ Elements
+		{
+			List<MSceneElement^>^ get();
+		}
+
+	public:
 		MSceneManager(SceneManager* sceneManager);
 
 		void New();
