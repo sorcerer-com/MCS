@@ -40,7 +40,10 @@ namespace MyEngine {
 
 	bool MContentManager::ImportPackage(String^ filePath)
 	{
-		return this->contentManager->ImportPackage(to_string(filePath));
+		bool res = this->contentManager->ImportPackage(to_string(filePath));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
 	}
 
 	bool MContentManager::ExportToPackage(String^ filePath, uint id)
@@ -51,24 +54,36 @@ namespace MyEngine {
 
 	bool MContentManager::CreatePath(String^ fullPath)
 	{
-		return this->contentManager->CreatePath(to_string(fullPath));
+		bool res = this->contentManager->CreatePath(to_string(fullPath));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
 	}
 
 	bool MContentManager::RenamePath(String^ oldFullPath, String^ newFullPath)
 	{
-		return this->contentManager->RenamePath(to_string(oldFullPath), to_string(newFullPath));
+		bool res = this->contentManager->RenamePath(to_string(oldFullPath), to_string(newFullPath));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
 	}
 
 	bool MContentManager::DeletePath(String^ fullPath)
 	{
-		return this->contentManager->DeletePath(to_string(fullPath));
+		bool res = this->contentManager->DeletePath(to_string(fullPath));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
 	}
 
 
 	MContentElement^ MContentManager::AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id)
 	{
 		ContentElementPtr elem = this->contentManager->AddElement((ContentElementType)type, to_string(name), to_string(package), to_string(path), id);
-		return this->getMContentElement(elem);
+		MContentElement^ mce = this->getMContentElement(elem);
+		if (mce != nullptr)
+			this->OnChanged(mce);
+		return mce;
 	}
 
 	MContentElement^ MContentManager::CloneElement(uint id, String^ newName)
@@ -80,9 +95,19 @@ namespace MyEngine {
 		ContentElement* newElem = elem->Clone();
 		newElem->ID = 0;
 		newElem->Name = to_string(newName);
-		this->contentManager->AddElement(newElem);
-		
-		return this->getMContentElement(this->contentManager->GetElement(newElem->ID, false));
+
+		if (this->contentManager->AddElement(newElem))
+		{
+			MContentElement^ mce = this->getMContentElement(this->contentManager->GetElement(newElem->ID, false));
+			this->OnChanged(mce);
+			return mce;
+		}
+		return nullptr;
+	}
+
+	bool MContentManager::ContainElement(uint id)
+	{
+		return this->contentManager->ContainElement(id);
 	}
 
 	bool MContentManager::RenameElement(uint id, String^ newName)
@@ -97,17 +122,25 @@ namespace MyEngine {
 
 		elem->Name = to_string(newName);
 		this->contentManager->SaveElement(elem->ID);
+
+		this->OnChanged(this->getMContentElement(elem));
 		return true;
 	}
 
 	bool MContentManager::MoveElement(uint id, String^ newFullPath)
 	{
-		return this->contentManager->MoveElement(id, to_string(newFullPath));
+		bool res = this->contentManager->MoveElement(id, to_string(newFullPath));
+		if (res)
+			this->OnChanged(this->getMContentElement(this->contentManager->GetElement(id, true, true)));
+		return res;
 	}
 
 	bool MContentManager::DeleteElement(uint id)
 	{
-		return this->contentManager->DeleteElement(id);
+		bool res = this->contentManager->DeleteElement(id);
+		if (res)
+			this->OnChanged(this->getMContentElement(this->contentManager->GetElement(id, true, true)));
+		return res;
 	}
 
 	MContentElement^ MContentManager::GetElement(uint id)
@@ -138,6 +171,17 @@ namespace MyEngine {
 	void MContentManager::SaveElement(uint id)
 	{
 		this->contentManager->SaveElement(id);
+	}
+
+
+	void MContentManager::OnChanged(MContentElement^ element)
+	{
+		this->Changed(this, element);
+	}
+
+	void MContentManager::OnElementChanged(MContentElement^ sender)
+	{
+		this->OnChanged(sender);
 	}
 
 

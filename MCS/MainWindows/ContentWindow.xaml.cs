@@ -191,8 +191,6 @@ namespace MCS.MainWindows
                     {
                         if (!this.ContentManager.CreatePath(packageName + "#"))
                             ExtendedMessageBox.Show("Cannot create the package '" + packageName + "'!", "Create package", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-                        
-                        this.OnPropertyChanged("PathsTree");
                     }
                 });
             }
@@ -212,8 +210,6 @@ namespace MCS.MainWindows
                     {
                         if (!this.ContentManager.CreatePath(this.SelectedTreeItem.Value.FullPath + folderName + "\\"))
                             ExtendedMessageBox.Show("Cannot create the folder '" + folderName + "'!", "Create folder", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-                        
-                        this.OnPropertyChanged("PathsTree");
                     }
                 });
             }
@@ -243,8 +239,6 @@ namespace MCS.MainWindows
 
                         if (!this.ContentManager.RenamePath(oldPath, newPath))
                             ExtendedMessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-
-                        this.OnPropertyChanged("PathsTree");
                     }
                 });
             }
@@ -265,9 +259,6 @@ namespace MCS.MainWindows
                     {
                         if (!this.ContentManager.DeletePath(path))
                             ExtendedMessageBox.Show("Cannot delete path '" + path + "'!", "Delete path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-
-                        this.OnPropertyChanged("PathsTree");
-                        this.OnPropertyChanged("Contents");
                     }
                 });
             }
@@ -290,8 +281,6 @@ namespace MCS.MainWindows
                     {
                         if (this.ContentManager.CloneElement(elem.ID, newName) == null)
                             ExtendedMessageBox.Show("Cannot clone content element '" + elem.Name + "' to '" + newName + "'!", "Clone element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-
-                        this.OnPropertyChanged("Contents");
                     }
                 });
             }
@@ -312,8 +301,6 @@ namespace MCS.MainWindows
                     {
                         if (!this.ContentManager.RenameElement(elem.ID, newName))
                             ExtendedMessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-
-                        this.OnPropertyChanged("Contents");
                     }
                 });
             }
@@ -334,8 +321,6 @@ namespace MCS.MainWindows
                     {
                         if (!this.ContentManager.MoveElement(elem.ID, newFullPath))
                             ExtendedMessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
-
-                        this.OnPropertyChanged("Contents");
                     }
                 });
             }
@@ -367,7 +352,6 @@ namespace MCS.MainWindows
                     if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
                     {
                         ContentWindow.SelectedElements.Clear();
-                        this.OnPropertyChanged("Contents");
                     }
                 });
             }
@@ -394,8 +378,6 @@ namespace MCS.MainWindows
 
                     if (openFileDialog.ShowDialog() == true)
                         this.import(openFileDialog.FileNames);
-
-                    this.OnPropertyChanged("Contents");
                 });
             }
         }
@@ -487,6 +469,11 @@ namespace MCS.MainWindows
             this.DataContext = this;
 
             this.ContentManager = contentManager;
+            this.ContentManager.Changed += (s, e) =>
+            {
+                this.OnPropertyChanged("PathsTree");
+                this.OnPropertyChanged("Contents");
+            };
 
             this.filter = string.Empty;
             this.selectedTreeItem = null;
@@ -570,8 +557,6 @@ namespace MCS.MainWindows
                     this.ContentManager.SaveElement(elem.ID);
                 }
             }
-
-            this.OnPropertyChanged("Contents");
         }
 
         private void export(string filename)

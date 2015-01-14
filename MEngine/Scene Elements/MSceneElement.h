@@ -61,49 +61,59 @@ namespace MyEngine {
 		property MContentElement^ Content
 		{
 			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetContent()); }
-			void set(MContentElement^ value) { if (value != nullptr) element->ContentID = value->ID; else element->ContentID = 0; }
+			void set(MContentElement^ value) { if (value != nullptr) element->ContentID = value->ID; else element->ContentID = 0; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Material
 		{
 			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetMaterial()); }
-			void set(MContentElement^ value) { if (value != nullptr) element->MaterialID = value->ID; else element->MaterialID = 0; }
+			void set(MContentElement^ value) { if (value != nullptr) element->MaterialID = value->ID; else element->MaterialID = 0; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Base")]
 		property bool Visible
 		{
 			bool get() { return element->Visible; }
-			void set(bool value) { element->Visible = value; }
+			void set(bool value) { element->Visible = value; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Position
 		{
 			MPoint get() { return MPoint(element->Position); }
-			void set(MPoint value) { element->Position = value.ToVector3(); }
+			void set(MPoint value) { element->Position = value.ToVector3(); OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Rotation
 		{
 			MPoint get() { return MPoint(element->Rotation.toAxisAngle()); }
-			void set(MPoint value) { element->Rotation = value.ToVector3(); }
+			void set(MPoint value) { element->Rotation = value.ToVector3(); OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Scale
 		{
 			MPoint get() { return MPoint(element->Scale); }
-			void set(MPoint value) { element->Scale = value.ToVector3(); }
+			void set(MPoint value) { element->Scale = value.ToVector3(); OnChanged(); }
 		}
+
+
+		delegate void ChangedEventHandler(MSceneElement^ sender);
+		event ChangedEventHandler^ Changed;
 
 	public:
 		MSceneElement(SceneManager* owner, uint id)
 		{
 			this->owner = owner;
 			this->id = id;
+		}
+
+
+		void OnChanged()
+		{
+			this->Changed(this);
 		}
 
 

@@ -28,6 +28,10 @@ namespace MyEngine {
 			List<MContentElement^>^ get();
 		}
 
+
+		delegate void ChangedEventHandler(MContentManager^ sender, MContentElement^ element);
+		event ChangedEventHandler^ Changed;
+
 	public:
 		MContentManager(ContentManager* contentManager);
 
@@ -40,6 +44,7 @@ namespace MyEngine {
 
 		MContentElement^ AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id);
 		MContentElement^ CloneElement(uint id, String^ newName);
+		bool ContainElement(uint id);
 		bool RenameElement(uint id, String^ newName);
 		bool MoveElement(uint id, String^ newFullPath);
 		bool DeleteElement(uint id);
@@ -48,6 +53,10 @@ namespace MyEngine {
 		MContentElement^ GetElement(String^ fullName);
 		MContentElement^ GetElement(String^ fullName, bool load);
 		void SaveElement(uint id);
+
+	private:
+		void OnChanged(MContentElement^ element);
+		void OnElementChanged(MContentElement ^sender);
 		
 	public:
 		static MContentElement^ getMContentElement(const ContentElementPtr& element);

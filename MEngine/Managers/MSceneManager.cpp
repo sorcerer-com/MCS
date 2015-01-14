@@ -45,13 +45,25 @@ namespace MyEngine {
 	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, uint contentID)
 	{
 		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), contentID);
-		return this->getMSceneElement(elem);
+		MSceneElement^ mse = this->getMSceneElement(elem);
+		if (mse != nullptr)
+		{
+			mse->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
+			this->OnChanged(mse);
+		}
+		return mse;
 	}
 
 	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, String^ contentFullName)
 	{
 		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), to_string(contentFullName));
-		return this->getMSceneElement(elem);
+		MSceneElement^ mse = this->getMSceneElement(elem);
+		if (mse != nullptr)
+		{
+			mse->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
+			this->OnChanged(mse);
+		}
+		return mse;
 	}
 
 	MSceneElement^ MSceneManager::CloneElement(MSceneElement^ element, String^ newName)
@@ -63,9 +75,14 @@ namespace MyEngine {
 		SceneElement* newElem = elem->Clone();
 		newElem->ID = 0;
 		newElem->Name = to_string(newName);
-		this->sceneManager->AddElement(newElem);
 
-		return this->getMSceneElement(this->sceneManager->GetElement(newElem->ID));
+		if (this->sceneManager->AddElement(newElem))
+		{
+			MSceneElement^ mse = this->getMSceneElement(this->sceneManager->GetElement(newElem->ID));
+			this->OnChanged(mse);
+			return mse;
+		}
+		return nullptr;
 	}
 
 	bool MSceneManager::ContainElement(uint id)
@@ -83,12 +100,17 @@ namespace MyEngine {
 			return false;
 
 		elem->Name = to_string(newName);
+
+		this->OnChanged(this->getMSceneElement(elem));
 		return true;
 	}
 
 	bool MSceneManager::DeleteElement(uint id)
 	{
-		return this->sceneManager->DeleteElement(id);
+		bool res = this->sceneManager->DeleteElement(id);
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
 	}
 
 	MSceneElement^ MSceneManager::GetElement(uint id)
@@ -109,6 +131,16 @@ namespace MyEngine {
 		return this->getMSceneElement(elem);
 	}
 
+
+	void MSceneManager::OnChanged(MSceneElement^ element)
+	{
+		this->Changed(this, element);
+	}
+
+	void MSceneManager::OnElementChanged(MSceneElement^ sender)
+	{
+		this->OnChanged(sender);
+	}
 
 	MSceneElement^ MSceneManager::getMSceneElement(const SceneElementPtr& element)
 	{

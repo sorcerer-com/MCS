@@ -23,6 +23,10 @@ namespace MyEngine {
 			List<MSceneElement^>^ get();
 		}
 
+
+		delegate void ChangedEventHandler(MSceneManager^ sender, MSceneElement^ element);
+		event ChangedEventHandler^ Changed;
+
 	public:
 		MSceneManager(SceneManager* sceneManager);
 
@@ -40,8 +44,10 @@ namespace MyEngine {
 		MSceneElement^ GetElement(String^ name);
 
 	private:
-		static MSceneElement^ getMSceneElement(const SceneElementPtr& element);
+		void OnChanged(MSceneElement^ element);
+		void OnElementChanged(MSceneElement ^sender);
 
+		static MSceneElement^ getMSceneElement(const SceneElementPtr& element);
 	};
 
 }

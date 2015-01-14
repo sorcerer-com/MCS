@@ -22,7 +22,7 @@ namespace MCS
         public static List<uint> SelectedElements = new List<uint>();
 
 
-        private bool sceneSaved; // TODO: on scene changed
+        private bool sceneSaved;
         private string sceneFilePath;
 
         public MSceneElement SelectedElement
@@ -236,6 +236,11 @@ namespace MCS
             this.DataContext = this;
 
             this.Engine = new MEngine();
+            this.Engine.SceneManager.Changed += (s, ee) =>
+            {
+                this.sceneSaved = false;
+                this.updateTitle();
+            };
 
             this.sceneSaved = true;
             this.sceneFilePath = string.Empty;

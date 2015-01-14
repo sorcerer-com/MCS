@@ -104,11 +104,21 @@ namespace MyEngine {
 			}
 		}
 
+
+		delegate void ChangedEventHandler(MContentElement^ sender);
+		event ChangedEventHandler^ Changed;
+
 	public:
 		MContentElement(ContentManager* owner, uint id)
 		{
 			this->owner = owner;
 			this->id = id;
+		}
+
+
+		void OnChanged()
+		{
+			this->Changed(this);
 		}
 		
 
