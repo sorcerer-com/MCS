@@ -98,7 +98,7 @@ namespace MyEngine {
 			Read(ifile, size);
 
 			// scene elements
-			for (int i = 0; i < size; i++)
+			for (int i = 0; i < size; ++i)
 			{
 				uint version = 0u;
 				Read(ifile, version);
@@ -167,7 +167,7 @@ namespace MyEngine {
 	{
 		ContentElementPtr celem = this->Owner->ContentManager->GetElement(contentFullName, false);
 		uint contentID = 0;
-		if (celem != NULL)
+		if (celem)
 			contentID = celem->ID;
 
 		return this->AddElement(type, name, contentID, id);
@@ -175,7 +175,7 @@ namespace MyEngine {
 
 	bool SceneManager::AddElement(SceneElement* element)
 	{
-		if (element == NULL)
+		if (!element)
 			throw "ArgumentNullException: element";
 
 		if (element->ID == INVALID_ID)

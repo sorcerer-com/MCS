@@ -13,9 +13,9 @@ namespace MyEngine {
 		while (i < l) {
 			j = i;
 			if (separator == ' ')
-				while (j < l && !isspace(s[j])) j++;
+				while (j < l && !isspace(s[j])) ++j;
 			else
-				while (j < l && s[j] != separator) j++;
+				while (j < l && s[j] != separator) ++j;
 			string str = s.substr(i, j - i);
 			if (!removeEmpty || (j - i > 0 && ((separator == ' ' && !isspace(str[0])) || str[0] != separator || str[0] != 0)))
 				result.push_back(str);

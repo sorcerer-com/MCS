@@ -265,6 +265,12 @@ namespace MCS
             this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
 
             this.KeyDown += WindowsManager.Window_KeyDown;
+
+            // TODO: remove:
+            MSceneElement mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Cube");
+            mse.Position = new MPoint(0, 0, 100);
+            mse.Rotation = new MPoint(20, 20, 0);
+            this.KeyDown += (s, ee) => { this.Engine.SceneManager.DeleteElement(mse.ID); };
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

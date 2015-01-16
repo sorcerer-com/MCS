@@ -281,7 +281,7 @@ namespace MyEngine {
 		else if (type == ESound)
 			element = new Sound(this, name, package, path);*/
 
-		if (element != NULL)
+		if (element)
 		{
 			element->ID = id;
 			if (!this->AddElement(element))

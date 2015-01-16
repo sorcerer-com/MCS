@@ -25,7 +25,7 @@ namespace MyEngine {
 	{
 		int size = (int)value.size();
 		ofile.write((char*)&size, sizeof(size));
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 			ofile.write((char*)&value[i], sizeof(value[i]));
 	}
 
@@ -59,7 +59,7 @@ namespace MyEngine {
 		ifile.read((char*)&size, sizeof(size));
 
 		value.reserve((size_t)size);
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; ++i)
 		{
 			T t;
 			ifile.read((char*)&t, sizeof(t));

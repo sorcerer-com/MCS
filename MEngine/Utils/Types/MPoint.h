@@ -79,12 +79,6 @@ namespace MyEngine {
 			return MPoint(p1.X * d, p1.Y * d, p1.Z * d);
 		}
 
-		static double DegToRad(double angle)
-		{
-			const double PI = 3.14159265;
-			return -PI * angle / 180.0;
-		}
-
 		static MPoint Min(MPoint a, MPoint b)
 		{
 			MPoint p;

@@ -9,6 +9,11 @@
 
 #include "..\Engine.h"
 #include "..\Utils\Thread.h"
+#include "..\Managers\SceneManager.h"
+#include "..\Managers\ContentManager.h"
+#include "..\Scene Elements\SceneElement.h"
+#include "..\Content Elements\ContentElement.h"
+#include "..\Content Elements\Mesh.h"
 
 
 namespace MyEngine {
@@ -71,17 +76,108 @@ namespace MyEngine {
 
 		// TODO: remove:
 		irr::scene::ICameraSceneNode* cam = smgr->addCameraSceneNode();
-		cam->setTarget(irr::core::vector3df(0, 0, 0));
 		cam->setFOV(irr::core::HALF_PI);
 
-		irr::scene::ISceneNodeAnimator* anim =
-			smgr->createFlyCircleAnimator(irr::core::vector3df(0, 15, 0), 30.0f);
-		cam->addAnimator(anim);
-		anim->drop();
-
-		irr::scene::ISceneNode* cube = smgr->addCubeSceneNode(10);
-		cube->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 		return true;
+	}
+
+	void IrrRenderer::updateScene()
+	{
+		// TODO: camera
+
+		// TODO: lights, may be they should be normaly updated
+
+		// TODO: fog
+
+		// Update SceneElements
+		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
+		for (const auto& sceneElement : sceneElements)
+			this->updateSceneElement(sceneElement);
+		sceneElements.clear();
+
+		// Remove invalid irrSceneElements
+		irr::scene::ISceneNode* irrRootSceneNode = this->smgr->getRootSceneNode();
+		const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
+		for (const auto& irrSceneNode : irrChildrenSceneNode)
+		{
+			if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
+				irrSceneNode->remove();
+		}
+	}
+	
+	void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
+	{
+		// TODO: skip system objects, cameras, if it's not in editor mode, set them as debug objects
+
+		
+		irr::scene::IMeshSceneNode* irrSceneNode = (irr::scene::IMeshSceneNode*)this->smgr->getSceneNodeFromId(sceneElement->ID);
+		if (!irrSceneNode)
+		{
+			irr::scene::SMesh* mesh = new irr::scene::SMesh();
+			irrSceneNode = this->smgr->addOctreeSceneNode(mesh, NULL, sceneElement->ID);
+			mesh->drop();
+		}
+
+		irrSceneNode->setName(sceneElement->Name.c_str());
+		irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode
+
+		const Vector3& pos = sceneElement->Position;
+		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
+		const Vector3& rot = sceneElement->Rotation.toAxisAngle();
+		irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
+		const Vector3& scl = sceneElement->Scale;
+		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+
+		// Update mesh
+		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
+		if (!contentElement || contentElement->Type != EMesh)
+		{
+			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
+				to_string(sceneElement->ContentID) + ")");
+			// TODO: show somehow cube or something
+			return;
+		}
+		Mesh* mesh = (Mesh*)contentElement.get();
+
+		// TODO: cache meshes for the objects with the same ones
+		irr::scene::SMesh* irrMesh = (irr::scene::SMesh*)irrSceneNode->getMesh();
+		irr::scene::SMeshBuffer* irrMeshBuffer = NULL;
+		if (irrMesh->getMeshBufferCount() != 0)
+			irrMeshBuffer = (irr::scene::SMeshBuffer*)irrMesh->getMeshBuffer(0);
+		else
+		{
+			irrMeshBuffer = new irr::scene::SMeshBuffer();
+			irrMesh->addMeshBuffer(irrMeshBuffer);
+			irrMeshBuffer->drop();
+		}
+
+		if ((unsigned int)mesh->Triangles.size() * 3 != irrMeshBuffer->Vertices.size())
+		{
+			irrMeshBuffer->Vertices.set_used((int)mesh->Triangles.size() * 3);
+			irrMeshBuffer->Indices.set_used((int)mesh->Triangles.size() * 3);
+			int i = 0;
+			for (const auto& triangle : mesh->Triangles)
+			{
+				for (int j = 0; j < 3; ++j)
+				{
+					irr::video::S3DVertex& v = irrMeshBuffer->Vertices[i];
+					const Vector3& pos = mesh->Vertices[triangle.vertices[j]];
+					v.Pos = irr::core::vector3df(pos.x, pos.y, pos.z);
+					const Vector3& norm = mesh->Normals[triangle.normals[j]];
+					v.Normal = irr::core::vector3df(norm.x, norm.y, norm.z);
+					const Vector3& tCoord = mesh->TexCoords[triangle.texCoords[j]];
+					v.TCoords = irr::core::vector2df(tCoord.x, tCoord.y);
+
+					irrMeshBuffer->Indices[i] = (unsigned short)i;
+					i++;
+				}
+			}
+			irrMeshBuffer->recalculateBoundingBox();
+			irrMesh->setDirty();
+			irrMesh->recalculateBoundingBox();
+			irrSceneNode->setMesh(irrMesh);
+			irrSceneNode->setMaterialFlag(irr::video::EMF_LIGHTING, false); // TODO: remove
+		}
 	}
 
 	void IrrRenderer::render()
@@ -102,6 +198,8 @@ namespace MyEngine {
 				this->driver->OnResize(irr::core::dimension2du(this->Width, this->Height));
 				this->Resized = false;
 			}
+
+			this->updateScene();
 			
 			this->driver->beginScene();
 

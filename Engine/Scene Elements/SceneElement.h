@@ -29,7 +29,7 @@ namespace MyEngine {
 		string Name;
 		uint ContentID;
 		uint MaterialID;
-		// TODO: textures?
+		// TODO: textures, attach?
 		bool Visible;
 		Vector3 Position;
 		Quaternion Rotation;

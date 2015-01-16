@@ -27,6 +27,9 @@ namespace irr
 
 namespace MyEngine {
 
+	class SceneElement;
+	using SceneElementPtr = shared_ptr < SceneElement >;
+	
 	class IrrRenderer : public Renderer
 	{
 	private:
@@ -45,6 +48,8 @@ namespace MyEngine {
 
 	private:
 		bool init();
+		void updateScene();
+		void updateSceneElement(const SceneElementPtr sceneElement);
 		void render();
 
 	};

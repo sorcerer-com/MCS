@@ -14,6 +14,7 @@ namespace MyEngine {
 		Quaternion(Vector3 axisAngle)
 		{
 			float angle = axisAngle.length();
+			angle *= 3.14159265f / 180.0f; // from deg to rad
 			axisAngle.normalize();
 			float sin = sinf(angle / 2.0f);
 			float cos = cosf(angle / 2.0f);
@@ -69,6 +70,7 @@ namespace MyEngine {
 			Vector3 res(x, y, z);
 			res *= 1.0f / sqrtf(1 - w * w);
 			res *= angle;
+			res *= 180 / 3.14159265f; // from rad to deg
 			return res;
 		}
 
