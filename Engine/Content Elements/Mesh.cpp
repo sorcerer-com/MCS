@@ -88,11 +88,11 @@ namespace MyEngine {
 			}
 			else if (tokens[0] == "f")
 			{
-				for (int j = 2; j <= (int)tokens.size() - 2; ++j)
+				for (int j = 2; j <= (int)tokens.size() - 2; j++)
 				{
 					string temp[3] = { tokens[1], tokens[j], tokens[j + 1] };
 					Triangle t;
-					for (int i = 0; i < 3; ++i)
+					for (int i = 0; i < 3; i++)
 					{
 						vector<string> things = split(temp[i], '/', true);
 						t.vertices[i] = stoi(things[0]);
@@ -129,28 +129,28 @@ namespace MyEngine {
 
 		int size = (int)this->Vertices.size();
 		ofile << "# No. points " << (size - 1) << ":" << endl;
-		for (int i = 1; i < size; ++i)
+		for (int i = 1; i < size; i++)
 			ofile << "v " << this->Vertices[i].x << " " << this->Vertices[i].y << " " << this->Vertices[i].z << endl;
 		ofile << endl;
 
 		size = (int)this->Normals.size();
 		ofile << "# No. normals " << (size - 1) << ":" << endl;
-		for (int i = 1; i < size; ++i)
+		for (int i = 1; i < size; i++)
 			ofile << "vn " << this->Normals[i].x << " " << this->Normals[i].y << " " << this->Normals[i].z << endl;
 		ofile << endl;
 
 		size = (int)this->TexCoords.size();
 		ofile << "# No. texture coordinates " << (size - 1) << ":" << endl;
-		for (int i = 1; i < size; ++i)
+		for (int i = 1; i < size; i++)
 			ofile << "vt " << this->TexCoords[i].x << " " << this->TexCoords[i].y << endl;
 		ofile << endl;
 
 		size = (int)this->Triangles.size();
 		ofile << "# No. faces " << size << ":" << endl;
-		for (int i = 0; i < size; ++i)
+		for (int i = 0; i < size; i++)
 		{
 			ofile << "f";
-			for (int j = 0; j < 3; ++j)
+			for (int j = 0; j < 3; j++)
 			{
 				ofile << " " <<
 					this->Triangles[i].vertices[j] << "/" <<

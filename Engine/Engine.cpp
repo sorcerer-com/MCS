@@ -35,7 +35,7 @@ namespace MyEngine {
 
 	void Engine::Log(LogType type, const string& category, const string& text)
 	{
-		if (Engine::Mode == EEngine)
+		if (Engine::Mode == EEngine) // TODO: in other "Record" mode show only errors?
 			return;
 
 		ofstream ofile(LOG_FILE, ios_base::app);

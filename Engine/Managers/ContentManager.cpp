@@ -92,7 +92,7 @@ namespace MyEngine {
 		ofstream ofile(filePath, ios_base::app | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
-			Engine::Log(EError, "ContentManager", "Cannot open package file: " + filePath);
+			Engine::Log(EWarning, "ContentManager", "Cannot open package file: " + filePath);
 			ofile.close();
 			return false;
 		}
@@ -112,7 +112,7 @@ namespace MyEngine {
 	{
 		if (this->ContainPath(fullPath))
 		{
-			Engine::Log(EError, "ContentManager", "Try to create already exists path '" + fullPath + "'");
+			Engine::Log(EWarning, "ContentManager", "Try to create already exists path '" + fullPath + "'");
 			return false;
 		}
 
@@ -132,7 +132,7 @@ namespace MyEngine {
 	{
 		if (this->ContainPath(newFullPath))
 		{
-			Engine::Log(EError, "ContentManager", "Try to rename non existent path '" + oldFullPath + "'");
+			Engine::Log(EWarning, "ContentManager", "Try to rename non existent path '" + oldFullPath + "'");
 			return false;
 		}
 		
@@ -147,7 +147,7 @@ namespace MyEngine {
 		PackageInfo& newInfo = this->packageInfos[newPackage];
 			
 		vector<string> forDelete;
-		for (auto it = oldInfo.Paths.rbegin(); it != oldInfo.Paths.rend(); ++it)
+		for (auto it = oldInfo.Paths.rbegin(); it != oldInfo.Paths.rend(); it++)
 		{
 			string path = (*it).first;
 			if (path.find(oldPath) == 0)
@@ -209,7 +209,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainPath(fullPath))
 		{
-			Engine::Log(EError, "ContentManager", "Try to delete non existent path '" + fullPath + "'");
+			Engine::Log(EWarning, "ContentManager", "Try to delete non existent path '" + fullPath + "'");
 			return false;
 		}
 
@@ -323,19 +323,19 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EError, "ContentManager", "Try to move non existent content element (" + to_string(id) + ")");
+			Engine::Log(EWarning, "ContentManager", "Try to move non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 		if (!this->ContainPath(newFullPath))
 		{
-			Engine::Log(EError, "ContentManager", "Try to move element to non existent path '" + newFullPath + "'");
+			Engine::Log(EWarning, "ContentManager", "Try to move element to non existent path '" + newFullPath + "'");
 			return false;
 		}
 
 		ContentElementPtr element = this->GetElement(id, true, true);
 		if (this->GetElement(newFullPath + element->Name, false))
 		{
-			Engine::Log(EError, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
+			Engine::Log(EWarning, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
 				") to path '" + newFullPath + "', but there is already element with the same name");
 			return false;
 		}
@@ -363,7 +363,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EError, "ContentManager", "Try to delete non existent content element (" + to_string(id) + ")");
+			Engine::Log(EWarning, "ContentManager", "Try to delete non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -549,7 +549,7 @@ namespace MyEngine {
 		// Package Infos
 		int size = 0;
 		Read(ifile, size);
-		for (int i = 0; i < size; ++i)
+		for (int i = 0; i < size; i++)
 		{
 			string packageName;
 			Read(ifile, packageName);
@@ -558,7 +558,7 @@ namespace MyEngine {
 			string str;
 			int size2 = 0;
 			Read(ifile, size2);
-			for (int j = 0; j < size2; ++j)
+			for (int j = 0; j < size2; j++)
 			{
 				Read(ifile, str);
 				info.Paths[str];
@@ -567,7 +567,7 @@ namespace MyEngine {
 			long long s1, s2;
 			size2 = 0;
 			Read(ifile, size2);
-			for (int j = 0; j < size2; ++j)
+			for (int j = 0; j < size2; j++)
 			{
 				Read(ifile, s1);
 				Read(ifile, s2);
@@ -581,7 +581,7 @@ namespace MyEngine {
 		// Content Elements
 		size = 0;
 		Read(ifile, size);
-		for (int i = 0; i < size; ++i)
+		for (int i = 0; i < size; i++)
 		{
 			ContentElement* element = new ContentElement(this, ifile);
 
@@ -739,7 +739,7 @@ namespace MyEngine {
 
 		// Remove free space
 		PackageInfo& info = this->packageInfos[element->Package];
-		for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); ++it)
+		for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); it++)
 		{
 			if ((*it).second >= element->Size())
 			{
@@ -791,7 +791,7 @@ namespace MyEngine {
 		}
 
 		ofile.seekp(element->PackageOffset);
-		for (int i = 0; i < size; ++i)
+		for (int i = 0; i < size; i++)
 			ofile.write("\0", sizeof(char));
 		ofile.close();
 

@@ -15,6 +15,7 @@ namespace irr
 	namespace scene
 	{
 		class ISceneManager;
+		struct SMesh;
 	}
 
 	namespace gui
@@ -27,6 +28,8 @@ namespace irr
 
 namespace MyEngine {
 
+	class ContentElement;
+	using ContentElementPtr = shared_ptr < ContentElement >;
 	class SceneElement;
 	using SceneElementPtr = shared_ptr < SceneElement >;
 	
@@ -38,6 +41,8 @@ namespace MyEngine {
 		irr::video::IVideoDriver* driver;
 		irr::scene::ISceneManager* smgr;
 		irr::gui::IGUIEnvironment* guienv;
+
+		map<uint, irr::scene::SMesh*> meshesCache;
 
 	public:
 		IrrRenderer(Engine* owner);

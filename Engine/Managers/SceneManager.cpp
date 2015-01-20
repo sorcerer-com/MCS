@@ -98,7 +98,7 @@ namespace MyEngine {
 			Read(ifile, size);
 
 			// scene elements
-			for (int i = 0; i < size; ++i)
+			for (int i = 0; i < size; i++)
 			{
 				uint version = 0u;
 				Read(ifile, version);
@@ -187,7 +187,7 @@ namespace MyEngine {
 
 		if (this->ContainElement(element->ID) || this->GetElement(element->Name))
 		{
-			Engine::Log(EError, "Scene", "Try to add scene element '" + element->Name + "' (" + to_string(element->ID) + ") that already exists");
+			Engine::Log(EWarning, "Scene", "Try to add scene element '" + element->Name + "' (" + to_string(element->ID) + ") that already exists");
 			return false;
 		}
 
@@ -209,7 +209,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EError, "Scene", "Try to delete non existent scene element (" + to_string(id) + ")");
+			Engine::Log(EWarning, "Scene", "Try to delete non existent scene element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -225,7 +225,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EError, "Scene", "Try to get non existent scene element (" + to_string(id) + ")");
+			Engine::Log(EWarning, "Scene", "Try to get non existent scene element (" + to_string(id) + ")");
 			return SceneElementPtr();
 		}
 
@@ -240,7 +240,7 @@ namespace MyEngine {
 				return pair.second;
 		}
 
-		Engine::Log(EError, "Scene", "Try to get non existent scene element '" + name + "'");
+		Engine::Log(EWarning, "Scene", "Try to get non existent scene element '" + name + "'");
 		return NULL;
 	}
 

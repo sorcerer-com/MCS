@@ -103,6 +103,16 @@ namespace MyEngine {
 			if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
 				irrSceneNode->remove();
 		}
+
+		// Clear meshes cache from unused meshes
+		vector<uint> forDelete;
+		for (const auto& pair : this->meshesCache)
+		{
+			if (pair.second->getReferenceCount() == 1)
+				forDelete.push_back(pair.first);
+		}
+		for (const auto& id : forDelete)
+			this->meshesCache.erase(id);
 	}
 	
 	void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
@@ -113,13 +123,15 @@ namespace MyEngine {
 		irr::scene::IMeshSceneNode* irrSceneNode = (irr::scene::IMeshSceneNode*)this->smgr->getSceneNodeFromId(sceneElement->ID);
 		if (!irrSceneNode)
 		{
-			irr::scene::SMesh* mesh = new irr::scene::SMesh();
+			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+
+			irr::scene::SMesh* mesh = this->meshesCache[sceneElement->ContentID];
 			irrSceneNode = this->smgr->addOctreeSceneNode(mesh, NULL, sceneElement->ID);
-			mesh->drop();
 		}
 
 		irrSceneNode->setName(sceneElement->Name.c_str());
-		irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode
+		irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode else set them half visible
 
 		const Vector3& pos = sceneElement->Position;
 		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
@@ -128,18 +140,18 @@ namespace MyEngine {
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
-		// Update mesh
+
+		// Create mesh
 		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
 		if (!contentElement || contentElement->Type != EMesh)
 		{
 			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
 				to_string(sceneElement->ContentID) + ")");
-			// TODO: show somehow cube or something
+			// TODO: show somehow cube or something and show this only once
 			return;
 		}
 		Mesh* mesh = (Mesh*)contentElement.get();
 
-		// TODO: cache meshes for the objects with the same ones
 		irr::scene::SMesh* irrMesh = (irr::scene::SMesh*)irrSceneNode->getMesh();
 		irr::scene::SMeshBuffer* irrMeshBuffer = NULL;
 		if (irrMesh->getMeshBufferCount() != 0)
@@ -151,6 +163,7 @@ namespace MyEngine {
 			irrMeshBuffer->drop();
 		}
 
+		// Update mesh
 		if ((unsigned int)mesh->Triangles.size() * 3 != irrMeshBuffer->Vertices.size())
 		{
 			irrMeshBuffer->Vertices.set_used((int)mesh->Triangles.size() * 3);
@@ -158,7 +171,7 @@ namespace MyEngine {
 			int i = 0;
 			for (const auto& triangle : mesh->Triangles)
 			{
-				for (int j = 0; j < 3; ++j)
+				for (int j = 0; j < 3; j++)
 				{
 					irr::video::S3DVertex& v = irrMeshBuffer->Vertices[i];
 					const Vector3& pos = mesh->Vertices[triangle.vertices[j]];
@@ -176,8 +189,8 @@ namespace MyEngine {
 			irrMesh->setDirty();
 			irrMesh->recalculateBoundingBox();
 			irrSceneNode->setMesh(irrMesh);
-			irrSceneNode->setMaterialFlag(irr::video::EMF_LIGHTING, false); // TODO: remove
 		}
+		irrSceneNode->setMaterialFlag(irr::video::EMF_LIGHTING, false); // TODO: remove
 	}
 
 	void IrrRenderer::render()
