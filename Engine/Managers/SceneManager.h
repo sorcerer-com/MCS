@@ -7,8 +7,9 @@
 namespace MyEngine {
 
 	class Engine;
-	class SceneElement;
 	enum SceneElementType;
+	class SceneElement;
+	class Camera;
 
 	using SceneElementPtr = shared_ptr < SceneElement >;
 
@@ -16,6 +17,8 @@ namespace MyEngine {
 	{
 	public:
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
+
+		Camera* ActiveCamera;
 
 		Engine* Owner;
 

@@ -8,6 +8,7 @@
 #include "..\Utils\Utils.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Scene Elements\SceneElement.h"
+#include "..\Scene Elements\Camera.h"
 
 #include "..\Managers\ContentManager.h"
 #include "..\Content Elements\ContentElement.h"
@@ -31,6 +32,7 @@ namespace MyEngine {
 	{
 		Engine::Log(ELog, "Scene", "New scene");
 		this->sceneElements.clear();
+		this->ActiveCamera = NULL;
 	}
 
 	bool SceneManager::Save(const string& filePath)
@@ -115,6 +117,9 @@ namespace MyEngine {
 				ifile.seekg(offset, ios_base::cur);
 
 				SceneElement* element = NULL;
+				if (type == ECamera)
+					element = new Camera(this, ifile);
+				else
 				/* TODO: add different scene elements types
 				if (type == ELight)
 					element = new Light(this, ifile);
@@ -146,6 +151,9 @@ namespace MyEngine {
 	{
 		SceneElement *element = NULL;
 
+		if (type == ECamera)
+			element = new Camera(this, name, contentID);
+		else
 		/* TODO: add other scene elements
 		if (type == ELight)
 			element = new Light(this, name, contentID, EStaticLight);

@@ -12,6 +12,7 @@
 #include "..\Managers\SceneManager.h"
 #include "..\Managers\ContentManager.h"
 #include "..\Scene Elements\SceneElement.h"
+#include "..\Scene Elements\Camera.h"
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
 
@@ -74,16 +75,30 @@ namespace MyEngine {
 		this->smgr = this->device->getSceneManager();
 		this->guienv = this->device->getGUIEnvironment();
 
-		// TODO: remove:
-		irr::scene::ICameraSceneNode* cam = smgr->addCameraSceneNode();
-		cam->setFOV(irr::core::HALF_PI);
+		irr::scene::ICameraSceneNode* irrCamera = smgr->addCameraSceneNode();
+		irrCamera->bindTargetAndRotation(true);
+		irrCamera->setNearValue(0.1f);
+		irrCamera->setFarValue(10000.0f);
 
 		return true;
 	}
 
 	void IrrRenderer::updateScene()
 	{
-		// TODO: camera
+		// Setup Camera
+		Camera* camera = this->Owner->SceneManager->ActiveCamera;
+		if (camera)
+		{
+			irr::scene::ICameraSceneNode* irrCamera = this->smgr->getActiveCamera();
+			irrCamera->setFOV(camera->FOV * (3.14159265f / 180.0f)); // from deg to rad
+
+			const Vector3& pos = camera->Position;
+			irrCamera->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
+			const Vector3& rot = camera->Rotation.toAxisAngle();
+			irrCamera->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
+			const Vector3& scl = camera->Scale;
+			irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+		}
 
 		// TODO: lights, may be they should be normaly updated
 

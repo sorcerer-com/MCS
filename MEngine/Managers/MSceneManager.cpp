@@ -4,6 +4,7 @@
 #include "MSceneManager.h"
 
 #include "..\Scene Elements\MSceneElement.h"
+#include "..\Scene Elements\MCamera.h"
 
 
 namespace MyEngine {
@@ -17,6 +18,21 @@ namespace MyEngine {
 			collection->Add(MSceneManager::getMSceneElement(element));
 
 		return collection;
+	}
+	
+	MCamera^ MSceneManager::ActiveCamera::get()
+	{
+		return gcnew MCamera(this->sceneManager, this->sceneManager->ActiveCamera->ID);
+	}
+	
+	void MSceneManager::ActiveCamera::set(MCamera^ value)
+	{
+		if (value != nullptr)
+		{
+			SceneElementPtr elem = this->sceneManager->GetElement(value->ID);
+			if (elem) this->sceneManager->ActiveCamera = (Camera*)elem.get();
+			OnChanged(value);
+		}
 	}
 
 
@@ -148,6 +164,9 @@ namespace MyEngine {
 			return nullptr;
 
 		MSceneElement^ melement = nullptr;
+		if (element->Type == ECamera)
+			melement = gcnew MCamera(element->Owner, element->ID);
+		else
 		/* TODO: add scene elements
 		if (element->Type == ELight)
 			melement = gcnew MLight(element->GetOwner(), element->ID);

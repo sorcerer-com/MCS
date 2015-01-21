@@ -11,6 +11,7 @@ namespace MyEngine {
 
 	enum class ESceneElementType;
 	ref class MSceneElement;
+	ref class MCamera;
 
 	public ref class MSceneManager
 	{
@@ -21,6 +22,12 @@ namespace MyEngine {
 		property List<MSceneElement^>^ Elements
 		{
 			List<MSceneElement^>^ get();
+		}
+
+		property MCamera^ ActiveCamera
+		{
+			MCamera^ get();
+			void set(MCamera^ value);
 		}
 
 

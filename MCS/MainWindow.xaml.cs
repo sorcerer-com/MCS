@@ -250,6 +250,10 @@ namespace MCS
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+            this.sceneSaved = true;
+            this.updateTitle();
+
             this.render.Child = new System.Windows.Forms.UserControl();
             this.render.Child.Resize += (s, ee) =>
             {
@@ -267,10 +271,12 @@ namespace MCS
             this.KeyDown += WindowsManager.Window_KeyDown;
 
             // TODO: remove:
-            MSceneElement mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Cube");
+            MSceneElement mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
             mse.Position = new MPoint(0, 0, 100);
             mse.Rotation = new MPoint(20, 20, 0);
-            this.KeyDown += (s, ee) => { this.Engine.SceneManager.DeleteElement(mse.ID); };
+            //mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1", @"MPackage#Meshes\Cube1");
+            //mse.Position = new MPoint(30, 0, 100);
+            this.Engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
