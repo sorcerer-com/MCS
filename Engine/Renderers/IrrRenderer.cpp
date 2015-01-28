@@ -101,6 +101,8 @@ namespace MyEngine {
 		}
 
 		// TODO: lights, may be they should be normaly updated
+		const Color4& ambientLight = this->Owner->SceneManager->AmbientLight;
+		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
 		// TODO: fog
 
@@ -205,7 +207,6 @@ namespace MyEngine {
 			irrMesh->recalculateBoundingBox();
 			irrSceneNode->setMesh(irrMesh);
 		}
-		irrSceneNode->setMaterialFlag(irr::video::EMF_LIGHTING, false); // TODO: remove
 	}
 
 	void IrrRenderer::render()

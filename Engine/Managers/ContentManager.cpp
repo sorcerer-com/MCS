@@ -305,7 +305,7 @@ namespace MyEngine {
 			} while (this->ContainElement(element->ID));
 		}
 
-		if (this->ContainElement(element->ID) || this->GetElement(element->GetFullName(), false))
+		if (this->ContainElement(element->ID) || this->ContainElement(element->GetFullName()))
 			Engine::Log(EWarning, "ContentManager", "Add content element '" + element->GetFullName() + "' (" + to_string(element->ID) + ") that already exists");
 
 		lock lck(this->thread->mutex("content"));
@@ -333,7 +333,7 @@ namespace MyEngine {
 		}
 
 		ContentElementPtr element = this->GetElement(id, true, true);
-		if (this->GetElement(newFullPath + element->Name, false))
+		if (this->ContainElement(newFullPath + element->Name))
 		{
 			Engine::Log(EWarning, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
 				") to path '" + newFullPath + "', but there is already element with the same name");
@@ -357,6 +357,31 @@ namespace MyEngine {
 	bool ContentManager::ContainElement(uint id) const
 	{
 		return this->content.find(id) != this->content.end();
+	}
+
+	bool ContentManager::ContainElement(const string& fullname)
+	{
+		string package = ContentManager::GetPackage(fullname);
+		string path = ContentManager::GetPath(fullname);
+		string name = ContentManager::GetName(fullname);
+
+		if (this->packageInfos.find(package) == this->packageInfos.end())
+			return false;
+
+		PackageInfo& info = this->packageInfos[package];
+
+		if (info.Paths.find(path) == info.Paths.end())
+			return false;
+
+		set<uint>& ids = info.Paths[path];
+		for (const auto& id : ids)
+		{
+			ContentElementPtr elem = this->GetElement(id, false);
+			if (elem->Name.compare(name) == 0)
+				return true;
+		}
+
+		return false;
 	}
 
 	bool ContentManager::DeleteElement(uint id)
@@ -411,6 +436,7 @@ namespace MyEngine {
 			Engine::Log(EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
 			return ContentElementPtr();
 		}
+
 		PackageInfo& info = this->packageInfos[package];
 
 		if (info.Paths.find(path) == info.Paths.end())

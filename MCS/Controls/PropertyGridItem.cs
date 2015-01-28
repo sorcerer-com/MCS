@@ -156,41 +156,47 @@ namespace MCS.Controls
                 cb.SelectionChanged += new SelectionChangedEventHandler(value_Changed);
                 this.Children.Add(cb);
             }
-            /* TODO: when add MColor:
-            else if (type == typeof(MColor))
+            else if (type == typeof(MyEngine.MColor))
             {
-                ValueBox vb = new ValueBox();
-                vb.Value = ((MColor)this.Object).R;
-                vb.ToolTip = vb.Text;
-                vb.IsNormalized = true;
-                vb.Margin = new Thickness(0, 5, 3, 5);
-                vb.Changed += new RoutedEventHandler(value_Changed);
-                this.propertyPanel.Children.Add(vb);
+                this.ColumnDefinitions.Add(new ColumnDefinition());
+                this.ColumnDefinitions.Add(new ColumnDefinition());
+                this.ColumnDefinitions.Add(new ColumnDefinition());
+                this.ColumnDefinitions.Add(new ColumnDefinition());
 
-                vb = new ValueBox();
-                vb.Value = ((MColor)this.Object).G;
-                vb.ToolTip = vb.Text;
-                vb.IsNormalized = true;
-                vb.Margin = new Thickness(0, 5, 3, 5);
-                vb.Changed += new RoutedEventHandler(value_Changed);
-                this.propertyPanel.Children.Add(vb);
+                MyEngine.MColor color = (MyEngine.MColor)this.Object;
 
-                vb = new ValueBox();
-                vb.Value = ((MColor)this.Object).B;
-                vb.ToolTip = vb.Text;
-                vb.IsNormalized = true;
-                vb.Margin = new Thickness(0, 5, 3, 5);
-                vb.Changed += new RoutedEventHandler(value_Changed);
-                this.propertyPanel.Children.Add(vb);
+                NumberBox nb = new NumberBox();
+                nb.Value = color.R;
+                nb.ToolTip = nb.Text;
+                nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Changed += new RoutedEventHandler(value_Changed);
+                this.Children.Add(nb);
+                Grid.SetColumn(nb, 0);
 
-                vb = new ValueBox();
-                vb.Value = ((MColor)this.Object).A;
-                vb.ToolTip = vb.Text;
-                vb.IsNormalized = true;
-                vb.Margin = new Thickness(0, 5, 3, 5);
-                vb.Changed += new RoutedEventHandler(value_Changed);
-                this.propertyPanel.Children.Add(vb);
-            }*/
+                nb = new NumberBox();
+                nb.Value = color.G;
+                nb.ToolTip = nb.Text;
+                nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Changed += new RoutedEventHandler(value_Changed);
+                this.Children.Add(nb);
+                Grid.SetColumn(nb, 1);
+
+                nb = new NumberBox();
+                nb.Value = color.B;
+                nb.ToolTip = nb.Text;
+                nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Changed += new RoutedEventHandler(value_Changed);
+                this.Children.Add(nb);
+                Grid.SetColumn(nb, 2);
+
+                nb = new NumberBox();
+                nb.Value = color.A;
+                nb.ToolTip = nb.Text;
+                nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Changed += new RoutedEventHandler(value_Changed);
+                this.Children.Add(nb);
+                Grid.SetColumn(nb, 3);
+            }
             else if (type == typeof(MyEngine.MPoint))
             {
                 this.ColumnDefinitions.Add(new ColumnDefinition());
@@ -294,18 +300,17 @@ namespace MCS.Controls
             {
                 SetValue(ObjectProperty, Enum.Parse(type, (sender as ComboBox).SelectedItem.ToString()));
             }
-            /* TODO: when add MColor:
-            else if (type == typeof(MColor))
+            else if (type == typeof(MyEngine.MColor))
             {
-                ValueBox vbR = this.propertyPanel.Children[0] as ValueBox;
-                ValueBox vbG = this.propertyPanel.Children[1] as ValueBox;
-                ValueBox vbB = this.propertyPanel.Children[2] as ValueBox;
-                ValueBox vbA = this.propertyPanel.Children[3] as ValueBox;
+                NumberBox vbR = this.Children[0] as NumberBox;
+                NumberBox vbG = this.Children[1] as NumberBox;
+                NumberBox vbB = this.Children[2] as NumberBox;
+                NumberBox vbA = this.Children[3] as NumberBox;
 
                 if (vbR != null && vbG != null && vbB != null && vbA != null)
                 {
                     if (sender != null)
-                        SetValue(ObjectProperty, new MColor(vbR.Value, vbG.Value, vbB.Value, vbA.Value));
+                        SetValue(ObjectProperty, new MyEngine.MColor(vbR.Value, vbG.Value, vbB.Value, vbA.Value));
 
                     Color c = Color.FromArgb((byte)(vbA.Value * 255), (byte)(vbR.Value * 255), (byte)(vbG.Value * 255), (byte)(vbB.Value * 255));
                     vbR.Background = new SolidColorBrush(c);
@@ -313,7 +318,7 @@ namespace MCS.Controls
                     vbB.Background = new SolidColorBrush(c);
                     vbA.Background = new SolidColorBrush(c);
                 }
-            }*/
+            }
             else if (type == typeof(MyEngine.MPoint) && sender != null)
             {
                 NumberBox vbX = this.Children[0] as NumberBox;

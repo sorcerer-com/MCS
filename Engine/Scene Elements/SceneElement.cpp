@@ -27,7 +27,7 @@ namespace MyEngine {
 		this->Visible = true;
 		this->Position = Vector3();
 		this->Rotation = Quaternion();
-		this->Scale = Vector3(1.0f, 1.0f, 1.0f);
+		this->Scale = Vector3(1.0, 1.0, 1.0);
 
 		this->Owner = owner;
 	}

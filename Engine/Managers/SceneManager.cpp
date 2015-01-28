@@ -33,6 +33,7 @@ namespace MyEngine {
 		Engine::Log(ELog, "Scene", "New scene");
 		this->sceneElements.clear();
 		this->ActiveCamera = NULL;
+		this->AmbientLight = Color4(0.2, 0.2, 0.2, 1.0);
 	}
 
 	bool SceneManager::Save(const string& filePath)
@@ -77,6 +78,9 @@ namespace MyEngine {
 			Write(ofile, this->ActiveCamera->ID);
 		else
 			Write(ofile, INVALID_ID);
+
+		// ambient light
+		Write(ofile, this->AmbientLight);
 
 		ofile.close();
 
@@ -149,6 +153,9 @@ namespace MyEngine {
 			Read(ifile, cameraId);
 			if (cameraId != INVALID_ID)
 				this->ActiveCamera = (Camera*)this->GetElement(cameraId).get();
+
+			// ambient light
+			Read(ifile, this->AmbientLight);
 		}
 
 		ifile.close();
@@ -205,7 +212,7 @@ namespace MyEngine {
 			} while (this->ContainElement(element->ID));
 		}
 
-		if (this->ContainElement(element->ID) || this->GetElement(element->Name))
+		if (this->ContainElement(element->ID) || this->ContainElement(element->Name))
 		{
 			Engine::Log(EWarning, "Scene", "Try to add scene element '" + element->Name + "' (" + to_string(element->ID) + ") that already exists");
 			return false;
@@ -223,6 +230,17 @@ namespace MyEngine {
 	bool SceneManager::ContainElement(uint id) const
 	{
 		return this->sceneElements.find(id) != this->sceneElements.end();
+	}
+
+	bool SceneManager::ContainElement(const string& name) const
+	{
+		for (const auto& pair : this->sceneElements)
+		{
+			if (pair.second->Name.compare(name) == 0)
+				return true;
+		}
+
+		return false;
 	}
 
 	bool SceneManager::DeleteElement(uint id)

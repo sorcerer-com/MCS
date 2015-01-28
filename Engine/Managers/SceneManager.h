@@ -2,6 +2,7 @@
 #pragma once
 
 #include "..\Utils\Header.h"
+#include "..\Utils\Types\Color4.h"
 
 
 namespace MyEngine {
@@ -19,6 +20,7 @@ namespace MyEngine {
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
 
 		Camera* ActiveCamera;
+		Color4 AmbientLight;
 
 		Engine* Owner;
 
@@ -37,6 +39,7 @@ namespace MyEngine {
 		SceneElementPtr AddElement(SceneElementType type, const string& name, const string& contentFullName, uint id = 0);
 		bool AddElement(SceneElement* element);
 		bool ContainElement(uint id) const;
+		bool ContainElement(const string& name) const;
 		bool DeleteElement(uint id);
 		SceneElementPtr GetElement(uint id);
 		SceneElementPtr GetElement(const string& name);

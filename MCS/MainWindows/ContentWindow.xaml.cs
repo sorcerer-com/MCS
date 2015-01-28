@@ -337,7 +337,8 @@ namespace MCS.MainWindows
 
                     ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
                     ExtendedMessageBoxButton button = ContentWindow.SelectedElements.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
-                    foreach (var id in ContentWindow.SelectedElements)
+                    List<uint> selectedElements = new List<uint>(ContentWindow.SelectedElements);
+                    foreach (var id in selectedElements)
                     {
                         MContentElement elem = this.ContentManager.GetElement(id, false);
                         if (res != ExtendedMessageBoxResult.YesToAll && res != ExtendedMessageBoxResult.NoToAll)

@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "MSceneManager.h"
 
+#include "..\Utils\Types\MColor.h"
 #include "..\Scene Elements\MSceneElement.h"
 #include "..\Scene Elements\MCamera.h"
 
@@ -33,6 +34,17 @@ namespace MyEngine {
 			if (elem) this->sceneManager->ActiveCamera = (Camera*)elem.get();
 			OnChanged(value);
 		}
+	}
+
+	MColor MSceneManager::AmbientLight::get()
+	{
+		return MColor(this->sceneManager->AmbientLight);
+	}
+
+	void MSceneManager::AmbientLight::set(MColor value)
+	{
+		this->sceneManager->AmbientLight = value.ToColor4();
+		OnChanged(nullptr);
 	}
 
 
@@ -104,6 +116,11 @@ namespace MyEngine {
 	bool MSceneManager::ContainElement(uint id)
 	{
 		return this->sceneManager->ContainElement(id);
+	}
+
+	bool MSceneManager::ContainElement(String^ name)
+	{
+		return this->sceneManager->ContainElement(to_string(name));
 	}
 
 	bool MSceneManager::RenameElement(String^ oldName, String^ newName)

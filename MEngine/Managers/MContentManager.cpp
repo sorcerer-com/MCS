@@ -110,6 +110,11 @@ namespace MyEngine {
 		return this->contentManager->ContainElement(id);
 	}
 
+	bool MContentManager::ContainElement(String^ fullName)
+	{
+		return this->contentManager->ContainElement(to_string(fullName));
+	}
+
 	bool MContentManager::RenameElement(uint id, String^ newName)
 	{
 		ContentElementPtr elem = this->contentManager->GetElement(id, true, true);

@@ -45,6 +45,7 @@ namespace MyEngine {
 		MContentElement^ AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id);
 		MContentElement^ CloneElement(uint id, String^ newName);
 		bool ContainElement(uint id);
+		bool ContainElement(String^ fullName);
 		bool RenameElement(uint id, String^ newName);
 		bool MoveElement(uint id, String^ newFullPath);
 		bool DeleteElement(uint id);

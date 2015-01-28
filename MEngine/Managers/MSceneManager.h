@@ -12,6 +12,7 @@ namespace MyEngine {
 	enum class ESceneElementType;
 	ref class MSceneElement;
 	ref class MCamera;
+	value struct MColor;
 
 	public ref class MSceneManager
 	{
@@ -30,6 +31,12 @@ namespace MyEngine {
 			void set(MCamera^ value);
 		}
 
+		property MColor AmbientLight
+		{
+			MColor get();
+			void set(MColor value);
+		}
+
 
 		delegate void ChangedEventHandler(MSceneManager^ sender, MSceneElement^ element);
 		event ChangedEventHandler^ Changed;
@@ -45,6 +52,7 @@ namespace MyEngine {
 		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName);
 		MSceneElement^ CloneElement(MSceneElement^ element, String^ newName);
 		bool ContainElement(uint id);
+		bool ContainElement(String^ name);
 		bool RenameElement(String^ oldName, String^ newName);
 		bool DeleteElement(uint id);
 		MSceneElement^ GetElement(uint id);
