@@ -72,6 +72,12 @@ namespace MyEngine {
 		for (const auto& sce : this->sceneElements)
 			sce.second->WriteToFile(ofile);
 
+		// active camera name
+		if (this->ActiveCamera)
+			Write(ofile, this->ActiveCamera->ID);
+		else
+			Write(ofile, INVALID_ID);
+
 		ofile.close();
 
 		Engine::Log(ELog, "Scene", "Save scene to file: " + filePath);
@@ -137,6 +143,12 @@ namespace MyEngine {
 					return false;
 				}
 			}
+
+			// active camera name
+			uint cameraId;
+			Read(ifile, cameraId);
+			if (cameraId != INVALID_ID)
+				this->ActiveCamera = (Camera*)this->GetElement(cameraId).get();
 		}
 
 		ifile.close();

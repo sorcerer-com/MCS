@@ -23,7 +23,7 @@ namespace MyEngine {
 
 		void makeZero(void)
 		{
-			x = y = z = 0.0;
+			x = y = z = 0.0f;
 		}
 
 		inline float length(void) const

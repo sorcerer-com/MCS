@@ -12,6 +12,7 @@
     <ClInclude Include="Managers\MSceneManager.h" />
     <ClInclude Include="Renderers\MRenderer.h" />
     <ClInclude Include="Scene Elements\MCamera.h" />
+    <ClInclude Include="Utils\Types\MColor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

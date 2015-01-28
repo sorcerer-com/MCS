@@ -1,4 +1,4 @@
-// MUtil.h
+// MPoint.h
 #pragma once
 
 #include "Engine\Utils\Types\Vector3.h"

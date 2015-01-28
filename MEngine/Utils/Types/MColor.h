@@ -1,0 +1,80 @@
+// MColor.h
+#pragma once
+
+#include "Engine\Utils\Types\Color4.h"
+#pragma managed
+
+using namespace System;
+
+
+namespace MyEngine {
+
+	public value struct MColor
+	{
+	public:
+		property double R;
+		property double G;
+		property double B;
+		property double A;
+
+	public:
+		MColor(double _r, double _g, double _b, double _a) { Set(_r, _g, _b, _a); }
+		MColor(const Color4& c) { Set(c.r, c.g, c.b, c.a); }
+
+		void Set(double _r, double _g, double _b, double _a)
+		{
+			R = _r;
+			G = _g;
+			B = _b;
+			A = _a;
+		}
+
+		Color4 ToColor4()
+		{
+			return Color4(R, G, B, A);
+		}
+
+		virtual String^ ToString() override
+		{
+			return "(" + (float)this->R + ", " + (float)this->G + ", " + (float)this->B + ", " + (float)this->A + ")";
+		}
+
+		double Intensity()
+		{
+			return (R + G + B) / 3;
+		}
+
+
+		static MColor operator -(MColor c)
+		{
+			return MColor(-c.R, -c.G, -c.B, -c.A);
+		}
+
+		static MColor operator +(MColor c1, MColor c2)
+		{
+			return MColor(c1.R + c2.R, c1.G + c2.G, c1.B + c2.B, c1.A + c2.A);
+		}
+
+		static MColor operator -(MColor c1, MColor c2)
+		{
+			return MColor(c1.R - c2.R, c1.G - c2.G, c1.B - c2.B, c1.A - c2.A);
+		}
+
+		static MColor operator *(MColor c1, MColor c2)
+		{
+			return MColor(c1.R * c2.R, c1.G * c2.G, c1.B * c2.B, c1.A * c2.A);
+		}
+
+		static MColor operator /(MColor c1, MColor c2)
+		{
+			return MColor(c1.R / c2.R, c1.G / c2.G, c1.B / c2.B, c1.A / c2.A);
+		}
+
+		static MColor operator *(MColor c1, double d)
+		{
+			return MColor(c1.R * d, c1.G * d, c1.B * d, c1.A * d);
+		}
+
+	};
+
+}
