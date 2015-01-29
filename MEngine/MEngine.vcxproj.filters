@@ -13,6 +13,7 @@
     <ClInclude Include="Renderers\MRenderer.h" />
     <ClInclude Include="Scene Elements\MCamera.h" />
     <ClInclude Include="Utils\Types\MColor.h" />
+    <ClInclude Include="Scene Elements\MLight.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

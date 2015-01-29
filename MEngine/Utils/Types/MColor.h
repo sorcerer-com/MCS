@@ -18,6 +18,7 @@ namespace MyEngine {
 		property double A;
 
 	public:
+		MColor(double _r, double _g, double _b) { Set(_r, _g, _b, 1.0); }
 		MColor(double _r, double _g, double _b, double _a) { Set(_r, _g, _b, _a); }
 		MColor(const Color4& c) { Set(c.r, c.g, c.b, c.a); }
 

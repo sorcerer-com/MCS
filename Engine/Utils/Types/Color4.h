@@ -12,6 +12,7 @@ namespace MyEngine {
 
 		Color4() { set(0, 0, 0, 0); }
 		Color4(const Color4& c) { set(c.r, c.g, c.b, c.a); }
+		Color4(double _r, double _g, double _b) { set(_r, _g, _b, 1.0); }
 		Color4(double _r, double _g, double _b, double _a) { set(_r, _g, _b, _a); }
 
 		void set(double _r, double _g, double _b, double _a)

@@ -9,6 +9,7 @@
 #include "..\Utils\IOUtils.h"
 #include "..\Scene Elements\SceneElement.h"
 #include "..\Scene Elements\Camera.h"
+#include "..\Scene Elements\Light.h"
 
 #include "..\Managers\ContentManager.h"
 #include "..\Content Elements\ContentElement.h"
@@ -129,13 +130,12 @@ namespace MyEngine {
 				SceneElement* element = NULL;
 				if (type == ECamera)
 					element = new Camera(this, ifile);
-				else
-				/* TODO: add different scene elements types
-				if (type == ELight)
+				else if (type == ELight)
 					element = new Light(this, ifile);
+				/* TODO: add different scene elements types
 				else if (element->Type == ECharacter)
-					element = new Character(this, ifile);
-				else*/
+					element = new Character(this, ifile);*/
+				else
 					element = new SceneElement(this, ifile);
 
 				if (element && !ifile.fail())
@@ -172,13 +172,12 @@ namespace MyEngine {
 
 		if (type == ECamera)
 			element = new Camera(this, name, contentID);
-		else
-		/* TODO: add other scene elements
-		if (type == ELight)
+		else if (type == ELight)
 			element = new Light(this, name, contentID, EStaticLight);
+		/* TODO: add other scene elements
 		else if (type == ECharacter)
-			element = new Character(this, name, contentID, INVALID_ID);
-		else*/
+			element = new Character(this, name, contentID, INVALID_ID);*/
+		else
 			element = new SceneElement(this, type, name, contentID);
 		element->ID = id;
 

@@ -274,9 +274,17 @@ namespace MCS
             MSceneElement mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
             mse.Position = new MPoint(0, 0, 100);
             mse.Rotation = new MPoint(20, 20, 0);
-            //mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1", @"MPackage#Meshes\Cube1");
-            //mse.Position = new MPoint(30, 0, 100);
+            mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1", @"MPackage#Meshes\Primitives\Cube");
+            mse.Position = new MPoint(50, 0, 100);
             this.Engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
+            MLight light = this.Engine.SceneManager.AddElement(ESceneElementType.Light, "light", 0) as MLight;
+            light.Position = new MPoint(15, 30, 100);
+            light.Color = new MColor(1.0f, 0.0f, 0.0f);
+            light.Intensity = 5000;
+            light = this.Engine.SceneManager.AddElement(ESceneElementType.Light, "light1", 0) as MLight;
+            light.Position = new MPoint(15, 30, 50);
+            light.Color = new MColor(0.0f, 1.0f, 0.0f);
+            light.Intensity = 500;
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

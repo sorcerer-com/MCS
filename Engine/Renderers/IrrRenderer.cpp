@@ -13,6 +13,7 @@
 #include "..\Managers\ContentManager.h"
 #include "..\Scene Elements\SceneElement.h"
 #include "..\Scene Elements\Camera.h"
+#include "..\Scene Elements\Light.h"
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
 
@@ -83,6 +84,7 @@ namespace MyEngine {
 		return true;
 	}
 
+
 	void IrrRenderer::updateScene()
 	{
 		// Setup Camera
@@ -100,11 +102,13 @@ namespace MyEngine {
 			irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 		}
 
-		// TODO: lights, may be they should be normaly updated
+		// Set Global Ambient Light
 		const Color4& ambientLight = this->Owner->SceneManager->AmbientLight;
 		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
 		// TODO: fog
+		
+		// TODO: lights, may be they should be normaly updated
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
@@ -137,15 +141,9 @@ namespace MyEngine {
 		// TODO: skip system objects, cameras, if it's not in editor mode, set them as debug objects
 
 		
-		irr::scene::IMeshSceneNode* irrSceneNode = (irr::scene::IMeshSceneNode*)this->smgr->getSceneNodeFromId(sceneElement->ID);
+		irr::scene::ISceneNode* irrSceneNode = this->smgr->getSceneNodeFromId(sceneElement->ID);
 		if (!irrSceneNode)
-		{
-			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
-				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
-
-			irr::scene::SMesh* mesh = this->meshesCache[sceneElement->ContentID];
-			irrSceneNode = this->smgr->addOctreeSceneNode(mesh, NULL, sceneElement->ID);
-		}
+			irrSceneNode = this->createIrrSceneNode(sceneElement);
 
 		irrSceneNode->setName(sceneElement->Name.c_str());
 		irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode else set them half visible
@@ -157,19 +155,68 @@ namespace MyEngine {
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
+		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
+		if (type == irr::scene::ESNT_MESH || type == irr::scene::ESNT_OCTREE)
+		{
+			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
+			irr::scene::SMesh* irrMesh = (irr::scene::SMesh*)irrMeshSceneNode->getMesh();
+			if (this->updateIrrMesh(sceneElement, irrMesh))
+				irrMeshSceneNode->setMesh(irrMesh);
+		}
+		else if (type == irr::scene::ESNT_LIGHT && sceneElement->Type == ELight)
+		{
+			Light* light = (Light*)sceneElement.get();
 
-		// Create mesh
+			irr::scene::ILightSceneNode* irrLightSceneNode = (irr::scene::ILightSceneNode*) irrSceneNode;
+			irr::video::SLight irrLight = irrLightSceneNode->getLightData();
+			irrLight.Radius = light->Radius;
+			irrLight.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
+			irrLight.DiffuseColor = irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a);
+			irrLight.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
+			irrLight.Falloff = light->SpotExponent;
+			irrLight.InnerCone = light->SpotCutoffInner;
+			irrLight.OuterCone = light->SpotCutoffOuter;
+			irrLight.Attenuation = irr::core::vector3df(0, 0, 1.0f / light->Intensity);
+			irrLightSceneNode->setLightType(irr::video::ELT_SPOT);
+			irrLightSceneNode->setLightData(irrLight);
+		}
+	}
+
+	irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
+	{
+		irr::scene::ISceneNode* irrSceneNode = NULL;
+
+		if (sceneElement->Type == ELight)
+		{
+			irrSceneNode = this->smgr->addLightSceneNode();
+			// TODO: add Billboard as a child when we have textures?
+		}
+		else
+		{
+			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+
+			irr::scene::SMesh* mesh = this->meshesCache[sceneElement->ContentID];
+			irrSceneNode = this->smgr->addOctreeSceneNode(mesh);
+		}
+
+		irrSceneNode->setID(sceneElement->ID);
+		return irrSceneNode;
+	}
+	
+	bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
+	{
 		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
 		if (!contentElement || contentElement->Type != EMesh)
 		{
 			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
 				to_string(sceneElement->ContentID) + ")");
 			// TODO: show somehow cube or something and show this only once
-			return;
+			return false;
 		}
 		Mesh* mesh = (Mesh*)contentElement.get();
 
-		irr::scene::SMesh* irrMesh = (irr::scene::SMesh*)irrSceneNode->getMesh();
+		// Create irrMeshBuffer
 		irr::scene::SMeshBuffer* irrMeshBuffer = NULL;
 		if (irrMesh->getMeshBufferCount() != 0)
 			irrMeshBuffer = (irr::scene::SMeshBuffer*)irrMesh->getMeshBuffer(0);
@@ -180,7 +227,7 @@ namespace MyEngine {
 			irrMeshBuffer->drop();
 		}
 
-		// Update mesh
+		// Update irrMeshBuffer
 		if ((unsigned int)mesh->Triangles.size() * 3 != irrMeshBuffer->Vertices.size())
 		{
 			irrMeshBuffer->Vertices.set_used((int)mesh->Triangles.size() * 3);
@@ -205,9 +252,11 @@ namespace MyEngine {
 			irrMeshBuffer->recalculateBoundingBox();
 			irrMesh->setDirty();
 			irrMesh->recalculateBoundingBox();
-			irrSceneNode->setMesh(irrMesh);
+			return true;
 		}
+		return false;
 	}
+
 
 	void IrrRenderer::render()
 	{

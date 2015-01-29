@@ -31,6 +31,8 @@ namespace MyEngine {
 
 	void Camera::WriteToFile(ostream& file) const
 	{
+		SceneElement::WriteToFile(file);
+
 		Write(file, this->FOV);
 		Write(file, this->FocalPlaneDist);
 		Write(file, this->FNumber);

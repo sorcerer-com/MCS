@@ -212,6 +212,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
     <ClInclude Include="Managers\MSceneManager.h" />
     <ClInclude Include="Renderers\MRenderer.h" />
     <ClInclude Include="Scene Elements\MCamera.h" />
+    <ClInclude Include="Scene Elements\MLight.h" />
     <ClInclude Include="Scene Elements\MSceneElement.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="MEngine.h" />

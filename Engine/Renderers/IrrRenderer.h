@@ -15,6 +15,7 @@ namespace irr
 	namespace scene
 	{
 		class ISceneManager;
+		class ISceneNode;
 		struct SMesh;
 	}
 
@@ -53,8 +54,12 @@ namespace MyEngine {
 
 	private:
 		bool init();
+
 		void updateScene();
 		void updateSceneElement(const SceneElementPtr sceneElement);
+		irr::scene::ISceneNode* createIrrSceneNode(const SceneElementPtr sceneElement);
+		bool updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh);
+
 		void render();
 
 	};
