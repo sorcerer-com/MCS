@@ -18,18 +18,12 @@ namespace MyEngine {
 		if (!owner)
 			throw "ArgumentNullException: owner";
 
-		this->Version = CURRENT_VERSION;
+		this->Owner = owner;
+
+		this->init();
 		this->Type = type;
-		this->ID = INVALID_ID;
 		this->Name = name;
 		this->ContentID = contentID;
-		this->MaterialID = INVALID_ID;
-		this->Visible = true;
-		this->Position = Vector3();
-		this->Rotation = Quaternion();
-		this->Scale = Vector3(1.0, 1.0, 1.0);
-
-		this->Owner = owner;
 	}
 
 	SceneElement::SceneElement(SceneManager* owner, istream& file)
@@ -37,6 +31,9 @@ namespace MyEngine {
 		if (!owner)
 			throw "ArgumentNullException: owner";
 
+		this->Owner = owner;
+
+		this->init();
 		Read(file, this->Version);
 		if (this->Version >= 1)
 		{
@@ -50,8 +47,20 @@ namespace MyEngine {
 			Read(file, this->Rotation);
 			Read(file, this->Scale);
 		}
+	}
 
-		this->Owner = owner;
+	void SceneElement::init()
+	{
+		this->Version = CURRENT_VERSION;
+		this->Type = ECamera;
+		this->ID = INVALID_ID;
+		this->Name = "";
+		this->ContentID = INVALID_ID;
+		this->MaterialID = INVALID_ID;
+		this->Visible = true;
+		this->Position = Vector3();
+		this->Rotation = Quaternion();
+		this->Scale = Vector3(1.0, 1.0, 1.0);
 	}
 
 

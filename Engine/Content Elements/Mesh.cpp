@@ -14,12 +14,14 @@ namespace MyEngine {
 	Mesh::Mesh(ContentManager* owner, const string& name, const string& package, const string& path) :
 		ContentElement(owner, EMesh, name, package, path)
 	{
+		this->init();
 		this->IsLoaded = true;
 	}
 
 	Mesh::Mesh(ContentManager* owner, istream& file) :
 		ContentElement(owner, file)
 	{
+		this->init();
 		if (this->Version >= 1)
 		{
 			Read(file, this->Vertices);
@@ -28,6 +30,14 @@ namespace MyEngine {
 			Read(file, this->Triangles);
 		}
 		this->IsLoaded = true;
+	}
+
+	void Mesh::init()
+	{
+		this->Vertices.clear();
+		this->Normals.clear();
+		this->TexCoords.clear();
+		this->Triangles.clear();
 	}
 
 

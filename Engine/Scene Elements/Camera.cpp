@@ -12,20 +12,26 @@ namespace MyEngine {
 	Camera::Camera(SceneManager* owner, const string& name, uint contentID) :
 		SceneElement(owner, ECamera, name, contentID)
 	{
-		this->FOV = 72.0f;
-		this->FocalPlaneDist = 0.0f;
-		this->FNumber = 2.0f;
+		this->init();
 	}
 
 	Camera::Camera(SceneManager* owner, istream& file) :
 		SceneElement(owner, file)
 	{
+		this->init();
 		if (this->Version >= 1)
 		{
 			Read(file, this->FOV);
 			Read(file, this->FocalPlaneDist);
 			Read(file, this->FNumber);
 		}
+	}
+
+	void Camera::init()
+	{
+		this->FOV = 72.0f;
+		this->FocalPlaneDist = 0.0f;
+		this->FNumber = 2.0f;
 	}
 
 

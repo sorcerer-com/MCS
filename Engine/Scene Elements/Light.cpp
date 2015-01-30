@@ -12,18 +12,14 @@ namespace MyEngine {
 	Light::Light(SceneManager* owner, const string& name, uint contentID, LightType lightType) :
 		SceneElement(owner, ELight, name, contentID)
 	{
+		this->init();
 		this->LType = lightType;
-		this->Radius = 128.0f;
-		this->Color = Color4(0.8f, 0.8f, 0.8f, 1.0f);
-		this->SpotExponent = 0.5f;
-		this->SpotCutoffInner = 0.0f;
-		this->SpotCutoffOuter = 180.0f;
-		this->Intensity = 128.0f;
 	}
 
 	Light::Light(SceneManager* owner, istream& file) :
 		SceneElement(owner, file)
 	{
+		this->init();
 		if (this->Version >= 1)
 		{
 			Read(file, this->LType);
@@ -34,6 +30,17 @@ namespace MyEngine {
 			Read(file, this->SpotCutoffOuter);
 			Read(file, this->Intensity);
 		}
+	}
+
+	void Light::init()
+	{
+		this->LType = ESun;
+		this->Radius = 128.0f;
+		this->Color = Color4(0.8f, 0.8f, 0.8f, 1.0f);
+		this->SpotExponent = 0.5f;
+		this->SpotCutoffInner = 0.0f;
+		this->SpotCutoffOuter = 180.0f;
+		this->Intensity = 128.0f;
 	}
 
 

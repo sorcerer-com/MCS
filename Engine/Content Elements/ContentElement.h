@@ -43,6 +43,9 @@ namespace MyEngine {
 		virtual long long Size() const;
 		virtual void WriteToFile(ostream& file);
 		virtual ContentElement* Clone() const;
+
+	private:
+		void init();
 	};
 
 }

@@ -16,16 +16,11 @@ namespace MyEngine {
 
 		this->Owner = owner;
 
-		this->Version = CURRENT_VERSION;
+		this->init();
 		this->Type = type;
-		this->ID = INVALID_ID;
 		this->Name = name;
 		this->Package = package;
 		this->Path = path;
-
-		this->PackageOffset = 0;
-		this->SavedSize = 0;
-		this->IsLoaded = false;
 	}
 
 	ContentElement::ContentElement(ContentManager* owner, istream& file)
@@ -33,6 +28,9 @@ namespace MyEngine {
 		if (!owner)
 			throw "ArgumentNullException: owner";
 
+		this->Owner = owner;
+
+		this->init();
 		Read(file, this->Version);
 		if (this->Version >= 1)
 		{
@@ -45,8 +43,20 @@ namespace MyEngine {
 			Read(file, this->SavedSize);
 		}
 		this->IsLoaded = false;
+	}
 
-		this->Owner = owner;
+	void ContentElement::init()
+	{
+		this->Version = CURRENT_VERSION;
+		this->Type = EMesh;
+		this->ID = INVALID_ID;
+		this->Name = "";
+		this->Package = "";
+		this->Path = "";
+
+		this->PackageOffset = 0;
+		this->SavedSize = 0;
+		this->IsLoaded = false;
 	}
 
 

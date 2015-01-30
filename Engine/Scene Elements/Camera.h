@@ -21,6 +21,9 @@ namespace MyEngine {
 
 		virtual void WriteToFile(ostream& file) const override;
 		virtual SceneElement* Clone() const override;
+
+	private:
+		void init();
 	};
 
 }

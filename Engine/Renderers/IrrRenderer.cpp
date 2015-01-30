@@ -107,8 +107,6 @@ namespace MyEngine {
 		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
 		// TODO: fog
-		
-		// TODO: lights, may be they should be normaly updated
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();

@@ -46,6 +46,9 @@ namespace MyEngine {
 
 		virtual void WriteToFile(ostream& file) const;
 		virtual SceneElement* Clone() const;
+
+	private:
+		void init();
 	};
 
 }
