@@ -24,6 +24,7 @@ namespace MCS
 
         private bool sceneSaved;
         private string sceneFilePath;
+        private Point lastMousePosition;
 
         public MSceneElement SelectedElement
         {
@@ -266,6 +267,9 @@ namespace MCS
                     this.render.ContextMenu.IsOpen = true;
                 }
             };
+            this.render.Child.KeyDown += render_KeyDown;
+            this.render.Child.MouseMove += render_MouseMove;
+            this.render.Child.MouseWheel += render_MouseWheel;
             this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
 
             this.KeyDown += WindowsManager.Window_KeyDown;
@@ -299,6 +303,71 @@ namespace MCS
             }
 
             this.Engine.Dispose();
+        }
+
+
+        void render_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            MCamera camera = this.Engine.SceneManager.ActiveCamera;
+            if (e.KeyCode == System.Windows.Forms.Keys.W)
+                camera.Move(0, 0, 1);
+            else if (e.KeyCode == System.Windows.Forms.Keys.S)
+                camera.Move(0, 0, -1);
+            else if (e.KeyCode == System.Windows.Forms.Keys.A)
+                camera.Move(-1, 0, 0);
+            else if (e.KeyCode == System.Windows.Forms.Keys.D)
+                camera.Move(1, 0, 0);
+            else if (e.KeyCode == System.Windows.Forms.Keys.E)
+                camera.Move(0, 1, 0);
+            else if (e.KeyCode == System.Windows.Forms.Keys.Q)
+                camera.Move(0, -1, 0);
+            System.Threading.Thread.Sleep(50);
+        }
+
+        void render_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            Point mousePosition = new Point(e.X, e.Y);
+
+            double dx = lastMousePosition.X - mousePosition.X;
+            double dy = lastMousePosition.Y - mousePosition.Y;
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Left &&
+                (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))) // rotete camera
+            {
+                MCamera camera =  this.Engine.SceneManager.ActiveCamera;
+                if (camera != null)
+                {
+                    MPoint angle = camera.Rotation;
+                    angle.X -= dy / 2;
+                    angle.Y -= dx / 2;
+                    camera.Rotation = angle;
+                }
+            }
+            else if (e.Button == System.Windows.Forms.MouseButtons.Left) // move
+            {
+                // TODO: somekind of flick bug
+                MCamera camera = this.Engine.SceneManager.ActiveCamera;
+                if (camera != null) // move camera
+                {
+                    if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                        camera.Move(-dx / 2, dy / 2, 0);
+                    else
+                        camera.Move(dx / 2, 0, -dy / 2);
+                }
+            }
+
+            this.lastMousePosition = mousePosition;
+            System.Threading.Thread.Sleep(50);
+        }
+
+        void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            MCamera camera = this.Engine.SceneManager.ActiveCamera;
+            if (camera != null) // move camera
+            {
+                camera.Move(0, 0, e.Delta / 10);
+            }
+            System.Threading.Thread.Sleep(50);
         }
 
 

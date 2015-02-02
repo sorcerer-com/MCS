@@ -35,6 +35,13 @@ namespace MyEngine {
 	}
 
 
+	void Camera::Move(const Vector3& v)
+	{
+		Vector3 vv = this->Rotation * v;
+		this->Position += vv;
+	}
+
+
 	void Camera::WriteToFile(ostream& file) const
 	{
 		SceneElement::WriteToFile(file);

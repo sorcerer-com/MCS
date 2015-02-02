@@ -100,6 +100,7 @@ namespace MyEngine {
 			irrCamera->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
 			const Vector3& scl = camera->Scale;
 			irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+			irrCamera->updateAbsolutePosition();
 		}
 
 		// Set Global Ambient Light

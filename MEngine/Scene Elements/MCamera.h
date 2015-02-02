@@ -45,6 +45,11 @@ namespace MyEngine {
 			MSceneElement(owner, id)
 		{
 		}
+
+		void Move(double x, double y, double z)
+		{
+			this->camera->Move(Vector3(x, y, z));
+		}
 	};
 
 }

@@ -61,6 +61,14 @@ namespace MyEngine {
 			scale(multiplier);
 		}
 
+		inline void conjugate(void)
+		{
+			x = -x;
+			y = -y;
+			z = -z;
+			w *= -1;
+		}
+
 		Vector3 toAxisAngle(void) const
 		{
 			if (w == 1.0f)
@@ -102,6 +110,19 @@ namespace MyEngine {
 		q.z = a.x * b.z - a.y * b.w + a.z * b.x + a.w * b.y;
 		q.w = a.x * b.w + a.y * b.z - a.z * b.y + a.w * b.x;
 		return q;
+	}
+
+	inline Vector3 operator *(const Quaternion& q, const Vector3& v)
+	{
+		Vector3 result;
+		/*result.x = q.w * q.w * v.x + 2 * q.y * q.w * v.z - 2 * q.z * q.w * v.y + q.x * q.x * v.x + 2 * q.y * q.x * v.y + 2 * q.z * q.x * v.z - q.z * q.z * v.x - q.y * q.y * v.x;
+		result.y = 2 * q.x * q.y * v.x + q.y * q.y * v.y + 2 * q.z * q.y * v.z + 2 * q.w * q.z * v.x - q.z * q.z * v.y + q.w * q.w * v.y - 2 * q.x * q.w * v.z - q.x * q.x * v.y;
+		result.z = 2 * q.x * q.z * v.x + 2 * q.y * q.z * v.y + q.z * q.z * v.z - 2 * q.w * q.y * v.x - q.y * q.y * v.z + 2 * q.w * q.x * v.y - q.x * q.x * v.z + q.w * q.w * v.z;*/
+		// faster
+		Vector3 xyz(q.x, q.y, q.z);
+		Vector3 t = cross(xyz, v) * 2;
+		result = v + q.w * t + cross(xyz, t);
+		return result;
 	}
 
 }

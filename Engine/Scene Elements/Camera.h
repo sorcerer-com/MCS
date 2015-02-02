@@ -19,6 +19,8 @@ namespace MyEngine {
 		Camera(SceneManager* owner, const string& name, uint contentID);
 		Camera(SceneManager* owner, istream& file);
 
+		void Move(const Vector3& v);
+
 		virtual void WriteToFile(ostream& file) const override;
 		virtual SceneElement* Clone() const override;
 
