@@ -31,6 +31,11 @@ namespace MyEngine {
 			this->renderer->ReSize(width, height);
 		}
 
+		uint GetSceneElementID(double x, double y)
+		{
+			return this->renderer->GetSceneElementID((float)x, (float)y);
+		}
+
 	};
 
 };

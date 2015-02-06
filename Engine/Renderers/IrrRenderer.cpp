@@ -9,6 +9,7 @@
 
 #include "..\Engine.h"
 #include "..\Utils\Thread.h"
+#include "..\Utils\Config.h"
 #include "..\Managers\SceneManager.h"
 #include "..\Managers\ContentManager.h"
 #include "..\Scene Elements\SceneElement.h"
@@ -52,6 +53,21 @@ namespace MyEngine {
 		this->Height = height;
 		this->Resized = true;
 		Engine::Log(ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
+	}
+
+	uint IrrRenderer::GetSceneElementID(float x, float y)
+	{
+		irr::scene::ISceneCollisionManager* collMan = smgr->getSceneCollisionManager();
+
+		irr::core::vector2di coord((int)x, (int)y);
+		irr::core::line3df ray = collMan->getRayFromScreenCoordinates(coord);
+		ray.end *= 0.1;
+		irr::core::vector3df intersection;
+		irr::core::triangle3df hitTriangle;
+		irr::scene::ISceneNode* hitSceneNode = collMan->getSceneNodeAndCollisionPointFromRay(ray, intersection, hitTriangle);
+		if (hitSceneNode)
+			return hitSceneNode->getID();
+		return INVALID_ID;
 	}
 
 
@@ -184,11 +200,14 @@ namespace MyEngine {
 	irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
 	{
 		irr::scene::ISceneNode* irrSceneNode = NULL;
+		irr::scene::ITriangleSelector* irrTriangleSelector = NULL;
 
 		if (sceneElement->Type == ELight)
 		{
 			irrSceneNode = this->smgr->addLightSceneNode();
 			// TODO: add Billboard as a child when we have textures?
+			// TODO: selector from the bounding box of the Billboard
+			//irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
 		}
 		else
 		{
@@ -197,6 +216,15 @@ namespace MyEngine {
 
 			irr::scene::SMesh* mesh = this->meshesCache[sceneElement->ContentID];
 			irrSceneNode = this->smgr->addOctreeSceneNode(mesh);
+			// irrTriangleSelector = this->smgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
+			irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
+		}
+
+		// add triangle selector to be able to select it
+		if (irrTriangleSelector)
+		{
+			irrSceneNode->setTriangleSelector(irrTriangleSelector);
+			irrTriangleSelector->drop();
 		}
 
 		irrSceneNode->setID(sceneElement->ID);

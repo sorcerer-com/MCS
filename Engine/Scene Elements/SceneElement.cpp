@@ -66,12 +66,16 @@ namespace MyEngine {
 
 	ContentElementPtr SceneElement::GetContent() const
 	{
-		return this->Owner->Owner->ContentManager->GetElement(this->ContentID, true, true);
+		if (this->Owner->Owner->ContentManager->ContainElement(this->ContentID))
+			return this->Owner->Owner->ContentManager->GetElement(this->ContentID, true, true);
+		return ContentElementPtr();
 	}
 
 	ContentElementPtr SceneElement::GetMaterial() const
 	{
-		return this->Owner->Owner->ContentManager->GetElement(this->MaterialID, true, true);
+		if (this->Owner->Owner->ContentManager->ContainElement(this->MaterialID))
+			return this->Owner->Owner->ContentManager->GetElement(this->MaterialID, true, true);
+		return ContentElementPtr();
 	}
 
 

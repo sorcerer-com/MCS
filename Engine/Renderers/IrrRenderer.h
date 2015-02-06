@@ -51,6 +51,7 @@ namespace MyEngine {
 
 		virtual bool Init(void* params) override;
 		virtual void ReSize(int width, int height) override;
+		virtual uint GetSceneElementID(float x, float y) override;
 
 	private:
 		bool init();

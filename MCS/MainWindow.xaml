@@ -21,7 +21,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto" MinWidth="250"/>
+            <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
 
         <!-- Top ToolBar -->
@@ -127,10 +127,8 @@
                 <RowDefinition/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            
-            <Grid Grid.Row="0">
-                <mc:PropertyGrid Expanded="True" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}"/>
-            </Grid>
+
+            <mc:PropertyGrid Grid.Row="0" Expanded="True" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}"/>
 
             <!-- Bottom StatusBar -->
             <StatusBar Grid.Row="1" Height="30" VerticalAlignment="Top">

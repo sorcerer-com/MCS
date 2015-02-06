@@ -31,7 +31,7 @@ namespace MCS
             get
             {
                 if (MainWindow.SelectedElements.Count > 0)
-                    return this.Engine.SceneManager.GetElement(ContentWindow.SelectedElements[0]);
+                    return this.Engine.SceneManager.GetElement(MainWindow.SelectedElements[0]);
 
                 return null;
             }
@@ -265,10 +265,12 @@ namespace MCS
                 if (ee.Button == System.Windows.Forms.MouseButtons.Right)
                 {
                     this.render.ContextMenu.IsOpen = true;
+                    this.render.ContextMenu.DataContext = this;
                 }
             };
             this.render.Child.KeyDown += render_KeyDown;
             this.render.Child.MouseMove += render_MouseMove;
+            this.render.Child.MouseDoubleClick += render_MouseDoubleClick;
             this.render.Child.MouseWheel += render_MouseWheel;
             this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
 
@@ -308,6 +310,7 @@ namespace MCS
 
         void render_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
+            // camera movement
             MCamera camera = this.Engine.SceneManager.ActiveCamera;
             if (e.KeyCode == System.Windows.Forms.Keys.W)
                 camera.Move(0, 0, 1);
@@ -321,6 +324,12 @@ namespace MCS
                 camera.Move(0, 1, 0);
             else if (e.KeyCode == System.Windows.Forms.Keys.Q)
                 camera.Move(0, -1, 0);
+
+            // shortcuts
+            else if (e.KeyCode == System.Windows.Forms.Keys.Escape) // deselect
+                this.selectElement(null, true);
+
+
             System.Threading.Thread.Sleep(50);
         }
 
@@ -358,6 +367,16 @@ namespace MCS
 
             this.lastMousePosition = mousePosition;
             System.Threading.Thread.Sleep(50);
+        }
+
+        void render_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            uint id = this.Engine.ViewPortRenderer.GetSceneElementID(e.X, e.Y);
+            MSceneElement mse = this.Engine.SceneManager.GetElement(id);
+            bool deselect = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
+            if (!deselect && !(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+                this.selectElement(null, false); // deselect all
+            this.selectElement(mse, deselect);
         }
 
         void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -398,13 +417,11 @@ namespace MCS
 
         private void selectElement(MSceneElement mse, bool deselect = false)
         {
-            // TODO: test selection
             if (mse == null) // deselect all
             {
                 MainWindow.SelectedElements.Clear();
                 //this.objectsComboBox.SelectedIndex = -1;
                 //this.scaleValueBox.Value = 0.0;
-                //this.showProperties(mse, false);
                 //this.selectedCursor = ECursorType.Select;
             }
             else
@@ -440,7 +457,6 @@ namespace MCS
                         this.selectedCursor = ECursorType.Select;
                     }*/
                 }
-                //this.showProperties(mse, false);
             }
             //this.updateCursor(false);
 
