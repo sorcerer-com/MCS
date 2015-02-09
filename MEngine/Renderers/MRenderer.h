@@ -5,6 +5,7 @@
 #pragma managed
 
 #include "..\Utils\MHeader.h"
+#include "..\Utils\Types\MPoint.h"
 
 
 namespace MyEngine {
@@ -33,7 +34,22 @@ namespace MyEngine {
 
 		uint GetSceneElementID(double x, double y)
 		{
-			return this->renderer->GetSceneElementID((float)x, (float)y);
+			Vector3 dir, inter;
+			return this->renderer->GetIntesectionInfo((float)x, (float)y, dir, inter);
+		}
+
+		MPoint GetDirection(double x, double y)
+		{
+			Vector3 dir, inter;
+			this->renderer->GetIntesectionInfo((float)x, (float)y, dir, inter);
+			return MPoint(dir);
+		}
+
+		MPoint GetIntesectionPoint(double x, double y)
+		{
+			Vector3 dir, inter;
+			this->renderer->GetIntesectionInfo((float)x, (float)y, dir, inter);
+			return MPoint(inter);
 		}
 
 	};

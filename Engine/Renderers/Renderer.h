@@ -8,6 +8,7 @@ namespace MyEngine {
 
 	class Engine;
 	struct Thread;
+	struct Vector3;
 
 	enum RendererType
 	{
@@ -34,7 +35,7 @@ namespace MyEngine {
 		
 		virtual bool Init(void* params) = 0;
 		virtual void ReSize(int width, int height) = 0;
-		virtual uint GetSceneElementID(float x, float y) = 0;
+		virtual uint GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter) = 0;
 	};
 
 	// TODO: may be subclass for "production" renderers

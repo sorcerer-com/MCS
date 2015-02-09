@@ -24,7 +24,10 @@ namespace MyEngine {
 	
 	MCamera^ MSceneManager::ActiveCamera::get()
 	{
-		return gcnew MCamera(this->sceneManager, this->sceneManager->ActiveCamera->ID);
+		if (this->sceneManager->ActiveCamera)
+			return gcnew MCamera(this->sceneManager, this->sceneManager->ActiveCamera->ID);
+
+		return nullptr;
 	}
 	
 	void MSceneManager::ActiveCamera::set(MCamera^ value)

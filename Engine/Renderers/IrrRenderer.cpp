@@ -55,18 +55,23 @@ namespace MyEngine {
 		Engine::Log(ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
 	}
 
-	uint IrrRenderer::GetSceneElementID(float x, float y)
+	uint IrrRenderer::GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter)
 	{
-		irr::scene::ISceneCollisionManager* collMan = smgr->getSceneCollisionManager();
+		irr::scene::ISceneCollisionManager* collMan = this->smgr->getSceneCollisionManager();
 
 		irr::core::vector2di coord((int)x, (int)y);
 		irr::core::line3df ray = collMan->getRayFromScreenCoordinates(coord);
-		ray.end *= 0.1;
+		dir = Vector3(ray.end.X, ray.end.Y, ray.end.Z) - Vector3(ray.start.X, ray.start.Y, ray.start.Z);
+		dir.normalize();
 		irr::core::vector3df intersection;
 		irr::core::triangle3df hitTriangle;
 		irr::scene::ISceneNode* hitSceneNode = collMan->getSceneNodeAndCollisionPointFromRay(ray, intersection, hitTriangle);
 		if (hitSceneNode)
+		{
+			inter = Vector3(intersection.X, intersection.Y, intersection.Z);
 			return hitSceneNode->getID();
+		}
+		inter = Vector3();
 		return INVALID_ID;
 	}
 

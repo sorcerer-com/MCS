@@ -20,24 +20,24 @@ namespace MyEngine {
 
 	public:
 		[MPropertyAttribute(Group = "Camera")]
-		property float FieldOfView
+		property double FieldOfView
 		{
-			float get() { return camera->FOV; }
-			void set(float value) { camera->FOV = value; OnChanged(); }
+			double get() { return camera->FOV; }
+			void set(double value) { camera->FOV = (float)value; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Camera")]
-		property float FocalPlaneDist
+		property double FocalPlaneDist
 		{
-			float get() { return camera->FocalPlaneDist; }
-			void set(float value) { camera->FocalPlaneDist = value; OnChanged(); }
+			double get() { return camera->FocalPlaneDist; }
+			void set(double value) { camera->FocalPlaneDist = (float)value; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Camera")]
-		property float FNumber
+		property double FNumber
 		{
-			float get() { return camera->FNumber; }
-			void set(float value) { camera->FNumber = value; OnChanged(); }
+			double get() { return camera->FNumber; }
+			void set(double value) { camera->FNumber = (float)value; OnChanged(); }
 		}
 
 	public:

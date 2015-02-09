@@ -33,7 +33,7 @@ namespace MCS
                 if (MainWindow.SelectedElements.Count > 0)
                     return this.Engine.SceneManager.GetElement(MainWindow.SelectedElements[0]);
 
-                return null;
+                return this.Engine.SceneManager.ActiveCamera;
             }
         }
 
@@ -174,9 +174,6 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (MainWindow.SelectedElements.Count == 0)
-                        return;
-
                     List<MSceneElement> newSelectedElements = new List<MSceneElement>();
                     foreach (var id in MainWindow.SelectedElements)
                     {
@@ -188,7 +185,7 @@ namespace MCS
 
                     foreach (MSceneElement mse in newSelectedElements)
                         this.selectElement(mse);
-                });
+                }, (o) => { return MainWindow.SelectedElements.Count != 0; });
             }
         }
 
@@ -198,9 +195,6 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (MainWindow.SelectedElements.Count != 1)
-                        return;
-
                     MSceneElement mse = this.Engine.SceneManager.GetElement(MainWindow.SelectedElements[0]);
                     string newName = TextDialogBox.Show("Rename", "Name", mse.Name);
                     if (!string.IsNullOrEmpty(newName) && mse.Name != newName)
@@ -208,7 +202,7 @@ namespace MCS
                         if (!this.Engine.SceneManager.RenameElement(mse.Name, newName))
                             ExtendedMessageBox.Show("Cannot rename scene element '" + mse.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return MainWindow.SelectedElements.Count == 1; });
             }
         }
 
@@ -218,12 +212,41 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (MainWindow.SelectedElements.Count == 0)
-                        return;
-
                     foreach (uint id in MainWindow.SelectedElements)
                         this.Engine.SceneManager.DeleteElement(id);
                     this.selectElement(null);
+                }, (o) => { return MainWindow.SelectedElements.Count != 0; });
+            }
+        }
+
+        public ICommand AddElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    Point p = this.render.ContextMenu.PointToScreen(new Point());
+                    p = this.render.PointFromScreen(p);
+                    MPoint dir = this.Engine.ViewPortRenderer.GetDirection(p.X, p.Y);;
+                    double dist = this.Engine.ViewPortRenderer.GetIntesectionPoint(p.X, p.Y).Length();
+                    if (dist == 0 || dist > 1000)
+                        dist = 100;
+
+                    MContentElement element = o as MContentElement;
+                    string name = element != null ? element.Name : o.ToString();
+                    int count = 0;
+                    while (this.Engine.SceneManager.ContainElement(name + count)) count++;
+
+                    MSceneElement mse = null;
+                    if (element != null)
+                        mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, name + count, element.ID);
+                    else if (name == "Camera")
+                        mse = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, name + count, @"MPackage#Meshes\System\Camera");
+                    else if (name == "Light")
+                        mse = this.Engine.SceneManager.AddElement(ESceneElementType.Light, name + count, 0);
+
+                    if (mse != null)
+                        mse.Position = this.Engine.SceneManager.ActiveCamera.Position + dir * dist;
                 });
             }
         }
@@ -265,13 +288,14 @@ namespace MCS
                 if (ee.Button == System.Windows.Forms.MouseButtons.Right)
                 {
                     this.render.ContextMenu.IsOpen = true;
-                    this.render.ContextMenu.DataContext = this;
+                    this.updateContextMenuItems();
                 }
             };
             this.render.Child.KeyDown += render_KeyDown;
             this.render.Child.MouseMove += render_MouseMove;
             this.render.Child.MouseDoubleClick += render_MouseDoubleClick;
             this.render.Child.MouseWheel += render_MouseWheel;
+            this.render.ContextMenu.DataContext = this;
             this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
 
             this.KeyDown += WindowsManager.Window_KeyDown;
@@ -354,7 +378,6 @@ namespace MCS
             }
             else if (e.Button == System.Windows.Forms.MouseButtons.Left) // move
             {
-                // TODO: somekind of flick bug
                 MCamera camera = this.Engine.SceneManager.ActiveCamera;
                 if (camera != null) // move camera
                 {
@@ -397,6 +420,33 @@ namespace MCS
                 this.Title += " - " + Path.GetFileNameWithoutExtension(this.sceneFilePath);
             if (!this.sceneSaved)
                 this.Title += "*";
+        }
+
+        private void updateContextMenuItems()
+        {
+            List<object> items = new List<object>();
+            foreach (var item in this.render.ContextMenu.Items)
+                items.Add(item);
+
+            this.render.ContextMenu.Items.Clear();
+            foreach (var item in items)
+            {
+                System.Windows.Controls.MenuItem menu = item as System.Windows.Controls.MenuItem;
+                if (menu != null && menu.Header.ToString() == "Add Object")
+                {
+                    menu.Items.Clear();
+                    List<object> selectedContentElements = this.GetSelectedContentElementsList(null);
+                    foreach (var element in selectedContentElements)
+                    {
+                        System.Windows.Controls.MenuItem mi = new System.Windows.Controls.MenuItem();
+                        mi.Header = element.ToString();
+                        mi.Command = this.AddElementCommand;
+                        mi.CommandParameter = element;
+                        menu.Items.Add(mi);
+                    }
+                }
+                this.render.ContextMenu.Items.Add(item);
+            }
         }
 
         private bool checkSceneSaved()

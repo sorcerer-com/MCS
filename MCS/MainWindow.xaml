@@ -104,10 +104,9 @@
                     <MenuItem Header="Rename" Command="{Binding Path=RenameElementCommand}"/>
                     <MenuItem Header="Delete" Command="{Binding Path=DeleteElementCommand}"/>
                     <Separator/>
-                    <MenuItem Header="Add Camera"/>
-                    <MenuItem Header="Add Light"/>
-                    <MenuItem Header="Add Static Object"/>
-                    <MenuItem Header="Add Dynamic Object"/>
+                    <MenuItem Header="Add Camera" Command="{Binding Path=AddElementCommand}" CommandParameter="Camera"/>
+                    <MenuItem Header="Add Light" Command="{Binding Path=AddElementCommand}" CommandParameter="Light"/>
+                    <MenuItem Header="Add Object"/>
                     <MenuItem Header="Add Water"/>
                     <MenuItem Header="Add Character"/>
                 </ContextMenu>

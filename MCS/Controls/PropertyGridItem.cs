@@ -293,7 +293,7 @@ namespace MCS.Controls
             else if ((type == typeof(int)) && (sender is NumberBox))
                 SetValue(ObjectProperty, (int)(sender as NumberBox).Value);
             else if ((type == typeof(float) || type == typeof(double)) && (sender is NumberBox))
-                SetValue(ObjectProperty, (float)(sender as NumberBox).Value);
+                SetValue(ObjectProperty, (double)(sender as NumberBox).Value);
             else if ((type == typeof(bool)) && (sender is ComboBox))
                 SetValue(ObjectProperty, (bool)((sender as ComboBox).SelectedItem.ToString() == "True"));
             else if ((type.IsEnum) && (sender is ComboBox))
