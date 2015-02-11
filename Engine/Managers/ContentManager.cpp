@@ -58,7 +58,7 @@ namespace MyEngine {
 				if (ifile.eof())
 					break;
 			}
-			ContentElementType type = EMesh;
+			ContentElementType type = ContentElementType::EMesh;
 			Read(ifile, type);
 			const streamoff offset = -(streamoff)(sizeof(version) + sizeof(type));
 			ifile.seekg(offset, ios_base::cur);
@@ -267,7 +267,7 @@ namespace MyEngine {
 	ContentElementPtr ContentManager::AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id /* = 0 */)
 	{
 		ContentElement *element = NULL;
-		if (type == EMesh)
+		if (type == ContentElementType::EMesh)
 			element = new Mesh(this, name, package, path);
 		/* TODO: add different content types
 		else if (type == EMaterial)
@@ -513,7 +513,7 @@ namespace MyEngine {
 			this_thread::sleep_for(chrono::milliseconds(100));
 
 			// unload all unused content elements
-			if (Engine::Mode != EEditor)
+			if (Engine::Mode != EngineMode::EEditor)
 			{
 				lock lck(this->thread->mutex("content"));
 				vector<uint> forUnload;
@@ -549,7 +549,8 @@ namespace MyEngine {
 		auto it = find(this->requests.begin(), this->requests.end(), pair);
 
 		bool skip = false;
-		if ((type != ESaveDatabase && it != this->requests.end()) || (type == ESaveDatabase && this->requests.size() > 0 && this->requests.back() == pair))
+		if ((type != RequestType::ESaveDatabase && it != this->requests.end()) || 
+			(type == RequestType::ESaveDatabase && this->requests.size() > 0 && this->requests.back() == pair))
 			skip = true;
 
 		if (!skip)
@@ -717,7 +718,7 @@ namespace MyEngine {
 	ContentElement* ContentManager::loadElement(istream& ifile, ContentElementType type)
 	{
 		ContentElement* element = NULL;
-		if (type == EMesh)
+		if (type == ContentElementType::EMesh)
 			element = new Mesh(this, ifile);
 		/* TODO: add different content types
 		else if (type == EMaterial)
@@ -851,7 +852,7 @@ namespace MyEngine {
 
 	void ContentManager::beckupElement(const ContentElementPtr& element, bool erase)
 	{
-		if (Engine::Mode == EEngine)
+		if (Engine::Mode == EngineMode::EEngine)
 			return;
 
 		string backupPath = BACKUP_FOLDER + string("\\");

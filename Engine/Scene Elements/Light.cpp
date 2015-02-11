@@ -34,7 +34,7 @@ namespace MyEngine {
 
 	void Light::init()
 	{
-		this->LType = ESun;
+		this->LType = LightType::ESun;
 		this->Radius = 128.0f;
 		this->Color = Color4(0.8f, 0.8f, 0.8f, 1.0f);
 		this->SpotExponent = 0.5f;

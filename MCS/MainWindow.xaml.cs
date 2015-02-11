@@ -352,9 +352,6 @@ namespace MCS
             // shortcuts
             else if (e.KeyCode == System.Windows.Forms.Keys.Escape) // deselect
                 this.selectElement(null, true);
-
-
-            System.Threading.Thread.Sleep(50);
         }
 
         void render_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -389,7 +386,6 @@ namespace MCS
             }
 
             this.lastMousePosition = mousePosition;
-            System.Threading.Thread.Sleep(50);
         }
 
         void render_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -409,7 +405,6 @@ namespace MCS
             {
                 camera.Move(0, 0, e.Delta / 10);
             }
-            System.Threading.Thread.Sleep(50);
         }
 
 

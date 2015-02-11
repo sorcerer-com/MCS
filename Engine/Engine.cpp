@@ -12,7 +12,7 @@
 namespace MyEngine {
 
 	/* E N G I N E */
-	EngineMode Engine::Mode = EEditor;
+	EngineMode Engine::Mode = EngineMode::EEditor;
 
 
 	Engine::Engine()
@@ -35,7 +35,7 @@ namespace MyEngine {
 
 	void Engine::Log(LogType type, const string& category, const string& text)
 	{
-		if (Engine::Mode == EEngine) // TODO: in other "Record"/"Movie" mode show only errors?
+		if (Engine::Mode == EngineMode::EEngine) // TODO: in other "Record"/"Movie" mode show only errors?
 			return;
 
 		ofstream ofile(LOG_FILE, ios_base::app);
@@ -46,9 +46,9 @@ namespace MyEngine {
 		}
 
 		string stype = "Log";
-		if (type == EWarning)
+		if (type == LogType::EWarning)
 			stype = "Warning";
-		else if (type == EError)
+		else if (type == LogType::EError)
 			stype = "Error";
 
 		ofile << left;

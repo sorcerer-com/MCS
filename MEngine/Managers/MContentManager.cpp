@@ -199,7 +199,7 @@ namespace MyEngine {
 			return gcnew MContentElement(element->Owner, element->ID);
 
 		MContentElement^ melement = nullptr;
-		if (element->Type == EMesh)
+		if (element->Type == ContentElementType::EMesh)
 			melement = gcnew MMesh(element->Owner, element->ID);
 		/* TODO: add content elements
 		else if (element->Type == EMaterial)

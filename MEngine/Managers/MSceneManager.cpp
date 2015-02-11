@@ -185,9 +185,9 @@ namespace MyEngine {
 			return nullptr;
 
 		MSceneElement^ melement = nullptr;
-		if (element->Type == ECamera)
+		if (element->Type == SceneElementType::ECamera)
 			melement = gcnew MCamera(element->Owner, element->ID);
-		else if (element->Type == ELight)
+		else if (element->Type == SceneElementType::ELight)
 			melement = gcnew MLight(element->Owner, element->ID);
 		/* TODO: add scene elements
 		else if (element->Type == ECharacter)

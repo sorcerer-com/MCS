@@ -40,7 +40,7 @@ namespace MyEngine {
 	bool SceneManager::Save(const string& filePath)
 	{
 		// Backup
-		if (Engine::Mode != EEngine)
+		if (Engine::Mode != EngineMode::EEngine)
 		{
 			string fileName = filePath.substr(filePath.find_last_of("\\") + 1, filePath.find_last_of(".") - filePath.find_last_of("\\") - 1);
 			string backupPath = BACKUP_FOLDER + string("\\");
@@ -122,15 +122,15 @@ namespace MyEngine {
 					return false;
 				}
 
-				SceneElementType type = ECamera;
+				SceneElementType type = SceneElementType::ECamera;
 				Read(ifile, type);
 				const streamoff offset = -(streamoff)(sizeof(version) + sizeof(type));
 				ifile.seekg(offset, ios_base::cur);
 
 				SceneElement* element = NULL;
-				if (type == ECamera)
+				if (type == SceneElementType::ECamera)
 					element = new Camera(this, ifile);
-				else if (type == ELight)
+				else if (type == SceneElementType::ELight)
 					element = new Light(this, ifile);
 				/* TODO: add different scene elements types
 				else if (element->Type == ECharacter)
@@ -170,9 +170,9 @@ namespace MyEngine {
 	{
 		SceneElement *element = NULL;
 
-		if (type == ECamera)
+		if (type == SceneElementType::ECamera)
 			element = new Camera(this, name, contentID);
-		else if (type == ELight)
+		else if (type == SceneElementType::ELight)
 			element = new Light(this, name, contentID, EStaticLight);
 		/* TODO: add other scene elements
 		else if (type == ECharacter)

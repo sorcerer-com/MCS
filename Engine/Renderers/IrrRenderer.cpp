@@ -115,13 +115,13 @@ namespace MyEngine {
 			irr::scene::ICameraSceneNode* irrCamera = this->smgr->getActiveCamera();
 			irrCamera->setFOV(camera->FOV * (3.14159265f / 180.0f)); // from deg to rad
 
+			irrCamera->updateAbsolutePosition();
 			const Vector3& pos = camera->Position;
 			irrCamera->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
 			const Vector3& rot = camera->Rotation.toAxisAngle();
 			irrCamera->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
 			const Vector3& scl = camera->Scale;
 			irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
-			irrCamera->updateAbsolutePosition();
 		}
 
 		// Set Global Ambient Light
@@ -129,6 +129,7 @@ namespace MyEngine {
 		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
 		// TODO: fog
+		// TODO: shadow
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
@@ -166,7 +167,12 @@ namespace MyEngine {
 			irrSceneNode = this->createIrrSceneNode(sceneElement);
 
 		irrSceneNode->setName(sceneElement->Name.c_str());
-		irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode else set them half visible
+		if (sceneElement.get() == this->Owner->SceneManager->ActiveCamera)
+			irrSceneNode->setVisible(false);
+		else if (irrSceneNode->isDebugObject() == true && Engine::Mode != EngineMode::EEditor)
+			irrSceneNode->setVisible(false);
+		else
+			irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode else set them half visible
 
 		const Vector3& pos = sceneElement->Position;
 		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
@@ -174,6 +180,8 @@ namespace MyEngine {
 		irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+
+		// TODO: set material
 
 		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
 		if (type == irr::scene::ESNT_MESH || type == irr::scene::ESNT_OCTREE)
@@ -183,7 +191,7 @@ namespace MyEngine {
 			if (this->updateIrrMesh(sceneElement, irrMesh))
 				irrMeshSceneNode->setMesh(irrMesh);
 		}
-		else if (type == irr::scene::ESNT_LIGHT && sceneElement->Type == ELight)
+		else if (type == irr::scene::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
 		{
 			Light* light = (Light*)sceneElement.get();
 
@@ -207,11 +215,12 @@ namespace MyEngine {
 		irr::scene::ISceneNode* irrSceneNode = NULL;
 		irr::scene::ITriangleSelector* irrTriangleSelector = NULL;
 
-		if (sceneElement->Type == ELight)
+		if (sceneElement->Type == SceneElementType::ELight)
 		{
 			irrSceneNode = this->smgr->addLightSceneNode();
 			// TODO: add Billboard as a child when we have textures?
 			// TODO: selector from the bounding box of the Billboard
+			
 			//irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
 		}
 		else
@@ -221,6 +230,9 @@ namespace MyEngine {
 
 			irr::scene::SMesh* mesh = this->meshesCache[sceneElement->ContentID];
 			irrSceneNode = this->smgr->addOctreeSceneNode(mesh);
+			if (sceneElement->Type == SceneElementType::ESystemObject)
+				irrSceneNode->setIsDebugObject(true);
+
 			// irrTriangleSelector = this->smgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
 			irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
 		}
@@ -239,7 +251,7 @@ namespace MyEngine {
 	bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
 	{
 		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
-		if (!contentElement || contentElement->Type != EMesh)
+		if (!contentElement || contentElement->Type != ContentElementType::EMesh)
 		{
 			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
 				to_string(sceneElement->ContentID) + ")");
@@ -316,7 +328,7 @@ namespace MyEngine {
 			this->smgr->drawAll();
 			this->guienv->drawAll();
 
-			if (Engine::Mode != EEngine)
+			if (Engine::Mode != EngineMode::EEngine)
 			{
 				irr::video::SColor white(255, 255, 255, 255);
 				this->guienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->driver->getFPS()), irr::core::recti(10, 10, 0, 0), white);

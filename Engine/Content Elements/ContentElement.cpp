@@ -48,7 +48,7 @@ namespace MyEngine {
 	void ContentElement::init()
 	{
 		this->Version = CURRENT_VERSION;
-		this->Type = EMesh;
+		this->Type = ContentElementType::EMesh;
 		this->ID = INVALID_ID;
 		this->Name = "";
 		this->Package = "";

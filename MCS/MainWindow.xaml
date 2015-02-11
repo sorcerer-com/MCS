@@ -58,11 +58,11 @@
                 <Button ToolTip="{Binding Path=ContentWindowCommandTooltip}" Command="{Binding Path=ContentWindowCommand}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Environment (Ctrl+E)">
-                    <Image Source="/Images/MainWindow/Environment.png" Style="{StaticResource toolbarButtonImageStyle}"/>
-                </Button>
                 <Button ToolTip="Find (Ctrl+F)">
                     <Image Source="/Images/MainWindow/Find.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button ToolTip="Environment (Ctrl+E)">
+                    <Image Source="/Images/MainWindow/Environment.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Layers (Ctrl+L)">
                     <Image Source="/Images/MainWindow/Layers.png" Style="{StaticResource toolbarButtonImageStyle}"/>
