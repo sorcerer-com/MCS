@@ -57,6 +57,9 @@ namespace MyEngine {
 
 	uint IrrRenderer::GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter)
 	{
+		if (!this->device || !this->device->run())
+			return INVALID_ID;
+
 		irr::scene::ISceneCollisionManager* collMan = this->smgr->getSceneCollisionManager();
 
 		irr::core::vector2di coord((int)x, (int)y);
@@ -74,7 +77,7 @@ namespace MyEngine {
 		inter = Vector3();
 		return INVALID_ID;
 	}
-
+	
 
 	bool IrrRenderer::init()
 	{
@@ -101,6 +104,7 @@ namespace MyEngine {
 		irrCamera->bindTargetAndRotation(true);
 		irrCamera->setNearValue(0.1f);
 		irrCamera->setFarValue(10000.0f);
+		irrCamera->remove();
 
 		return true;
 	}
@@ -167,12 +171,17 @@ namespace MyEngine {
 			irrSceneNode = this->createIrrSceneNode(sceneElement);
 
 		irrSceneNode->setName(sceneElement->Name.c_str());
-		if (sceneElement.get() == this->Owner->SceneManager->ActiveCamera)
+		if (sceneElement.get() == this->Owner->SceneManager->ActiveCamera) // hide active camera
 			irrSceneNode->setVisible(false);
-		else if (irrSceneNode->isDebugObject() == true && Engine::Mode != EngineMode::EEditor)
-			irrSceneNode->setVisible(false);
-		else
-			irrSceneNode->setVisible(sceneElement->Visible); // TODO: if it's not in editor mode else set them half visible
+		else if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
+		{
+			if (irrSceneNode->isDebugObject() == true) // hide all debug objects
+				irrSceneNode->setVisible(false);
+			else
+				irrSceneNode->setVisible(sceneElement->Visible);
+		}
+		else 
+			irrSceneNode->setVisible(true); // show all objects in Editor mode
 
 		const Vector3& pos = sceneElement->Position;
 		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
@@ -228,8 +237,8 @@ namespace MyEngine {
 			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
 				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
 
-			irr::scene::SMesh* mesh = this->meshesCache[sceneElement->ContentID];
-			irrSceneNode = this->smgr->addOctreeSceneNode(mesh);
+			irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
+			irrSceneNode = this->smgr->addOctreeSceneNode(irrMesh);
 			if (sceneElement->Type == SceneElementType::ESystemObject)
 				irrSceneNode->setIsDebugObject(true);
 

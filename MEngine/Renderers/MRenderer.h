@@ -10,10 +10,38 @@
 
 namespace MyEngine {
 
+	public enum class ERendererType
+	{
+		IrrRenderer,
+		CPURayRenderer,
+		GPURayRenderer
+	};
+
 	public ref class MRenderer
 	{
 	private:
 		Renderer* renderer;
+
+	public:
+		property ERendererType Type
+		{
+			ERendererType get() { return (ERendererType)this->renderer->Type; }
+		}
+
+		property int Width
+		{
+			int get() { return this->renderer->Width; }
+		}
+
+		property int Height
+		{
+			int get() { return this->renderer->Height; }
+		}
+
+		property bool Resized
+		{
+			bool get() { return this->renderer->Resized; }
+		}
 
 	public:
 		MRenderer(Renderer* renderer)
@@ -31,6 +59,7 @@ namespace MyEngine {
 		{
 			this->renderer->ReSize(width, height);
 		}
+
 
 		uint GetSceneElementID(double x, double y)
 		{

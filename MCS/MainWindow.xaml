@@ -38,16 +38,16 @@
                 </Button>
             </ToolBar>
             <ToolBar Band="1" BandIndex="2" IsManipulationEnabled="True">
-                <RadioButton GroupName="Cursors" IsChecked="True">
+                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Select" IsChecked="True">
                     <Image Source="/Images/MainWindow/Cursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
-                <RadioButton GroupName="Cursors">
+                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Move" >
                     <Image Source="/Images/MainWindow/MoveCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
-                <RadioButton GroupName="Cursors">
+                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Rotate" >
                     <Image Source="/Images/MainWindow/RotateCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
-                <RadioButton GroupName="Cursors">
+                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Scale" >
                     <Image Source="/Images/MainWindow/ScaleCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
             </ToolBar>
@@ -130,7 +130,7 @@
             <mc:PropertyGrid Grid.Row="0" Expanded="True" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}"/>
 
             <!-- Bottom StatusBar -->
-            <StatusBar Grid.Row="1" Height="30" VerticalAlignment="Top">
+            <StatusBar Grid.Row="1" VerticalAlignment="Top">
                 <!--
                 <ComboBox Width="250" MaxDropDownHeight="100">
                     <ComboBox.ItemTemplate>
@@ -142,33 +142,10 @@
                 <Separator/>
                 <!-- <MC:ValueBox x:Name="scaleValueBox" Width="50" Value="0.0" Changed="scaleValueBox_Changed"/> -->
                 <Separator/>
-                <Image Source="/Images/MainWindow/translate.png"/>
-                <ComboBox Width="Auto" SelectedIndex="1">
-                    <ComboBoxItem Content="1"/>
-                    <ComboBoxItem Content="4"/>
-                    <ComboBoxItem Content="16"/>
-                    <ComboBoxItem Content="64"/>
-                    <ComboBoxItem Content="256"/>
-                    <ComboBoxItem Content="1024"/>
-                </ComboBox>
-                <Separator/>
-                <Image Source="/Images/MainWindow/rotate.png"/>
-                <ComboBox Width="Auto" SelectedIndex="1">
-                    <ComboBoxItem Content="5"/>
-                    <ComboBoxItem Content="15"/>
-                    <ComboBoxItem Content="45"/>
-                    <ComboBoxItem Content="90"/>
-                </ComboBox>
-                <Separator/>
-                <Image Source="/Images/MainWindow/scale.png"/>
-                <ComboBox Width="Auto" SelectedIndex="2">
-                    <ComboBoxItem Content="1"/>
-                    <ComboBoxItem Content="10"/>
-                    <ComboBoxItem Content="30"/>
-                    <ComboBoxItem Content="50"/>
-                </ComboBox>
-                <Separator/>
-                <Label Width="Auto"/>
+                <Image Source="{Binding Path=SnapDropDownImage}" Visibility="{Binding Path=SnapDropDownVisibility}" Height="26"/>
+                <ComboBox Width="Auto" ItemsSource="{Binding Path=SnapDropDownItems}" SelectedItem="{Binding Path=SnapDropDownSelectedItem, Mode=TwoWay}" Visibility="{Binding Path=SnapDropDownVisibility}"/>
+                <Separator Visibility="{Binding Path=SnapDropDownVisibility}"/>
+                <Label Width="Auto" Content="{Binding Path=InfoLabelContent}"/>
             </StatusBar>
         </Grid>
         

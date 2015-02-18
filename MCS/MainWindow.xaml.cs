@@ -3,6 +3,7 @@ using MCS.MainWindows;
 using MCS.Managers;
 using Microsoft.Win32;
 using MyEngine;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -21,10 +22,20 @@ namespace MCS
 
         public static List<uint> SelectedElements = new List<uint>();
 
+        public enum ECursorType
+        {
+            Select,
+            Move,
+            Rotate,
+            Scale
+        }
+
 
         private bool sceneSaved;
         private string sceneFilePath;
         private Point lastMousePosition;
+        private ECursorType selectedCursor;
+
 
         public MSceneElement SelectedElement
         {
@@ -50,6 +61,76 @@ namespace MCS
                     };
             }
         }
+
+        public string InfoLabelContent
+        {
+            get
+            {
+                if (MainWindow.SelectedElements.Count == 1)
+                    return string.Format("'{0}' object selected", this.SelectedElement.Name);
+                else
+                    return string.Format("{0} objects selected", MainWindow.SelectedElements.Count);
+            }
+        }
+
+        #region SnapDropDown
+
+        public string SnapDropDownImage
+        {
+            get
+            {
+                if (selectedCursor == ECursorType.Move)
+                    return "/Images/MainWindow/move.png";
+                else if (selectedCursor == ECursorType.Rotate)
+                    return "/Images/MainWindow/rotate.png";
+                else if (selectedCursor == ECursorType.Scale)
+                    return "/Images/MainWindow/scale.png";
+                return string.Empty;
+            }
+        }
+
+        public double[] SnapDropDownItems
+        {
+            get
+            {
+                if (selectedCursor == ECursorType.Move)
+                    return new double[] { 0.1, 0.5, 1.0, 5.0, 10.0, 50.0};
+                else if (selectedCursor == ECursorType.Rotate)
+                    return new double[] { 1.0, 5.0, 15.0, 45.0, 90.0 };
+                else if (selectedCursor == ECursorType.Scale)
+                    return new double[] { 1.0, 10.0, 30.0, 50.0 };
+                return null;
+            }
+        }
+
+        private double[] snapDropDownSelectedItem;
+        public double SnapDropDownSelectedItem
+        {
+            get
+            {
+                if (this.snapDropDownSelectedItem == null)
+                    this.snapDropDownSelectedItem = new double[] { 1.0, 1.0, 1.0, 1.0 };
+                return snapDropDownSelectedItem[(int)this.selectedCursor];
+            }
+            set
+            {
+                if (this.snapDropDownSelectedItem == null)
+                    this.snapDropDownSelectedItem = new double[] { 1.0, 1.0, 1.0, 1.0 };
+                snapDropDownSelectedItem[(int)this.selectedCursor] = value;
+            }
+        }
+
+        public Visibility SnapDropDownVisibility
+        {
+            get
+            {
+                if (this.selectedCursor == ECursorType.Select)
+                    return Visibility.Collapsed;
+                return Visibility.Visible;
+            }
+        }
+
+        #endregion
 
         #region Commands
 
@@ -146,6 +227,25 @@ namespace MCS
         public string SaveSceneCommandTooltip
         {
             get { return "Save (" + WindowsManager.GetHotkey(this.GetType(), "SaveSceneCommand") + ")"; }
+        }
+
+        public ICommand CursorChangedCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (o != null)
+                    {
+                        Enum.TryParse<ECursorType>(o.ToString(), out this.selectedCursor);
+
+                        this.OnPropertyChanged("SnapDropDownImage");
+                        this.OnPropertyChanged("SnapDropDownItems");
+                        this.OnPropertyChanged("SnapDropDownSelectedItem");
+                        this.OnPropertyChanged("SnapDropDownVisibility");
+                    }
+                });
+            }
         }
 
         public ICommand LogWindowCommand
@@ -245,7 +345,7 @@ namespace MCS
                     else if (name == "Light")
                         mse = this.Engine.SceneManager.AddElement(ESceneElementType.Light, name + count, 0);
 
-                    if (mse != null)
+                    if (mse != null && this.Engine.SceneManager.ActiveCamera != null)
                         mse.Position = this.Engine.SceneManager.ActiveCamera.Position + dir * dist;
                 });
             }
@@ -268,6 +368,8 @@ namespace MCS
 
             this.sceneSaved = true;
             this.sceneFilePath = string.Empty;
+            this.lastMousePosition = new Point();
+            this.selectedCursor = ECursorType.Select;
 
             ConfigManager.LoadConfig();
         }
@@ -275,6 +377,7 @@ namespace MCS
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+            this.OnPropertyChanged("SelectedElement");
             this.sceneSaved = true;
             this.updateTitle();
 
@@ -295,6 +398,7 @@ namespace MCS
             this.render.Child.MouseMove += render_MouseMove;
             this.render.Child.MouseDoubleClick += render_MouseDoubleClick;
             this.render.Child.MouseWheel += render_MouseWheel;
+            this.render.Child.MouseUp += render_MouseUp;
             this.render.ContextMenu.DataContext = this;
             this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
 
@@ -336,22 +440,41 @@ namespace MCS
         {
             // camera movement
             MCamera camera = this.Engine.SceneManager.ActiveCamera;
-            if (e.KeyCode == System.Windows.Forms.Keys.W)
+            if (e.KeyCode == System.Windows.Forms.Keys.W && camera != null)
                 camera.Move(0, 0, 1);
-            else if (e.KeyCode == System.Windows.Forms.Keys.S)
+            else if (e.KeyCode == System.Windows.Forms.Keys.S && camera != null)
                 camera.Move(0, 0, -1);
-            else if (e.KeyCode == System.Windows.Forms.Keys.A)
+            else if (e.KeyCode == System.Windows.Forms.Keys.A && camera != null)
                 camera.Move(-1, 0, 0);
-            else if (e.KeyCode == System.Windows.Forms.Keys.D)
+            else if (e.KeyCode == System.Windows.Forms.Keys.D && camera != null)
                 camera.Move(1, 0, 0);
-            else if (e.KeyCode == System.Windows.Forms.Keys.E)
+            else if (e.KeyCode == System.Windows.Forms.Keys.E && camera != null)
                 camera.Move(0, 1, 0);
-            else if (e.KeyCode == System.Windows.Forms.Keys.Q)
+            else if (e.KeyCode == System.Windows.Forms.Keys.Q && camera != null)
                 camera.Move(0, -1, 0);
 
             // shortcuts
             else if (e.KeyCode == System.Windows.Forms.Keys.Escape) // deselect
                 this.selectElement(null, true);
+            else if (e.KeyCode == System.Windows.Forms.Keys.Space) // change cursors
+            {
+                if (this.selectedCursor == ECursorType.Select) // translate
+                    this.selectedCursor = ECursorType.Move;
+                else if (this.selectedCursor == ECursorType.Move) // rotate
+                    this.selectedCursor = ECursorType.Rotate;
+                else if (this.selectedCursor == ECursorType.Rotate) // scale
+                    this.selectedCursor = ECursorType.Scale;
+                else // select
+                    this.selectedCursor = ECursorType.Select;
+                //this.updateCursor(true); // TODO: update radio buttons somehow
+
+                this.OnPropertyChanged("SnapDropDownImage");
+                this.OnPropertyChanged("SnapDropDownItems");
+                this.OnPropertyChanged("SnapDropDownSelectedItem");
+                this.OnPropertyChanged("SnapDropDownVisibility");
+            }
+
+            this.OnPropertyChanged("SelectedElement");
         }
 
         void render_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -360,6 +483,8 @@ namespace MCS
 
             double dx = lastMousePosition.X - mousePosition.X;
             double dy = lastMousePosition.Y - mousePosition.Y;
+            if (dx == 0.0 && dy == 0.0)
+                return;
 
             if (e.Button == System.Windows.Forms.MouseButtons.Left &&
                 (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))) // rotete camera
@@ -373,10 +498,10 @@ namespace MCS
                     camera.Rotation = angle;
                 }
             }
-            else if (e.Button == System.Windows.Forms.MouseButtons.Left) // move
+            else if (e.Button == System.Windows.Forms.MouseButtons.Left) // move camera
             {
                 MCamera camera = this.Engine.SceneManager.ActiveCamera;
-                if (camera != null) // move camera
+                if (camera != null)
                 {
                     if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                         camera.Move(-dx / 2, dy / 2, 0);
@@ -384,8 +509,51 @@ namespace MCS
                         camera.Move(dx / 2, 0, -dy / 2);
                 }
             }
+            // transform object
+            else if (e.Button == System.Windows.Forms.MouseButtons.Middle &&
+                this.selectedCursor != ECursorType.Select &&
+                MainWindow.SelectedElements.Count > 0)
+            {
+                MPoint rot = new MPoint();
+                if (this.Engine.SceneManager.ActiveCamera != null)
+                {
+                    rot = this.Engine.SceneManager.ActiveCamera.Rotation;
+                    rot.X = Math.Round(rot.X / 90) * 90;
+                    rot.Y = Math.Round(rot.Y / 90) * 90;
+                    rot.Z = Math.Round(rot.Z / 90) * 90;
+                }
+
+                MPoint delta = new MPoint((int)-dx / 2, (int)dy / 2, 0);
+                if (this.selectedCursor == ECursorType.Rotate) 
+                    delta.RotateBy(new MPoint(0.0, 0.0, -90.0));
+                delta.RotateBy(rot);
+                delta *= this.SnapDropDownSelectedItem; // snap value by the drop down value
+
+                foreach(var id in MainWindow.SelectedElements)
+                {
+                    MSceneElement mse = this.Engine.SceneManager.GetElement(id);
+                    if (mse != null)
+                    {
+                        if (this.selectedCursor == ECursorType.Move)
+                            mse.Position += delta;
+                        else if (this.selectedCursor == ECursorType.Rotate)
+                            mse.Rotation += delta;
+                        else if (this.selectedCursor == ECursorType.Scale)
+                            mse.Scale += delta * 0.01;
+                    }
+                }
+                this.OnPropertyChanged("SelectedElement");
+            }
 
             this.lastMousePosition = mousePosition;
+        }
+
+        void render_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            if (this.SelectedElement.Equals(this.Engine.SceneManager.ActiveCamera))
+            {
+                this.OnPropertyChanged("SelectedElement");
+            }
         }
 
         void render_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -400,10 +568,20 @@ namespace MCS
 
         void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            MCamera camera = this.Engine.SceneManager.ActiveCamera;
-            if (camera != null) // move camera
+            if (this.selectedCursor != ECursorType.Select &&
+                (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))) // change snap value
             {
-                camera.Move(0, 0, e.Delta / 10);
+                int currIndex = Array.IndexOf(this.SnapDropDownItems, this.SnapDropDownSelectedItem);
+                currIndex += Math.Sign(e.Delta);
+                currIndex %= this.SnapDropDownItems.Length;
+                currIndex = currIndex < 0 ? this.SnapDropDownItems.Length - 1 : currIndex; 
+                this.SnapDropDownSelectedItem = this.SnapDropDownItems[currIndex];
+                this.OnPropertyChanged("SnapDropDownSelectedItem");
+            }
+            else if (this.Engine.SceneManager.ActiveCamera != null) // move camera
+            {
+                this.Engine.SceneManager.ActiveCamera.Move(0, 0, e.Delta / 10);
+                this.OnPropertyChanged("SelectedElement");
             }
         }
 
@@ -506,6 +684,7 @@ namespace MCS
             //this.updateCursor(false);
 
             this.OnPropertyChanged("SelectedElement");
+            this.OnPropertyChanged("InfoLabelContent");
         }
 
 

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Engine\Utils\Types\Vector3.h"
+#include "Engine\Utils\Types\Quaternion.h"
 #pragma managed
 
 using namespace System;
@@ -47,6 +48,12 @@ namespace MyEngine {
 			double m = 1.0 / Length();
 			if (m == 0.0) return;
 			Set(X * m, Y * m, Z * m);
+		}
+
+		void RotateBy(MPoint angles)
+		{
+			Vector3 result = Quaternion(angles.ToVector3()) * this->ToVector3();
+			this->Set(result.x, result.y, result.z);
 		}
 
 		static MPoint operator -(MPoint p)

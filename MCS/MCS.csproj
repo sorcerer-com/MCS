@@ -224,7 +224,7 @@
     <Resource Include="Images\MainWindow\MoveCursor.png" />
     <Resource Include="Images\MainWindow\RotateCursor.PNG" />
     <Resource Include="Images\MainWindow\ScaleCursor.PNG" />
-    <Resource Include="Images\MainWindow\translate.png" />
+    <Resource Include="Images\MainWindow\move.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\ContentWindow\folder.png" />

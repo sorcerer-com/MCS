@@ -50,6 +50,12 @@ namespace MyEngine {
 		{
 			this->camera->Move(Vector3(x, y, z));
 		}
+
+		MPoint GetDirection()
+		{
+			return MPoint(this->camera->GetDirection());
+		}
+
 	};
 
 }

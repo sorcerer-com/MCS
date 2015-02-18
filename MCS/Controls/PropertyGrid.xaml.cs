@@ -86,7 +86,7 @@ namespace MCS.Controls
         private static void OnPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             PropertyGrid pg = source as PropertyGrid;
-            if (pg == null || (e.OldValue != null && e.OldValue.Equals(e.NewValue)))
+            if (pg == null)
                 return;
 
             pg.Refresh();

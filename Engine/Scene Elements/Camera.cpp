@@ -41,6 +41,12 @@ namespace MyEngine {
 		this->Position += vv;
 	}
 
+	Vector3 Camera::GetDirection()
+	{
+		Vector3 dir(0, 0, 1);
+		return this->Rotation * dir;
+	}
+
 
 	void Camera::WriteToFile(ostream& file) const
 	{
