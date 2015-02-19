@@ -81,15 +81,15 @@ namespace MyEngine {
 
 	bool IrrRenderer::init()
 	{
-		irr::SIrrlichtCreationParameters param;
-		param.AntiAlias = true;
-		param.DriverType = irr::video::EDT_OPENGL;
-		param.HandleSRGB = true;
-		param.Stencilbuffer = true;
-		param.WindowId = this->windowHandle;
-		param.ZBufferBits = 32;
+		irr::SIrrlichtCreationParameters irrParam;
+		irrParam.AntiAlias = true;
+		irrParam.DriverType = irr::video::EDT_OPENGL;
+		irrParam.HandleSRGB = true;
+		irrParam.Stencilbuffer = true;
+		irrParam.WindowId = this->windowHandle;
+		irrParam.ZBufferBits = 32;
 
-		this->device = irr::createDeviceEx(param);
+		this->device = irr::createDeviceEx(irrParam);
 		if (!this->device)
 		{
 			Engine::Log(EError, "IrrRenderer", "Cannot init IrrLicht Renderer");
@@ -100,7 +100,9 @@ namespace MyEngine {
 		this->smgr = this->device->getSceneManager();
 		this->guienv = this->device->getGUIEnvironment();
 
-		irr::scene::ICameraSceneNode* irrCamera = smgr->addCameraSceneNode();
+		this->smgr->setShadowColor(irr::video::SColor(150, 0, 0, 0));
+
+		irr::scene::ICameraSceneNode* irrCamera = this->smgr->addCameraSceneNode();
 		irrCamera->bindTargetAndRotation(true);
 		irrCamera->setNearValue(0.1f);
 		irrCamera->setFarValue(10000.0f);
@@ -133,7 +135,6 @@ namespace MyEngine {
 		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
 		// TODO: fog
-		// TODO: shadow
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
@@ -162,10 +163,7 @@ namespace MyEngine {
 	}
 	
 	void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
-	{
-		// TODO: skip system objects, cameras, if it's not in editor mode, set them as debug objects
-
-		
+	{		
 		irr::scene::ISceneNode* irrSceneNode = this->smgr->getSceneNodeFromId(sceneElement->ID);
 		if (!irrSceneNode)
 			irrSceneNode = this->createIrrSceneNode(sceneElement);
@@ -227,7 +225,7 @@ namespace MyEngine {
 		if (sceneElement->Type == SceneElementType::ELight)
 		{
 			irrSceneNode = this->smgr->addLightSceneNode();
-			// TODO: add Billboard as a child when we have textures?
+			// TODO: add Billboard as a child when we have textures? set it as debug object
 			// TODO: selector from the bounding box of the Billboard
 			
 			//irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
@@ -239,8 +237,13 @@ namespace MyEngine {
 
 			irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
 			irrSceneNode = this->smgr->addOctreeSceneNode(irrMesh);
-			if (sceneElement->Type == SceneElementType::ESystemObject)
+			if (sceneElement->Type == SceneElementType::ECamera ||
+				sceneElement->Type == SceneElementType::ESystemObject)
 				irrSceneNode->setIsDebugObject(true);
+			
+			// shadow
+			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
+			irrMeshSceneNode->addShadowVolumeSceneNode();
 
 			// irrTriangleSelector = this->smgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
 			irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
