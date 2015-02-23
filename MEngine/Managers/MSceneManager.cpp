@@ -51,6 +51,28 @@ namespace MyEngine {
 		OnChanged(nullptr);
 	}
 
+	MColor MSceneManager::FogColor::get()
+	{
+		return MColor(this->sceneManager->FogColor);
+	}
+
+	void MSceneManager::FogColor::set(MColor value)
+	{
+		this->sceneManager->FogColor = value.ToColor4();
+		OnChanged(nullptr);
+	}
+
+	double MSceneManager::FogDensity::get()
+	{
+		return this->sceneManager->FogDensity;
+	}
+
+	void MSceneManager::FogDensity::set(double value)
+	{
+		this->sceneManager->FogDensity = (float)value;
+		OnChanged(nullptr);
+	}
+
 
 	MSceneManager::MSceneManager(SceneManager* sceneManager)
 	{

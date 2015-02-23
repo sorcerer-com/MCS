@@ -134,23 +134,26 @@ namespace MyEngine {
 		const Color4& ambientLight = this->Owner->SceneManager->AmbientLight;
 		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
-		// TODO: fog
+		// Setup Fog
+		const Color4& fogColor = this->Owner->SceneManager->FogColor;
+		const float& fogDensity = this->Owner->SceneManager->FogDensity;
+		this->driver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
 		for (const auto& sceneElement : sceneElements)
 			this->updateSceneElement(sceneElement);
 		sceneElements.clear();
-
+		
 		// Remove invalid irrSceneElements
 		irr::scene::ISceneNode* irrRootSceneNode = this->smgr->getRootSceneNode();
-		const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
+		const auto& irrChildrenSceneNode = irrRootSceneNode->getChildren();
 		for (const auto& irrSceneNode : irrChildrenSceneNode)
 		{
 			if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
 				irrSceneNode->remove();
 		}
-
+		
 		// Clear meshes cache from unused meshes
 		vector<uint> forDelete;
 		for (const auto& pair : this->meshesCache)
@@ -189,6 +192,7 @@ namespace MyEngine {
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
 		// TODO: set material
+		irrSceneNode->setMaterialFlag(irr::video::EMF_FOG_ENABLE, true);
 
 		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
 		if (type == irr::scene::ESNT_MESH || type == irr::scene::ESNT_OCTREE)

@@ -35,6 +35,8 @@ namespace MyEngine {
 		this->sceneElements.clear();
 		this->ActiveCamera = NULL;
 		this->AmbientLight = Color4(0.2, 0.2, 0.2, 1.0);
+		this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
+		this->FogDensity = 0.0f;
 	}
 
 	bool SceneManager::Save(const string& filePath)
@@ -82,6 +84,10 @@ namespace MyEngine {
 
 		// ambient light
 		Write(ofile, this->AmbientLight);
+
+		// fog
+		Write(ofile, this->FogColor);
+		Write(ofile, this->FogDensity);
 
 		ofile.close();
 
@@ -156,6 +162,10 @@ namespace MyEngine {
 
 			// ambient light
 			Read(ifile, this->AmbientLight);
+
+			// fog
+			Read(ifile, this->FogColor);
+			Read(ifile, this->FogDensity);
 		}
 
 		ifile.close();

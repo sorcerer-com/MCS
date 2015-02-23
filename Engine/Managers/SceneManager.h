@@ -21,6 +21,8 @@ namespace MyEngine {
 
 		Camera* ActiveCamera;
 		Color4 AmbientLight;
+		Color4 FogColor;
+		float FogDensity;
 
 		Engine* Owner;
 

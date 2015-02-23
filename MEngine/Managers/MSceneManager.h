@@ -37,6 +37,18 @@ namespace MyEngine {
 			void set(MColor value);
 		}
 
+		property MColor FogColor
+		{
+			MColor get();
+			void set(MColor value);
+		}
+
+		property double FogDensity
+		{
+			double get();
+			void set(double value);
+		}
+
 
 		delegate void ChangedEventHandler(MSceneManager^ sender, MSceneElement^ element);
 		event ChangedEventHandler^ Changed;
