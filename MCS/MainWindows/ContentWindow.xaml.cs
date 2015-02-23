@@ -493,7 +493,8 @@ namespace MCS.MainWindows
                 ContentWindow.SelectedElements.Remove(item.ID);
 
             foreach (ContentItem item in e.AddedItems)
-                ContentWindow.SelectedElements.Add(item.ID);
+                if (!ContentWindow.SelectedElements.Contains(item.ID))
+                    ContentWindow.SelectedElements.Add(item.ID);
 
             this.OnPropertyChanged("SelectedElement");
         }

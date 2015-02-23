@@ -124,6 +124,9 @@
     <Compile Include="Dialogs\TextDialogBox.xaml.cs">
       <DependentUpon>TextDialogBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindows\FindWindow.xaml.cs">
+      <DependentUpon>FindWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Managers\ConfigManager.cs" />
     <Compile Include="Managers\DelegateCommand.cs" />
     <Compile Include="Managers\WindowsManager.cs" />
@@ -132,6 +135,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MainWindows\ContentWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindows\FindWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -141,7 +141,7 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.checkSceneSaved())
+                    if (this.CheckSceneSaved())
                     {
                         this.Engine.SceneManager.New();
 
@@ -163,7 +163,7 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (!this.checkSceneSaved())
+                    if (!this.CheckSceneSaved())
                         return;
 
                     OpenFileDialog ofd = new OpenFileDialog();
@@ -252,7 +252,7 @@ namespace MCS
         {
             get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LogWindow)); }); }
         }
-        public string LogSceneCommandTooltip
+        public string LogWindowCommandTooltip
         {
             get { return "Log (" + WindowsManager.GetHotkey(this.GetType(), "LogWindowCommand") + ")"; }
         }
@@ -264,6 +264,15 @@ namespace MCS
         public string ContentWindowCommandTooltip
         {
             get { return "Content Browser (" + WindowsManager.GetHotkey(this.GetType(), "ContentWindowCommand") + ")"; }
+        }
+
+        public ICommand FindWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(FindWindow), this.Engine.SceneManager); }); }
+        }
+        public string FindWindowCommandTooltip
+        {
+            get { return "Find (" + WindowsManager.GetHotkey(this.GetType(), "FindWindowCommand") + ")"; }
         }
 
 
@@ -281,10 +290,10 @@ namespace MCS
                         MSceneElement newMse = this.Engine.SceneManager.CloneElement(mse, mse.Name + "2");
                         newSelectedElements.Add(newMse);
                     }
-                    this.selectElement(null);
+                    this.SelectElement(0);
 
                     foreach (MSceneElement mse in newSelectedElements)
-                        this.selectElement(mse);
+                        this.SelectElement(mse.ID);
                 }, (o) => { return MainWindow.SelectedElements.Count != 0; });
             }
         }
@@ -314,7 +323,7 @@ namespace MCS
                 {
                     foreach (uint id in MainWindow.SelectedElements)
                         this.Engine.SceneManager.DeleteElement(id);
-                    this.selectElement(null);
+                    this.SelectElement(0);
                 }, (o) => { return MainWindow.SelectedElements.Count != 0; });
             }
         }
@@ -426,7 +435,7 @@ namespace MCS
             this.KeyDown -= WindowsManager.Window_KeyDown;
 
             // check for saving
-            if (!this.checkSceneSaved())
+            if (!this.CheckSceneSaved())
             {
                 e.Cancel = true;
                 return;
@@ -455,7 +464,7 @@ namespace MCS
 
             // shortcuts
             else if (e.KeyCode == System.Windows.Forms.Keys.Escape) // deselect
-                this.selectElement(null, true);
+                this.SelectElement(0, true);
             else if (e.KeyCode == System.Windows.Forms.Keys.Space) // change cursors
             {
                 if (this.selectedCursor == ECursorType.Select) // translate
@@ -562,8 +571,8 @@ namespace MCS
             MSceneElement mse = this.Engine.SceneManager.GetElement(id);
             bool deselect = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
             if (!deselect && !(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
-                this.selectElement(null, false); // deselect all
-            this.selectElement(mse, deselect);
+                this.SelectElement(0, false); // deselect all
+            this.SelectElement(mse.ID, deselect);
         }
 
         void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -583,6 +592,73 @@ namespace MCS
                 this.Engine.SceneManager.ActiveCamera.Move(0, 0, e.Delta / 10);
                 this.OnPropertyChanged("SelectedElement");
             }
+        }
+
+
+        public bool CheckSceneSaved()
+        {
+            if (!this.sceneSaved)
+            {
+                ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Do you want to save changes?", "Confirm", ExtendedMessageBoxButton.YesNoCancel, ExtendedMessageBoxImage.Question);
+                if (res == ExtendedMessageBoxResult.Yes)
+                {
+                    this.SaveSceneCommand.Execute(null);
+                    return true;
+                }
+                else if (res != ExtendedMessageBoxResult.No) // Cancel
+                    return false;
+            }
+            return true;
+        }
+
+        public void SelectElement(uint mseID, bool deselect = false)
+        {
+            if (mseID == 0) // deselect all
+            {
+                MainWindow.SelectedElements.Clear();
+                //this.objectsComboBox.SelectedIndex = -1;
+                //this.scaleValueBox.Value = 0.0;
+                //this.selectedCursor = ECursorType.Select;
+            }
+            else
+            {
+                if (!deselect) // select
+                {
+                    if (!MainWindow.SelectedElements.Contains(mseID))
+                        MainWindow.SelectedElements.Add(mseID);
+                    //MPoint scale = mse.Scale;
+                    //this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
+                    //if (MScene.SelectedElements.Count == 1)
+                    //    this.objectsComboBox.SelectedItem = mse;
+                }
+                else // deselect
+                {
+                    for (int i = 0; i < MainWindow.SelectedElements.Count; i++)
+                        if (MainWindow.SelectedElements[i] == mseID)
+                        {
+                            MainWindow.SelectedElements.RemoveAt(i);
+                            break;
+                        }
+
+                    /*
+                    if (MainWindow.SelectedElements.Count > 0)
+                    {
+                        this.objectsComboBox.SelectedItem = MScene.SelectedElements[0];
+                        MPoint scale = MScene.SelectedElements[0].Scale;
+                        this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
+                    }
+                    else
+                    {
+                        this.objectsComboBox.SelectedIndex = -1;
+                        this.scaleValueBox.Value = 0.0;
+                        this.selectedCursor = ECursorType.Select;
+                    }*/
+                }
+            }
+            //this.updateCursor(false);
+
+            this.OnPropertyChanged("SelectedElement");
+            this.OnPropertyChanged("InfoLabelContent");
         }
 
 
@@ -620,71 +696,6 @@ namespace MCS
                 }
                 this.render.ContextMenu.Items.Add(item);
             }
-        }
-
-        private bool checkSceneSaved()
-        {
-            if (!this.sceneSaved)
-            {
-                ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Do you want to save changes?", "Confirm", ExtendedMessageBoxButton.YesNoCancel, ExtendedMessageBoxImage.Question);
-                if (res == ExtendedMessageBoxResult.Yes)
-                {
-                    this.SaveSceneCommand.Execute(null);
-                    return true;
-                }
-                else if (res != ExtendedMessageBoxResult.No) // Cancel
-                    return false;
-            }
-            return true;
-        }
-
-        private void selectElement(MSceneElement mse, bool deselect = false)
-        {
-            if (mse == null) // deselect all
-            {
-                MainWindow.SelectedElements.Clear();
-                //this.objectsComboBox.SelectedIndex = -1;
-                //this.scaleValueBox.Value = 0.0;
-                //this.selectedCursor = ECursorType.Select;
-            }
-            else
-            {
-                if (!deselect) // select
-                {
-                    MainWindow.SelectedElements.Add(mse.ID);
-                    //MPoint scale = mse.Scale;
-                    //this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
-                    //if (MScene.SelectedElements.Count == 1)
-                    //    this.objectsComboBox.SelectedItem = mse;
-                }
-                else // deselect
-                {
-                    for (int i = 0; i < MainWindow.SelectedElements.Count; i++)
-                        if (MainWindow.SelectedElements[i] == mse.ID)
-                        {
-                            MainWindow.SelectedElements.RemoveAt(i);
-                            break;
-                        }
-
-                    /*
-                    if (MainWindow.SelectedElements.Count > 0)
-                    {
-                        this.objectsComboBox.SelectedItem = MScene.SelectedElements[0];
-                        MPoint scale = MScene.SelectedElements[0].Scale;
-                        this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
-                    }
-                    else
-                    {
-                        this.objectsComboBox.SelectedIndex = -1;
-                        this.scaleValueBox.Value = 0.0;
-                        this.selectedCursor = ECursorType.Select;
-                    }*/
-                }
-            }
-            //this.updateCursor(false);
-
-            this.OnPropertyChanged("SelectedElement");
-            this.OnPropertyChanged("InfoLabelContent");
         }
 
 

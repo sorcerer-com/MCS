@@ -52,13 +52,13 @@
                 </RadioButton>
             </ToolBar>
             <ToolBar Band="1" BandIndex="3" IsManipulationEnabled="True">
-                <Button ToolTip="{Binding Path=LogSceneCommandTooltip}" Command="{Binding Path=LogWindowCommand}">
+                <Button ToolTip="{Binding Path=LogWindowCommandTooltip}" Command="{Binding Path=LogWindowCommand}">
                     <Image Source="/Images/MainWindow/Log.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="{Binding Path=ContentWindowCommandTooltip}" Command="{Binding Path=ContentWindowCommand}">
                     <Image Source="/Images/MainWindow/Contents.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Find (Ctrl+F)">
+                <Button ToolTip="{Binding Path=FindWindowCommandTooltip}" Command="{Binding Path=FindWindowCommand}">
                     <Image Source="/Images/MainWindow/Find.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Environment (Ctrl+E)">
