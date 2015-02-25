@@ -80,13 +80,13 @@ namespace MyEngine {
 
 	inline long long SizeOf(const string& value)
 	{
-		return sizeof(long long) + value.size() * sizeof(char);
+		return sizeof(int) + value.size() * sizeof(char);
 	}
 
 	template <class T>
 	inline long long SizeOf(const vector<T>& value)
 	{
-		return sizeof(long long) + value.size() * sizeof(T);
+		return sizeof(int) + value.size() * sizeof(T);
 	}
 
 #pragma endregion

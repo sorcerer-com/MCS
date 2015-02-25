@@ -40,6 +40,7 @@ namespace MyEngine {
 
 		bool CreatePath(String^ fullPath);
 		bool RenamePath(String^ oldFullPath, String^ newFullPath);
+		bool ContainPath(String^ fullPath);
 		bool DeletePath(String^ fullPath);
 
 		MContentElement^ AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id);

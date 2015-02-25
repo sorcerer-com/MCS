@@ -672,6 +672,8 @@ namespace MyEngine {
 
 	bool ContentManager::loadElement(uint id)
 	{
+		lock lck(this->thread->mutex("content"));
+
 		ContentElementPtr element = this->GetElement(id, false);
 		if (!element)
 		{
@@ -697,10 +699,7 @@ namespace MyEngine {
 		ContentElement* elem = this->loadElement(ifile, element->Type);
 
 		if (elem && !ifile.fail())
-		{
-			lock lck(this->thread->mutex("content"));
 			this->content[elem->ID].reset(elem);
-		}
 		else
 		{
 			Engine::Log(EError, "ContentManager", "Cannot load content element '" + element->Name + "'#" +

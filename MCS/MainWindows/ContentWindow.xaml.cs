@@ -378,7 +378,7 @@ namespace MCS.MainWindows
                     openFileDialog.Multiselect = true;
 
                     if (openFileDialog.ShowDialog() == true)
-                        this.import(openFileDialog.FileNames);
+                        this.import(new List<string>(openFileDialog.FileNames));
                 });
             }
         }
@@ -502,22 +502,33 @@ namespace MCS.MainWindows
         private void ListView_Drop(object sender, DragEventArgs e)
         {
             string[] fileDrops = e.Data.GetData(DataFormats.FileDrop) as string[];
-            if (fileDrops != null)
-                this.import(fileDrops);
+            if (fileDrops != null && this.SelectedTreeItem != null)
+                this.import(new List<string>(fileDrops));
         }
 
-        private void import(string[] filenames)
+        private void import(List<string> filenames)
         {
+            this.Cursor = Cursors.Wait;
             List<string> textureExts = new List<string> { ".bmp", ".jpg", ".gif", ".png", ".tiff", ".hdr" };
 
             ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
-            ExtendedMessageBoxButton button = filenames.Length > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
-            foreach (string filename in filenames)
+            ExtendedMessageBoxButton button = filenames.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
+            string rootDir = filenames.Count > 0 ? Path.GetDirectoryName(filenames[0]) : string.Empty;
+            for (int i = 0; i < filenames.Count; i++)
             {
-                string ext = Path.GetExtension(filename).ToLowerInvariant();
-                string name = Path.GetFileNameWithoutExtension(filename);
+                // if we drop a folder
+                if (Directory.Exists(filenames[i]))
+                {
+                    filenames.AddRange(Directory.GetDirectories(filenames[i]));
+                    filenames.AddRange(Directory.GetFiles(filenames[i]));
+                    continue;
+                }
+
+                if (!File.Exists(filenames[i]))
+                    continue;
 
                 EContentElementType type;
+                string ext = Path.GetExtension(filenames[i]).ToLowerInvariant();
                 if (ext == ".obj")
                     type = EContentElementType.Mesh;
                 /* TODO: add other content elements
@@ -528,8 +539,16 @@ namespace MCS.MainWindows
                 else
                     continue;
 
+                string name = Path.GetFileNameWithoutExtension(filenames[i]);
+                string relativePath = Path.GetDirectoryName(filenames[i]).Remove(0, rootDir.Length).Trim('\\');
+                if (relativePath != string.Empty) relativePath += "\\";
+                string fullPath = this.SelectedTreeItem.Value.FullPath + relativePath;
+
+                if (!this.ContentManager.ContainPath(fullPath))
+                    this.ContentManager.CreatePath(fullPath);
+
                 // if allready exists
-                MContentElement elem = this.ContentManager.GetElement(this.SelectedTreeItem.Value.FullPath + name, false);
+                MContentElement elem = this.ContentManager.GetElement(fullPath + name, true);
                 uint id = 0;
                 if (elem != null)
                 {
@@ -543,14 +562,14 @@ namespace MCS.MainWindows
                 }
 
                 // add element
-                string package = MContentManager.GetPackage(this.SelectedTreeItem.Value.FullPath);
-                string path = MContentManager.GetPath(this.SelectedTreeItem.Value.FullPath);
+                string package = MContentManager.GetPackage(fullPath);
+                string path = MContentManager.GetPath(fullPath);
                 elem = this.ContentManager.AddElement(type, name, package, path, id);
 
                 if (elem != null)
                 {
                     if (type == EContentElementType.Mesh)
-                        ((MMesh)elem).LoadFromOBJFile(filename);
+                        ((MMesh)elem).LoadFromOBJFile(filenames[i]);
                     /* TODO: add other content elements
                     else if (type == EContentElementType.Texture)
                         ((MTexture)elem).LoadFromFile(fileDrop);
@@ -559,6 +578,7 @@ namespace MCS.MainWindows
                     this.ContentManager.SaveElement(elem.ID);
                 }
             }
+            this.Cursor = Cursors.Arrow;
         }
 
         private void export(string filename)

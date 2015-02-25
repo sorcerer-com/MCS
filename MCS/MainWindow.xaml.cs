@@ -608,7 +608,7 @@ namespace MCS
                 if (res == ExtendedMessageBoxResult.Yes)
                 {
                     this.SaveSceneCommand.Execute(null);
-                    return true;
+                    return this.sceneSaved;
                 }
                 else if (res != ExtendedMessageBoxResult.No) // Cancel
                     return false;

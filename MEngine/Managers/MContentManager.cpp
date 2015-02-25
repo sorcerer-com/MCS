@@ -68,6 +68,11 @@ namespace MyEngine {
 		return res;
 	}
 
+	bool MContentManager::ContainPath(String^ fullPath)
+	{
+		return this->contentManager->ContainPath(to_string(fullPath));
+	}
+
 	bool MContentManager::DeletePath(String^ fullPath)
 	{
 		bool res = this->contentManager->DeletePath(to_string(fullPath));
@@ -144,7 +149,7 @@ namespace MyEngine {
 	{
 		bool res = this->contentManager->DeleteElement(id);
 		if (res)
-			this->OnChanged(this->getMContentElement(this->contentManager->GetElement(id, true, true)));
+			this->OnChanged(nullptr);
 		return res;
 	}
 
