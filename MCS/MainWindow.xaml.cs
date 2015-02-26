@@ -154,7 +154,7 @@ namespace MCS
         }
         public string NewSceneCommandTooltip
         {
-            get { return "New (" + WindowsManager.GetHotkey(this.GetType(), "NewSceneCommand") + ")"; }
+            get { return "New " + WindowsManager.GetHotkey(this.GetType(), "NewSceneCommand", true); }
         }
 
         public ICommand OpenSceneCommand
@@ -188,7 +188,7 @@ namespace MCS
         }
         public string OpenSceneCommandTooltip
         {
-            get { return "Open (" + WindowsManager.GetHotkey(this.GetType(), "OpenSceneCommand") + ")"; }
+            get { return "Open " + WindowsManager.GetHotkey(this.GetType(), "OpenSceneCommand", true); }
         }
 
         public ICommand SaveSceneCommand
@@ -226,7 +226,120 @@ namespace MCS
         }
         public string SaveSceneCommandTooltip
         {
-            get { return "Save (" + WindowsManager.GetHotkey(this.GetType(), "SaveSceneCommand") + ")"; }
+            get { return "Save " + WindowsManager.GetHotkey(this.GetType(), "SaveSceneCommand", true); }
+        }
+
+        public ICommand ImportSceneCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    OpenFileDialog ofd = new OpenFileDialog();
+                    ofd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    ofd.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+                    ofd.DefaultExt = "xml";
+                    ofd.RestoreDirectory = true;
+                    if (ofd.ShowDialog() == true)
+                    {
+                        if (!File.Exists(ofd.FileName))
+                        {
+                            MessageBox.Show("Cannot import scene from this file: \n " + ofd.FileName, "Import Scene", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
+                        System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+                        xmlDoc.Load(ofd.FileName);
+
+                        System.Xml.XmlElement xmlRoot = xmlDoc.FirstChild as System.Xml.XmlElement;
+
+                        var xmlChildNodes = xmlRoot.ChildNodes;
+                        foreach (var xmlNode in xmlChildNodes)
+                        {
+                            System.Xml.XmlElement xmlElement = xmlNode as System.Xml.XmlElement;
+                            string name = xmlElement.GetAttribute("Name");
+                            ESceneElementType type;
+                            if (!Enum.TryParse(xmlElement.GetAttribute("Type"), out type))
+                                continue;
+                            string content = string.Empty;
+                            if (xmlElement.HasAttribute("Content"))
+                                content = xmlElement.GetAttribute("Content");
+                            MSceneElement mse = this.Engine.SceneManager.AddElement(type, name, content);
+                            if (xmlElement.HasAttribute("Material"))
+                                mse.Material = this.Engine.ContentManager.GetElement(xmlElement.GetAttribute("Material"));
+                            mse.Visible = bool.Parse(xmlElement.GetAttribute("Visible"));
+                            mse.Position = MPoint.Parse(xmlElement.GetAttribute("Position"));
+                            mse.Rotation = MPoint.Parse(xmlElement.GetAttribute("Rotation"));
+                            mse.Scale = MPoint.Parse(xmlElement.GetAttribute("Scale"));
+                        }
+
+                        this.Engine.SceneManager.AmbientLight = MColor.Parse(xmlRoot.GetAttribute("AmbientLight"));
+                        this.Engine.SceneManager.FogColor = MColor.Parse(xmlRoot.GetAttribute("FogColor"));
+                        this.Engine.SceneManager.FogDensity = double.Parse(xmlRoot.GetAttribute("FogDensity"));
+                        this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.GetElement(xmlRoot.GetAttribute("ActiveCamera")) as MCamera;
+                    }
+
+                    this.sceneSaved = false;
+                    this.updateTitle();
+                });
+            }
+        }
+        public string ImportSceneCommandTooltip
+        {
+            get { return "Import " + WindowsManager.GetHotkey(this.GetType(), "ImportSceneCommand", true); }
+        }
+
+        public ICommand ExportSceneCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    SaveFileDialog sfd = new SaveFileDialog();
+                    sfd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    sfd.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+                    sfd.DefaultExt = "xml";
+                    sfd.RestoreDirectory = true;
+                    sfd.OverwritePrompt = true;
+                    if (sfd.ShowDialog() == true)
+                    {
+                        System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+
+                        System.Xml.XmlElement xmlRoot = xmlDoc.CreateElement("Scene");
+                        xmlRoot.SetAttribute("AmbientLight", this.Engine.SceneManager.AmbientLight.ToString());
+                        xmlRoot.SetAttribute("FogColor", this.Engine.SceneManager.FogColor.ToString());
+                        xmlRoot.SetAttribute("FogDensity", this.Engine.SceneManager.FogDensity.ToString());
+                        xmlRoot.SetAttribute("ActiveCamera", this.Engine.SceneManager.ActiveCamera.Name);
+                        xmlDoc.AppendChild(xmlRoot);
+
+                        var mses = this.Engine.SceneManager.Elements;
+                        foreach (var mse in mses)
+                        {
+                            if (mse.Type == ESceneElementType.SystemObject)
+                                continue;
+
+                            System.Xml.XmlElement xmlElement = xmlDoc.CreateElement("SceneElement");
+                            xmlElement.SetAttribute("Name", mse.Name);
+                            xmlElement.SetAttribute("Type", mse.Type.ToString());
+                            if (mse.Content != null)
+                                xmlElement.SetAttribute("Content", mse.Content.FullName);
+                            if (mse.Material != null)
+                                xmlElement.SetAttribute("Material", mse.Material.FullName);
+                            xmlElement.SetAttribute("Visible", mse.Visible.ToString());
+                            xmlElement.SetAttribute("Position", mse.Position.ToString());
+                            xmlElement.SetAttribute("Rotation", mse.Rotation.ToString());
+                            xmlElement.SetAttribute("Scale", mse.Scale.ToString());
+                            xmlRoot.AppendChild(xmlElement);
+                        }
+
+                        xmlDoc.Save(sfd.FileName);
+                    }
+                });
+            }
+        }
+        public string ExportSceneCommandTooltip
+        {
+            get { return "Export " + WindowsManager.GetHotkey(this.GetType(), "ExportSceneCommand", true); }
         }
 
         public ICommand CursorChangedCommand
@@ -254,7 +367,7 @@ namespace MCS
         }
         public string LogWindowCommandTooltip
         {
-            get { return "Log (" + WindowsManager.GetHotkey(this.GetType(), "LogWindowCommand") + ")"; }
+            get { return "Log " + WindowsManager.GetHotkey(this.GetType(), "LogWindowCommand", true); }
         }
 
         public ICommand ContentWindowCommand
@@ -263,7 +376,7 @@ namespace MCS
         }
         public string ContentWindowCommandTooltip
         {
-            get { return "Content Browser (" + WindowsManager.GetHotkey(this.GetType(), "ContentWindowCommand") + ")"; }
+            get { return "Content Browser " + WindowsManager.GetHotkey(this.GetType(), "ContentWindowCommand", true); }
         }
 
         public ICommand FindWindowCommand
@@ -272,7 +385,7 @@ namespace MCS
         }
         public string FindWindowCommandTooltip
         {
-            get { return "Find (" + WindowsManager.GetHotkey(this.GetType(), "FindWindowCommand") + ")"; }
+            get { return "Find " + WindowsManager.GetHotkey(this.GetType(), "FindWindowCommand", true); }
         }
 
 

@@ -28,16 +28,6 @@ namespace MyEngine {
 			Z = _z;
 		}
 
-		Vector3 ToVector3()
-		{
-			return Vector3(X, Y, Z);
-		}
-
-		virtual String^ ToString() override
-		{
-			return "(" + (float)this->X + ", " + (float)this->Y + ", " + (float)this->Z + ")";
-		}
-
 		double Length()
 		{
 			return sqrt(X * X + Y * Y + Z * Z);
@@ -54,6 +44,32 @@ namespace MyEngine {
 		{
 			Vector3 result = Quaternion(angles.ToVector3()) * this->ToVector3();
 			this->Set(result.x, result.y, result.z);
+		}
+
+		Vector3 ToVector3()
+		{
+			return Vector3(X, Y, Z);
+		}
+
+		virtual String^ ToString() override
+		{
+			return "(" + (float)this->X + ", " + (float)this->Y + ", " + (float)this->Z + ")";
+		}
+
+
+		static MPoint Parse(String^ s)
+		{
+			array<String^>^ separators = { "(", ")", ",", " " };
+			array<String^>^ tokens = s->Split(separators, System::StringSplitOptions::RemoveEmptyEntries);
+			if (tokens->Length != 3)
+				return MPoint();
+
+			MPoint res;
+			res.X = double::Parse(tokens[0]);
+			res.Y = double::Parse(tokens[1]);
+			res.Z = double::Parse(tokens[2]);
+
+			return res;
 		}
 
 		static MPoint operator -(MPoint p)

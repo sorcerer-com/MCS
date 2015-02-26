@@ -176,7 +176,7 @@ namespace MCS.Managers
             ConfigManager.SaveConfig();
         }
 
-        public static string GetHotkey(Type windowType, string commandName)
+        public static string GetHotkey(Type windowType, string commandName, bool brackets = false)
         {
             if (!hotkeys.ContainsKey(windowType))
                 return null;
@@ -194,7 +194,10 @@ namespace MCS.Managers
                     if (info.Shift)
                         hotkey += "Shift+";
                     hotkey += info.Key.ToString();
-                    return hotkey;
+                    if (brackets)
+                        return "(" + hotkey + ")";
+                    else
+                        return hotkey;
                 }
             }
 

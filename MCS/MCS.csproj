@@ -249,7 +249,10 @@
   <ItemGroup>
     <Resource Include="Images\ContentWindow\clear.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\MainWindow\Export.png" />
+    <Resource Include="Images\MainWindow\Import.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

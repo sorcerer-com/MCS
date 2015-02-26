@@ -104,7 +104,7 @@ namespace MCS.MainWindows
                         !element.Type.ToString().ToLowerInvariant().Contains(this.Filter))
                         continue;
 
-                    if (this.SelectedTreeItem != null && !element.FullPath.Equals(this.SelectedTreeItem.Value.FullPath))
+                    if (this.SelectedTreeItem != null && !element.FullPath.Contains(this.SelectedTreeItem.Value.FullPath))
                         continue;
 
                     string image = string.Empty;
@@ -508,12 +508,14 @@ namespace MCS.MainWindows
 
         private void import(List<string> filenames)
         {
-            this.Cursor = Cursors.Wait;
             List<string> textureExts = new List<string> { ".bmp", ".jpg", ".gif", ".png", ".tiff", ".hdr" };
 
             ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
             ExtendedMessageBoxButton button = filenames.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
+            
             string rootDir = filenames.Count > 0 ? Path.GetDirectoryName(filenames[0]) : string.Empty;
+            TreeItem selectedTreeItem = this.SelectedTreeItem.Value;
+
             for (int i = 0; i < filenames.Count; i++)
             {
                 // if we drop a folder
@@ -542,7 +544,7 @@ namespace MCS.MainWindows
                 string name = Path.GetFileNameWithoutExtension(filenames[i]);
                 string relativePath = Path.GetDirectoryName(filenames[i]).Remove(0, rootDir.Length).Trim('\\');
                 if (relativePath != string.Empty) relativePath += "\\";
-                string fullPath = this.SelectedTreeItem.Value.FullPath + relativePath;
+                string fullPath = selectedTreeItem.FullPath + relativePath;
 
                 if (!this.ContentManager.ContainPath(fullPath))
                     this.ContentManager.CreatePath(fullPath);
@@ -578,7 +580,6 @@ namespace MCS.MainWindows
                     this.ContentManager.SaveElement(elem.ID);
                 }
             }
-            this.Cursor = Cursors.Arrow;
         }
 
         private void export(string filename)

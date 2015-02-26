@@ -36,18 +36,25 @@
                 <Button ToolTip="{Binding Path=SaveSceneCommandTooltip}" Command="{Binding Path=SaveSceneCommand}">
                     <Image Source="/Images/MainWindow/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
+                <Separator/>
+                <Button ToolTip="{Binding Path=ImportSceneCommandTooltip}" Command="{Binding Path=ImportSceneCommand}">
+                    <Image Source="/Images/MainWindow/Import.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Button ToolTip="{Binding Path=ExportSceneCommandTooltip}" Command="{Binding Path=ExportSceneCommand}">
+                    <Image Source="/Images/MainWindow/Export.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
             </ToolBar>
             <ToolBar Band="1" BandIndex="2" IsManipulationEnabled="True">
-                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Select" IsChecked="True">
+                <RadioButton GroupName="Cursors" ToolTip="Select" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Select" IsChecked="True">
                     <Image Source="/Images/MainWindow/Cursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
-                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Move" >
+                <RadioButton GroupName="Cursors" ToolTip="Move" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Move" >
                     <Image Source="/Images/MainWindow/MoveCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
-                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Rotate" >
+                <RadioButton GroupName="Cursors" ToolTip="Rotate" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Rotate" >
                     <Image Source="/Images/MainWindow/RotateCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
-                <RadioButton GroupName="Cursors" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Scale" >
+                <RadioButton GroupName="Cursors" ToolTip="Scale" Command="{Binding Path=CursorChangedCommand}" CommandParameter="Scale" >
                     <Image Source="/Images/MainWindow/ScaleCursor.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </RadioButton>
             </ToolBar>

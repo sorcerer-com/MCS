@@ -30,6 +30,11 @@ namespace MyEngine {
 			A = _a;
 		}
 
+		double Intensity()
+		{
+			return (R + G + B) / 3;
+		}
+
 		Color4 ToColor4()
 		{
 			return Color4(R, G, B, A);
@@ -40,9 +45,21 @@ namespace MyEngine {
 			return "(" + (float)this->R + ", " + (float)this->G + ", " + (float)this->B + ", " + (float)this->A + ")";
 		}
 
-		double Intensity()
+
+		static MColor Parse(String^ s)
 		{
-			return (R + G + B) / 3;
+			array<String^>^ separators = { "(", ")", ",", " " };
+			array<String^>^ tokens = s->Split(separators, System::StringSplitOptions::RemoveEmptyEntries);
+			if (tokens->Length != 4)
+				return MColor();
+
+			MColor res;
+			res.R = double::Parse(tokens[0]);
+			res.G = double::Parse(tokens[1]);
+			res.B = double::Parse(tokens[2]);
+			res.A = double::Parse(tokens[3]);
+
+			return res;
 		}
 
 
