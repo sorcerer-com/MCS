@@ -88,7 +88,7 @@ namespace MyEngine {
 		[MPropertyAttribute(Group = "Transform")]
 		property MPoint Rotation
 		{
-			MPoint get() { return MPoint(element->Rotation.toAxisAngle()); }
+			MPoint get() { return MPoint(element->Rotation.toEulerAngle()); }
 			void set(MPoint value) { element->Rotation = value.ToVector3(); OnChanged(); }
 		}
 

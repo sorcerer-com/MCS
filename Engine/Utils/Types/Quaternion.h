@@ -11,14 +11,26 @@ namespace MyEngine {
 		Quaternion() { set(0, 0, 0, 1); }
 		Quaternion(const Quaternion& q) { set(q.x, q.y, q.z, q.w); }
 		Quaternion(double _x, double _y, double _z, double _w) { set(_x, _y, _z, _w); }
-		Quaternion(Vector3 axisAngle)
+		Quaternion(Vector3 eulerAngle)
 		{
-			float angle = axisAngle.length();
-			angle *= 3.14159265f / 180.0f; // from deg to rad
-			axisAngle.normalize();
-			float sin = sinf(angle / 2.0f);
-			float cos = cosf(angle / 2.0f);
-			set(axisAngle.x * sin, axisAngle.y * sin, axisAngle.z * sin, cos);
+			eulerAngle *= 3.14159265f / 180.0f; // from deg to rad
+
+			eulerAngle *= 0.5f;
+			float c1 = cosf(eulerAngle.y);
+			float s1 = sinf(eulerAngle.y);
+			float c2 = cosf(eulerAngle.z);
+			float s2 = sinf(eulerAngle.z);
+			float c3 = cosf(eulerAngle.x);
+			float s3 = sinf(eulerAngle.x);
+			float c1c2 = c1 * c2;
+			float s1s2 = s1 * s2;
+
+			w = c1c2 * c3 - s1s2 * s3;
+			x = c1c2 * s3 + s1s2 * c3;
+			y = s1 * c2 * c3 + c1 * s2 * s3;
+			z = c1 * s2 * c3 - s1 * c2 * s3;
+			
+			this->normalize();
 		}
 
 		void set(double _x, double _y, double _z, double _w)
@@ -69,17 +81,37 @@ namespace MyEngine {
 			w *= -1;
 		}
 
-		Vector3 toAxisAngle(void) const
+		Vector3 toEulerAngle(void) const
 		{
-			if (w == 1.0f)
-				return Vector3();
+			float sqw = w * w;
+			float sqx = x * x;
+			float sqy = y * y;
+			float sqz = z * z;
+			float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+			float test = x * y + z * w;
 
-			float angle = 2 * acosf(w);
-			Vector3 res(x, y, z);
-			res *= 1.0f / sqrtf(1 - w * w);
-			res *= angle;
-			res *= 180 / 3.14159265f; // from rad to deg
-			return res;
+			Vector3 result;
+			if (test > 0.499f * unit) // singularity at north pole
+			{
+				result.y = 2.0f * atan2f(x, w);
+				result.z = 3.14159265f * 0.5f;
+				result.x = 0;
+			}
+			else if (test < -0.499f * unit) // singularity at south pole
+			{
+				result.y = -2.0f * atan2f(x, w);
+				result.z = -3.14159265f * 0.5f;
+				result.x = 0;
+			}
+			else
+			{
+				result.y = atan2f(2.0f * y * w - 2.0f * x * z, sqx - sqy - sqz + sqw);
+				result.z = asinf(2.0f * test / unit);
+				result.x = atan2f(2.0f * x * w - 2.0f * y * z, -sqx + sqy - sqz + sqw);
+			}
+
+			result *= 180 / 3.14159265f; // from rad to deg
+			return result;
 		}
 
 		inline void operator +=(const Quaternion& q)

@@ -124,7 +124,7 @@ namespace MyEngine {
 			irrCamera->updateAbsolutePosition();
 			const Vector3& pos = camera->Position;
 			irrCamera->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
-			const Vector3& rot = camera->Rotation.toAxisAngle();
+			const Vector3& rot = camera->Rotation.toEulerAngle();
 			irrCamera->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
 			const Vector3& scl = camera->Scale;
 			irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
@@ -147,7 +147,7 @@ namespace MyEngine {
 		
 		// Remove invalid irrSceneElements
 		irr::scene::ISceneNode* irrRootSceneNode = this->smgr->getRootSceneNode();
-		const auto& irrChildrenSceneNode = irrRootSceneNode->getChildren();
+		const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
 		for (const auto& irrSceneNode : irrChildrenSceneNode)
 		{
 			if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
@@ -186,13 +186,16 @@ namespace MyEngine {
 
 		const Vector3& pos = sceneElement->Position;
 		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
-		const Vector3& rot = sceneElement->Rotation.toAxisAngle();
+		const Vector3& rot = sceneElement->Rotation.toEulerAngle();
 		irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
 		// TODO: set material
-		irrSceneNode->setMaterialFlag(irr::video::EMF_FOG_ENABLE, true);
+		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
+		irrMaterial.FogEnable = true;
+		irrMaterial.BackfaceCulling = false;
+		irrMaterial.NormalizeNormals = true;
 
 		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
 		if (type == irr::scene::ESNT_MESH || type == irr::scene::ESNT_OCTREE)

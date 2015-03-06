@@ -144,6 +144,8 @@ namespace MCS
                     if (this.CheckSceneSaved())
                     {
                         this.Engine.SceneManager.New();
+                        this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+                        this.OnPropertyChanged("SelectedElement");
 
                         this.sceneSaved = true;
                         this.sceneFilePath = string.Empty;
@@ -677,7 +679,7 @@ namespace MCS
 
         void render_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (this.SelectedElement.Equals(this.Engine.SceneManager.ActiveCamera))
+            if (this.Engine.SceneManager.ActiveCamera != null && this.SelectedElement.Equals(this.Engine.SceneManager.ActiveCamera))
             {
                 this.OnPropertyChanged("SelectedElement");
             }
