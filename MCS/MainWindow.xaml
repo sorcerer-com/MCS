@@ -68,7 +68,8 @@
                 <Button ToolTip="{Binding Path=FindWindowCommandTooltip}" Command="{Binding Path=FindWindowCommand}">
                     <Image Source="/Images/MainWindow/Find.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Environment (Ctrl+E)">
+                <Separator/>
+                <Button ToolTip="{Binding Path=EnvironmentWindowCommandTooltip}" Command="{Binding Path=EnvironmentWindowCommand}">
                     <Image Source="/Images/MainWindow/Environment.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Layers (Ctrl+L)">

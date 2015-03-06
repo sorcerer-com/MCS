@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TextDialogBox" Width="Auto" Height="Auto" SizeToContent="WidthAndHeight" 
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" 
-        KeyDown="TextBox_KeyDown">
+        KeyDown="TextDialogBox_KeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -26,8 +26,8 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             
-            <Button Content="OK" Grid.Column="0" Margin="5" Command="{Binding Path=OkButtonCommand}"/>
-            <Button Content="Cancel" Grid.Column="1" Margin="5" Command="{Binding Path=CancelButtonCommand}"/>
+            <Button Content="_OK" Grid.Column="0" Margin="5" Command="{Binding Path=OkButtonCommand}"/>
+            <Button Content="_Cancel" Grid.Column="1" Margin="5" Command="{Binding Path=CancelButtonCommand}"/>
         </Grid>
     </Grid>
 </Window>

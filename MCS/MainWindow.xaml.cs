@@ -390,6 +390,15 @@ namespace MCS
             get { return "Find " + WindowsManager.GetHotkey(this.GetType(), "FindWindowCommand", true); }
         }
 
+        public ICommand EnvironmentWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(EnvironmentWindow), this.Engine.SceneManager); }); }
+        }
+        public string EnvironmentWindowCommandTooltip
+        {
+            get { return "Environment " + WindowsManager.GetHotkey(this.GetType(), "EnvironmentWindowCommand", true); }
+        }
+
 
         // Scene Elements commands
         public ICommand CloneElementCommand

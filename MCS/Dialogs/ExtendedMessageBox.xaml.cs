@@ -50,7 +50,7 @@ namespace MCS.Dialogs
         private ExtendedMessageBoxButton button;
         public string YesButtonText
         {
-            get { return button == ExtendedMessageBoxButton.OK || button == ExtendedMessageBoxButton.OKCancel ? "OK" : "Yes"; }
+            get { return button == ExtendedMessageBoxButton.OK || button == ExtendedMessageBoxButton.OKCancel ? "_OK" : "_Yes"; }
         }
         public bool IsYesToAllButtonVisible
         {
@@ -164,6 +164,15 @@ namespace MCS.Dialogs
             : this(text, title, button)
         {
             this.image = icon;
+        }
+
+
+        private void ExtendedMessageBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                this.YesButtonCommand.Execute(null);
+            else if (e.Key == Key.Escape)
+                this.CancelButtonCommand.Execute(null);
         }
 
 

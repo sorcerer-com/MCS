@@ -45,6 +45,7 @@ namespace MCS.Controls
 
         public PropertyGridItem()
         {
+            this.CanWrite = true;
         }
 
         public PropertyGridItem(object obj)
@@ -164,11 +165,13 @@ namespace MCS.Controls
                 this.ColumnDefinitions.Add(new ColumnDefinition());
 
                 MyEngine.MColor color = (MyEngine.MColor)this.Object;
+                Color c = Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 
                 NumberBox nb = new NumberBox();
                 nb.Value = color.R;
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Background = new SolidColorBrush(c);
                 nb.Changed += new RoutedEventHandler(value_Changed);
                 this.Children.Add(nb);
                 Grid.SetColumn(nb, 0);
@@ -177,6 +180,7 @@ namespace MCS.Controls
                 nb.Value = color.G;
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Background = new SolidColorBrush(c);
                 nb.Changed += new RoutedEventHandler(value_Changed);
                 this.Children.Add(nb);
                 Grid.SetColumn(nb, 1);
@@ -185,6 +189,7 @@ namespace MCS.Controls
                 nb.Value = color.B;
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Background = new SolidColorBrush(c);
                 nb.Changed += new RoutedEventHandler(value_Changed);
                 this.Children.Add(nb);
                 Grid.SetColumn(nb, 2);
@@ -193,6 +198,7 @@ namespace MCS.Controls
                 nb.Value = color.A;
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
+                nb.Background = new SolidColorBrush(c);
                 nb.Changed += new RoutedEventHandler(value_Changed);
                 this.Children.Add(nb);
                 Grid.SetColumn(nb, 3);

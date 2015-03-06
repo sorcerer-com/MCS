@@ -124,6 +124,7 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.F8, false, false, false, "", "LogWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F3, false, false, false, "", "ContentWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F, true, false, false, "", "FindWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.E, true, false, false, "", "EnvironmentWindowCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
 
             // ContentWindow
