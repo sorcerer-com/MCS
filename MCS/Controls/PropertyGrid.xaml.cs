@@ -77,9 +77,9 @@ namespace MCS.Controls
             remove { RemoveHandler(ChangedEvent, value); }
         }
 
-        protected virtual void OnChanged()
+        protected virtual void OnChanged(PropertyGridItem pgi)
         {
-            RoutedEventArgs args = new RoutedEventArgs(ChangedEvent, this);
+            RoutedEventArgs args = new RoutedEventArgs(ChangedEvent, pgi);
             RaiseEvent(args);
         }
 
@@ -225,7 +225,7 @@ namespace MCS.Controls
                     pi.SetValue(this.Object, null, null);
                 else
                     pi.SetValue(this.Object, pgi.Object, null);
-                this.OnChanged();
+                this.OnChanged(pgi);
             }
         }
     }

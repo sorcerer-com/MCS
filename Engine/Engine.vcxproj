@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Content Elements\ContentElement.cpp" />
+    <ClCompile Include="Content Elements\Material.cpp" />
     <ClCompile Include="Content Elements\Mesh.cpp" />
     <ClCompile Include="Managers\ContentManager.cpp" />
     <ClCompile Include="Engine.cpp" />
@@ -186,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Content Elements\ContentElement.h" />
+    <ClInclude Include="Content Elements\Material.h" />
     <ClInclude Include="Content Elements\Mesh.h" />
     <ClInclude Include="Managers\ContentManager.h" />
     <ClInclude Include="Engine.h" />

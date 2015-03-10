@@ -77,6 +77,12 @@ namespace MCS.Managers
             windows[windowType.Name] = window;
         }
 
+        public static void CloseAllWindows()
+        {
+            foreach (var pair in windows)
+                pair.Value.Close();
+        }
+
 
         // Hot keys functionality
         public static void LoadConfig(XmlDocument xmlDoc)

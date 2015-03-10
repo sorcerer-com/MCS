@@ -19,6 +19,8 @@ namespace MCS.MainWindows
     {
         public MContentManager ContentManager { get; private set; }
 
+        private List<uint> changedElements;
+
         public static List<uint> SelectedElements = new List<uint>();
 
 
@@ -161,6 +163,20 @@ namespace MCS.MainWindows
                     return this.ContentManager.GetElement(ContentWindow.SelectedElements[0], true);
 
                 return null;
+            }
+        }
+
+        public MCS.Controls.PropertyGrid.GetListDelegate GetSelectedContentElementsList
+        {
+            get
+            {
+                return (s) =>
+                {
+                    List<object> res = new List<object>();
+                    foreach (var id in ContentWindow.SelectedElements)
+                        res.Add(this.ContentManager.GetElement(id));
+                    return res;
+                };
             }
         }
 
@@ -369,8 +385,9 @@ namespace MCS.MainWindows
                         return;
 
                     OpenFileDialog openFileDialog = new OpenFileDialog();
-                    string filter = "All Compatible Files (*.obj, *.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr, *.wav)|*.obj;*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr;*.wav|";
+                    string filter = "All Compatible Files (*.obj, *.xml, *.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr, *.wav)|*.obj;*.xml;*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr;*.wav|";
                     filter += "Object Files (*.obj)|*.obj|";
+                    filter += "Material XML Files (*.xml)|*.xml|";
                     filter += "Picture Files (*.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr)|*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr|";
                     filter += "WAVE Files (*.wav)|*.wav|";
                     filter += "All Files (*.*)|*.*";
@@ -405,12 +422,12 @@ namespace MCS.MainWindows
                         saveFileDialog.Filter = "Object Files (*.obj)|*.obj|All Files (*.*)|*.*";
                         saveFileDialog.DefaultExt = "obj";
                     }
-                    /* TODO: add other content elements
                     else if (elem.Type == EContentElementType.Material)
                     {
-                        saveFileDialog.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
+                        saveFileDialog.Filter = "Material XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
                         saveFileDialog.DefaultExt = "xml";
                     }
+                    /* TODO: add other content elements
                     else if (elem.Type == EContentElementType.Texture)
                     {
                         saveFileDialog.Filter = "Picture Files (*.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr)|*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr|All Files (*.*)|*.*";
@@ -460,6 +477,34 @@ namespace MCS.MainWindows
 
 
         // Add Content Element commands
+        public ICommand AddElementCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    if (this.SelectedTreeItem == null)
+                        return;
+
+                    string name = TextDialogBox.Show("Add " + o.ToString(), "Name");
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        EContentElementType type;
+                        if (o.ToString() == "Material")
+                            type = EContentElementType.Material;
+                        /* TODO: add other content elements */
+                        else
+                            return;
+
+                        string package = MContentManager.GetPackage(this.SelectedTreeItem.Value.FullPath);
+                        string path = MContentManager.GetPath(this.SelectedTreeItem.Value.FullPath);
+                        MContentElement elem = this.ContentManager.AddElement(type, name, package, path, 0);
+                        if (elem == null)
+                            ExtendedMessageBox.Show("Cannot add content element '" + name + "' at '" + this.SelectedTreeItem.Value.FullPath + "'", type.ToString(), ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
+                    }
+                });
+            }
+        }
 
         #endregion
 
@@ -475,9 +520,16 @@ namespace MCS.MainWindows
                 this.OnPropertyChanged("PathsTree");
                 this.OnPropertyChanged("Contents");
             };
+            this.changedElements = new List<uint>();
 
             this.filter = string.Empty;
             this.selectedTreeItem = null;
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            foreach(var elemID in this.changedElements)
+                this.ContentManager.SaveElement(elemID);
         }
 
 
@@ -533,6 +585,8 @@ namespace MCS.MainWindows
                 string ext = Path.GetExtension(filenames[i]).ToLowerInvariant();
                 if (ext == ".obj")
                     type = EContentElementType.Mesh;
+                else if (ext == ".xml")
+                    type = EContentElementType.Material;
                 /* TODO: add other content elements
                 else if (textureExts.Contains(ext))
                     type = EContentElementType.Texture;
@@ -570,13 +624,7 @@ namespace MCS.MainWindows
 
                 if (elem != null)
                 {
-                    if (type == EContentElementType.Mesh)
-                        ((MMesh)elem).LoadFromOBJFile(filenames[i]);
-                    /* TODO: add other content elements
-                    else if (type == EContentElementType.Texture)
-                        ((MTexture)elem).LoadFromFile(fileDrop);
-                    else if (type == EContentElementType.Sound)
-                        ((MSound)elem).LoadFromWAVEFile(fileDrop); // */
+                    elem.LoadFromFile(filenames[i]);
                     this.ContentManager.SaveElement(elem.ID);
                 }
             }
@@ -585,16 +633,15 @@ namespace MCS.MainWindows
         private void export(string filename)
         {
             MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0]);
+            if (elem != null)
+                elem.SaveToFile(filename);
+        }
 
-            if (elem.Type == EContentElementType.Mesh)
-                ((MMesh)elem).SaveToOBJFile(filename);
-            /* TODO: add other content elements
-            else if (elem.Type == EContentElementType.Material)
-                ((MMaterial)elem).SaveToXMLFile(filename);
-            else if (elem.Type == EContentElementType.Texture)
-                ((MTexture)elem).SaveToFile(filename);
-            else if (elem.Type == EContentElementType.Sound)
-                ((MSound)elem).SaveToWAVEFile(filename); // */
+
+        private void PropertyGrid_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!this.changedElements.Contains(this.SelectedElement.ID))
+                this.changedElements.Add(this.SelectedElement.ID);
         }
 
         

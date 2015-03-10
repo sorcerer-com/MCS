@@ -10,6 +10,7 @@
 #include "..\Utils\IOUtils.h"
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
+#include "..\Content Elements\Material.h"
 
 
 namespace MyEngine {
@@ -269,9 +270,9 @@ namespace MyEngine {
 		ContentElement *element = NULL;
 		if (type == ContentElementType::EMesh)
 			element = new Mesh(this, name, package, path);
-		/* TODO: add different content types
 		else if (type == EMaterial)
 			element = new Material(this, name, package, path);
+		/* TODO: add different content types
 		else if (type == ETexture)
 			element = new Texture(this, name, package, path);
 		else if (type == EUIScreen)
@@ -719,9 +720,9 @@ namespace MyEngine {
 		ContentElement* element = NULL;
 		if (type == ContentElementType::EMesh)
 			element = new Mesh(this, ifile);
-		/* TODO: add different content types
 		else if (type == EMaterial)
 			element = new Material(this, ifile);
+		/* TODO: add different content types
 		else if (type == ETexture)
 			element = new Texture(this, ifile);
 		else if (type == EUIScreen)

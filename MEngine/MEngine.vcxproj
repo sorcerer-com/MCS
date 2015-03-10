@@ -207,6 +207,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Content Elements\MContentElement.h" />
+    <ClInclude Include="Content Elements\MMaterial.h" />
     <ClInclude Include="Content Elements\MMesh.h" />
     <ClInclude Include="Managers\MContentManager.h" />
     <ClInclude Include="Managers\MSceneManager.h" />
@@ -242,6 +243,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

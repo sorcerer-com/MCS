@@ -10,6 +10,7 @@ namespace irr
 	namespace video
 	{
 		class IVideoDriver;
+		class SMaterial;
 	}
 
 	namespace scene
@@ -60,6 +61,7 @@ namespace MyEngine {
 		void updateSceneElement(const SceneElementPtr sceneElement);
 		irr::scene::ISceneNode* createIrrSceneNode(const SceneElementPtr sceneElement);
 		bool updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh);
+		bool updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial);
 
 		void render();
 

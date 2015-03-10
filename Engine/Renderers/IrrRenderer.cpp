@@ -17,6 +17,7 @@
 #include "..\Scene Elements\Light.h"
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
+#include "..\Content Elements\Material.h"
 
 
 namespace MyEngine {
@@ -77,13 +78,13 @@ namespace MyEngine {
 		inter = Vector3();
 		return INVALID_ID;
 	}
-	
+
 
 	bool IrrRenderer::init()
 	{
 		irr::SIrrlichtCreationParameters irrParam;
 		irrParam.AntiAlias = true;
-		irrParam.DriverType = irr::video::EDT_OPENGL;
+		irrParam.DriverType = irr::video::E_DRIVER_TYPE::EDT_OPENGL;
 		irrParam.HandleSRGB = true;
 		irrParam.Stencilbuffer = true;
 		irrParam.WindowId = this->windowHandle;
@@ -137,14 +138,14 @@ namespace MyEngine {
 		// Setup Fog
 		const Color4& fogColor = this->Owner->SceneManager->FogColor;
 		const float& fogDensity = this->Owner->SceneManager->FogDensity;
-		this->driver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
+		this->driver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::E_FOG_TYPE::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
 		for (const auto& sceneElement : sceneElements)
 			this->updateSceneElement(sceneElement);
 		sceneElements.clear();
-		
+
 		// Remove invalid irrSceneElements
 		irr::scene::ISceneNode* irrRootSceneNode = this->smgr->getRootSceneNode();
 		const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
@@ -153,7 +154,7 @@ namespace MyEngine {
 			if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
 				irrSceneNode->remove();
 		}
-		
+
 		// Clear meshes cache from unused meshes
 		vector<uint> forDelete;
 		for (const auto& pair : this->meshesCache)
@@ -164,13 +165,14 @@ namespace MyEngine {
 		for (const auto& id : forDelete)
 			this->meshesCache.erase(id);
 	}
-	
+
 	void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
-	{		
+	{
 		irr::scene::ISceneNode* irrSceneNode = this->smgr->getSceneNodeFromId(sceneElement->ID);
 		if (!irrSceneNode)
 			irrSceneNode = this->createIrrSceneNode(sceneElement);
 
+		// Set Name and Visibility
 		irrSceneNode->setName(sceneElement->Name.c_str());
 		if (sceneElement.get() == this->Owner->SceneManager->ActiveCamera) // hide active camera
 			irrSceneNode->setVisible(false);
@@ -181,9 +183,10 @@ namespace MyEngine {
 			else
 				irrSceneNode->setVisible(sceneElement->Visible);
 		}
-		else 
+		else
 			irrSceneNode->setVisible(true); // show all objects in Editor mode
 
+		// Set Transformation
 		const Vector3& pos = sceneElement->Position;
 		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
 		const Vector3& rot = sceneElement->Rotation.toEulerAngle();
@@ -191,21 +194,20 @@ namespace MyEngine {
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
-		// TODO: set material
+		// Set Material
 		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
-		irrMaterial.FogEnable = true;
-		irrMaterial.BackfaceCulling = false;
-		irrMaterial.NormalizeNormals = true;
+		this->updateIrrMaterial(sceneElement, irrMaterial);
 
+		// Set Content
 		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
-		if (type == irr::scene::ESNT_MESH || type == irr::scene::ESNT_OCTREE)
+		if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
 		{
 			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
 			irr::scene::SMesh* irrMesh = (irr::scene::SMesh*)irrMeshSceneNode->getMesh();
 			if (this->updateIrrMesh(sceneElement, irrMesh))
 				irrMeshSceneNode->setMesh(irrMesh);
 		}
-		else if (type == irr::scene::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
+		else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
 		{
 			Light* light = (Light*)sceneElement.get();
 
@@ -219,7 +221,7 @@ namespace MyEngine {
 			irrLight.InnerCone = light->SpotCutoffInner;
 			irrLight.OuterCone = light->SpotCutoffOuter;
 			irrLight.Attenuation = irr::core::vector3df(0, 0, 1.0f / light->Intensity);
-			irrLightSceneNode->setLightType(irr::video::ELT_SPOT);
+			irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
 			irrLightSceneNode->setLightData(irrLight);
 		}
 	}
@@ -234,7 +236,7 @@ namespace MyEngine {
 			irrSceneNode = this->smgr->addLightSceneNode();
 			// TODO: add Billboard as a child when we have textures? set it as debug object
 			// TODO: selector from the bounding box of the Billboard
-			
+
 			//irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
 		}
 		else
@@ -247,7 +249,7 @@ namespace MyEngine {
 			if (sceneElement->Type == SceneElementType::ECamera ||
 				sceneElement->Type == SceneElementType::ESystemObject)
 				irrSceneNode->setIsDebugObject(true);
-			
+
 			// shadow
 			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
 			irrMeshSceneNode->addShadowVolumeSceneNode();
@@ -266,7 +268,7 @@ namespace MyEngine {
 		irrSceneNode->setID(sceneElement->ID);
 		return irrSceneNode;
 	}
-	
+
 	bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
 	{
 		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
@@ -318,6 +320,30 @@ namespace MyEngine {
 			return true;
 		}
 		return false;
+	}
+
+	bool IrrRenderer::updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial)
+	{
+		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+		if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
+		{
+			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
+				to_string(sceneElement->MaterialID) + ")");
+			// TODO: set pink material and show this only once
+			return false;
+		}
+		Material* material = (Material*)contentElement.get();
+
+		irrMaterial.AmbientColor = irr::video::SColorf(material->AmbientColor.r, material->AmbientColor.g, material->AmbientColor.b, material->AmbientColor.a).toSColor();
+		irrMaterial.DiffuseColor = irr::video::SColorf(material->DiffuseColor.r, material->DiffuseColor.g, material->DiffuseColor.b, material->DiffuseColor.a).toSColor();
+		irrMaterial.SpecularColor = irr::video::SColorf(material->SpecularColor.r, material->SpecularColor.g, material->SpecularColor.b, material->SpecularColor.a).toSColor();
+		irrMaterial.Shininess = material->Shininess;
+
+		irrMaterial.FogEnable = true;
+		irrMaterial.BackfaceCulling = false;
+		irrMaterial.NormalizeNormals = true;
+		irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
+		return true;
 	}
 
 

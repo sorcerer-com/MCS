@@ -102,15 +102,16 @@ namespace MyEngine {
 		}
 
 
-		bool LoadFromOBJFile(String^ filePath)
+		bool LoadFromFile(String^ filePath) override
 		{
 			return this->mesh->LoadFromOBJFile(to_string(filePath));
 		}
 
-		bool SaveToOBJFile(String^ filePath)
+		bool SaveToFile(String^ filePath) override
 		{
 			return this->mesh->SaveToOBJFile(to_string(filePath));
 		}
+	
 	};
 
 }

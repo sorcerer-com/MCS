@@ -14,6 +14,7 @@
     <ClInclude Include="Scene Elements\MCamera.h" />
     <ClInclude Include="Utils\Types\MColor.h" />
     <ClInclude Include="Scene Elements\MLight.h" />
+    <ClInclude Include="Content Elements\MMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

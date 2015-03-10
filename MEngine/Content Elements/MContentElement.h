@@ -116,6 +116,16 @@ namespace MyEngine {
 		}
 
 
+		virtual bool LoadFromFile(String^)
+		{
+			return false;
+		}
+
+		virtual bool SaveToFile(String^)
+		{
+			return false;
+		}
+
 		void OnChanged()
 		{
 			this->Changed(this);
