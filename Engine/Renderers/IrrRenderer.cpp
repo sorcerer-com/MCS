@@ -22,19 +22,22 @@
 
 namespace MyEngine {
 
+	irr::video::SColor IrrRenderer::irrInvalidColor = irr::video::SColor(255, 255, 0, 255);
+
+
 	IrrRenderer::IrrRenderer(Engine* owner) :
 		Renderer(owner, EIrrRenderer)
 	{
-		this->device = NULL;
-		this->driver = NULL;
-		this->smgr = NULL;
+		this->irrDevice = NULL;
+		this->irrDriver = NULL;
+		this->irrSmgr = NULL;
 	}
 
 	IrrRenderer::~IrrRenderer()
 	{
 		this->thread->join();
 
-		Engine::Log(ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
+		Engine::Log(LogType::ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
 	}
 
 
@@ -44,7 +47,7 @@ namespace MyEngine {
 
 		this->thread->defWorker(&IrrRenderer::render, this);
 
-		Engine::Log(ELog, "IrrRenderer", "Init IrrLicht Renderer");
+		Engine::Log(LogType::ELog, "IrrRenderer", "Init IrrLicht Renderer");
 		return true;
 	}
 
@@ -53,15 +56,15 @@ namespace MyEngine {
 		this->Width = width;
 		this->Height = height;
 		this->Resized = true;
-		Engine::Log(ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
+		Engine::Log(LogType::ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
 	}
 
 	uint IrrRenderer::GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter)
 	{
-		if (!this->device || !this->device->run())
+		if (!this->irrDevice || !this->irrDevice->run())
 			return INVALID_ID;
 
-		irr::scene::ISceneCollisionManager* collMan = this->smgr->getSceneCollisionManager();
+		irr::scene::ISceneCollisionManager* collMan = this->irrSmgr->getSceneCollisionManager();
 
 		irr::core::vector2di coord((int)x, (int)y);
 		irr::core::line3df ray = collMan->getRayFromScreenCoordinates(coord);
@@ -90,20 +93,23 @@ namespace MyEngine {
 		irrParam.WindowId = this->windowHandle;
 		irrParam.ZBufferBits = 32;
 
-		this->device = irr::createDeviceEx(irrParam);
-		if (!this->device)
+		this->irrDevice = irr::createDeviceEx(irrParam);
+		if (!this->irrDevice)
 		{
-			Engine::Log(EError, "IrrRenderer", "Cannot init IrrLicht Renderer");
+			Engine::Log(LogType::EError, "IrrRenderer", "Cannot init IrrLicht Renderer");
 			return false;
 		}
 
-		this->driver = this->device->getVideoDriver();
-		this->smgr = this->device->getSceneManager();
-		this->guienv = this->device->getGUIEnvironment();
+		this->irrDriver = this->irrDevice->getVideoDriver();
+		this->irrSmgr = this->irrDevice->getSceneManager();
+		this->irrGuienv = this->irrDevice->getGUIEnvironment();
 
-		this->smgr->setShadowColor(irr::video::SColor(150, 0, 0, 0));
+		this->irrSmgr->setShadowColor(irr::video::SColor(150, 0, 0, 0));
 
-		irr::scene::ICameraSceneNode* irrCamera = this->smgr->addCameraSceneNode();
+		this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_OPTIMIZED_FOR_QUALITY, true);
+		this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_CREATE_MIP_MAPS, true);
+
+		irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->addCameraSceneNode();
 		irrCamera->bindTargetAndRotation(true);
 		irrCamera->setNearValue(0.1f);
 		irrCamera->setFarValue(10000.0f);
@@ -119,7 +125,7 @@ namespace MyEngine {
 		Camera* camera = this->Owner->SceneManager->ActiveCamera;
 		if (camera)
 		{
-			irr::scene::ICameraSceneNode* irrCamera = this->smgr->getActiveCamera();
+			irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->getActiveCamera();
 			irrCamera->setFOV(camera->FOV * (3.14159265f / 180.0f)); // from deg to rad
 
 			irrCamera->updateAbsolutePosition();
@@ -133,12 +139,12 @@ namespace MyEngine {
 
 		// Set Global Ambient Light
 		const Color4& ambientLight = this->Owner->SceneManager->AmbientLight;
-		this->smgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
+		this->irrSmgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
 
 		// Setup Fog
 		const Color4& fogColor = this->Owner->SceneManager->FogColor;
 		const float& fogDensity = this->Owner->SceneManager->FogDensity;
-		this->driver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::E_FOG_TYPE::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
+		this->irrDriver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::E_FOG_TYPE::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
 
 		// Update SceneElements
 		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
@@ -147,7 +153,7 @@ namespace MyEngine {
 		sceneElements.clear();
 
 		// Remove invalid irrSceneElements
-		irr::scene::ISceneNode* irrRootSceneNode = this->smgr->getRootSceneNode();
+		irr::scene::ISceneNode* irrRootSceneNode = this->irrSmgr->getRootSceneNode();
 		const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
 		for (const auto& irrSceneNode : irrChildrenSceneNode)
 		{
@@ -168,7 +174,7 @@ namespace MyEngine {
 
 	void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
 	{
-		irr::scene::ISceneNode* irrSceneNode = this->smgr->getSceneNodeFromId(sceneElement->ID);
+		irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->getSceneNodeFromId(sceneElement->ID);
 		if (!irrSceneNode)
 			irrSceneNode = this->createIrrSceneNode(sceneElement);
 
@@ -198,14 +204,21 @@ namespace MyEngine {
 		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
 		this->updateIrrMaterial(sceneElement, irrMaterial);
 
+		// TODO: set textures
+
 		// Set Content
 		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
 		if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
 		{
-			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
-			irr::scene::SMesh* irrMesh = (irr::scene::SMesh*)irrMeshSceneNode->getMesh();
+			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+
+			irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
 			if (this->updateIrrMesh(sceneElement, irrMesh))
+			{
+				irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
 				irrMeshSceneNode->setMesh(irrMesh);
+			}
 		}
 		else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
 		{
@@ -233,11 +246,11 @@ namespace MyEngine {
 
 		if (sceneElement->Type == SceneElementType::ELight)
 		{
-			irrSceneNode = this->smgr->addLightSceneNode();
+			irrSceneNode = this->irrSmgr->addLightSceneNode();
 			// TODO: add Billboard as a child when we have textures? set it as debug object
 			// TODO: selector from the bounding box of the Billboard
 
-			//irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
+			//irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
 		}
 		else
 		{
@@ -245,7 +258,7 @@ namespace MyEngine {
 				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
 
 			irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-			irrSceneNode = this->smgr->addOctreeSceneNode(irrMesh);
+			irrSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh);
 			if (sceneElement->Type == SceneElementType::ECamera ||
 				sceneElement->Type == SceneElementType::ESystemObject)
 				irrSceneNode->setIsDebugObject(true);
@@ -254,8 +267,8 @@ namespace MyEngine {
 			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
 			irrMeshSceneNode->addShadowVolumeSceneNode();
 
-			// irrTriangleSelector = this->smgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
-			irrTriangleSelector = this->smgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
+			// irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
+			irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
 		}
 
 		// add triangle selector to be able to select it
@@ -271,13 +284,23 @@ namespace MyEngine {
 
 	bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
 	{
-		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
+		ContentElementPtr contentElement = NULL;
+		if (this->Owner->ContentManager->ContainElement(sceneElement->ContentID))
+			contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
 		if (!contentElement || contentElement->Type != ContentElementType::EMesh)
 		{
-			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
+			if (irrMesh->getMeshBufferCount() > 0 && irrMesh->getMeshBuffer(0)->getIndexCount() == 36)
+				return false;
+
+			Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
 				to_string(sceneElement->ContentID) + ")");
-			// TODO: show somehow cube or something and show this only once
-			return false;
+
+			auto irrCubeSceneNode = this->irrSmgr->addCubeSceneNode();
+			irrMesh->clear();
+			irrMesh->addMeshBuffer(irrCubeSceneNode->getMesh()->getMeshBuffer(0));
+			irrMesh->setDirty();
+			irrCubeSceneNode->remove();
+			return true;
 		}
 		Mesh* mesh = (Mesh*)contentElement.get();
 
@@ -324,13 +347,21 @@ namespace MyEngine {
 
 	bool IrrRenderer::updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial)
 	{
-		ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+		ContentElementPtr contentElement = NULL;
+		if (this->Owner->ContentManager->ContainElement(sceneElement->MaterialID))
+			contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
 		if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
 		{
-			Engine::Log(EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
+			if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
+				return true;
+
+			Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
 				to_string(sceneElement->MaterialID) + ")");
-			// TODO: set pink material and show this only once
-			return false;
+
+			irrMaterial = irr::video::SMaterial();
+			irrMaterial.DiffuseColor = IrrRenderer::irrInvalidColor;
+			irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
+			return true;
 		}
 		Material* material = (Material*)contentElement.get();
 
@@ -354,7 +385,7 @@ namespace MyEngine {
 
 		while (!this->thread->interrupted())
 		{
-			if (!this->device->run())
+			if (!this->irrDevice->run())
 			{
 				this_thread::sleep_for(chrono::milliseconds(10));
 				continue;
@@ -362,31 +393,31 @@ namespace MyEngine {
 
 			if (this->Resized)
 			{
-				this->driver->OnResize(irr::core::dimension2du(this->Width, this->Height));
+				this->irrDriver->OnResize(irr::core::dimension2du(this->Width, this->Height));
 				this->Resized = false;
 			}
 
 			this->updateScene();
 			
-			this->driver->beginScene();
+			this->irrDriver->beginScene();
 
-			this->smgr->drawAll();
-			this->guienv->drawAll();
+			this->irrSmgr->drawAll();
+			this->irrGuienv->drawAll();
 
 			if (Engine::Mode != EngineMode::EEngine)
 			{
 				irr::video::SColor white(255, 255, 255, 255);
-				this->guienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->driver->getFPS()), irr::core::recti(10, 10, 0, 0), white);
-				this->guienv->getBuiltInFont()->draw(irr::core::stringw("Primitives: ") + irr::core::stringw(this->driver->getPrimitiveCountDrawn()), irr::core::recti(10, 20, 0, 0), white);
+				this->irrGuienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->irrDriver->getFPS()), irr::core::recti(10, 10, 0, 0), white);
+				this->irrGuienv->getBuiltInFont()->draw(irr::core::stringw("Primitives: ") + irr::core::stringw(this->irrDriver->getPrimitiveCountDrawn()), irr::core::recti(10, 20, 0, 0), white);
 			}
 
-			this->driver->endScene();
+			this->irrDriver->endScene();
 
 			this_thread::sleep_for(chrono::milliseconds(1));
 		}
 
-		this->device->closeDevice();
-		this->device->drop();
+		this->irrDevice->closeDevice();
+		this->irrDevice->drop();
 	}
 
 }

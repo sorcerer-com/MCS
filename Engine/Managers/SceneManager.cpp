@@ -31,7 +31,7 @@ namespace MyEngine {
 
 	void SceneManager::New()
 	{
-		Engine::Log(ELog, "Scene", "New scene");
+		Engine::Log(LogType::ELog, "Scene", "New scene");
 		this->sceneElements.clear();
 		this->ActiveCamera = NULL;
 		this->AmbientLight = Color4(0.2, 0.2, 0.2, 1.0);
@@ -55,7 +55,7 @@ namespace MyEngine {
 				ofstream dst(backupPath.c_str(), std::ios::binary);
 				dst << src.rdbuf();
 
-				Engine::Log(ELog, "Scene", "Backup scene file: " + filePath + " to: " + backupPath);
+				Engine::Log(LogType::ELog, "Scene", "Backup scene file: " + filePath + " to: " + backupPath);
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace MyEngine {
 		ofstream ofile(filePath, ios_base::out | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
-			Engine::Log(EError, "Scene", "Cannot save scene file: " + filePath);
+			Engine::Log(LogType::EError, "Scene", "Cannot save scene file: " + filePath);
 			ofile.close();
 			return false;
 		}
@@ -91,7 +91,7 @@ namespace MyEngine {
 
 		ofile.close();
 
-		Engine::Log(ELog, "Scene", "Save scene to file: " + filePath);
+		Engine::Log(LogType::ELog, "Scene", "Save scene to file: " + filePath);
 		return true;
 	}
 
@@ -102,7 +102,7 @@ namespace MyEngine {
 		ifstream ifile(filePath, ios_base::in | ios_base::binary);
 		if (!ifile || !ifile.is_open())
 		{
-			Engine::Log(EError, "Scene", "Cannot load scene file: " + filePath);
+			Engine::Log(LogType::EError, "Scene", "Cannot load scene file: " + filePath);
 			ifile.close();
 			return false;
 		}
@@ -123,7 +123,7 @@ namespace MyEngine {
 				Read(ifile, version);
 				if (version == 0u)
 				{
-					Engine::Log(EError, "Scene", "Scene file is corrupted");
+					Engine::Log(LogType::EError, "Scene", "Scene file is corrupted");
 					ifile.close();
 					return false;
 				}
@@ -148,7 +148,7 @@ namespace MyEngine {
 					this->AddElement(element);
 				else
 				{
-					Engine::Log(EError, "Scene", "Scene file is corrupted");
+					Engine::Log(LogType::EError, "Scene", "Scene file is corrupted");
 					ifile.close();
 					return false;
 				}
@@ -170,7 +170,7 @@ namespace MyEngine {
 
 		ifile.close();
 
-		Engine::Log(ELog, "Scene", "Load scene from file: " + filePath);
+		Engine::Log(LogType::ELog, "Scene", "Load scene from file: " + filePath);
 		return true;
 	}
 
@@ -223,12 +223,12 @@ namespace MyEngine {
 
 		if (this->ContainElement(element->ID) || this->ContainElement(element->Name))
 		{
-			Engine::Log(EWarning, "Scene", "Try to add scene element '" + element->Name + "' (" + to_string(element->ID) + ") that already exists");
+			Engine::Log(LogType::EWarning, "Scene", "Try to add scene element '" + element->Name + "' (" + to_string(element->ID) + ") that already exists");
 			return false;
 		}
 
 		this->sceneElements[element->ID] = SceneElementPtr(element);
-		Engine::Log(ELog, "Scene", "Add scene element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
+		Engine::Log(LogType::ELog, "Scene", "Add scene element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
 
 		/* if (element->Type != ESystemObject)
 			this->AddLayerID("Default", element->ID); */
@@ -256,7 +256,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EWarning, "Scene", "Try to delete non existent scene element (" + to_string(id) + ")");
+			Engine::Log(LogType::EWarning, "Scene", "Try to delete non existent scene element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -264,7 +264,7 @@ namespace MyEngine {
 		//this->ContentManager.ClearInstances(id); // delete all used instaces for this scene element
 		this->sceneElements.erase(id);
 
-		Engine::Log(ELog, "Scene", "Delete scene element (" + to_string(id) + ")");
+		Engine::Log(LogType::ELog, "Scene", "Delete scene element (" + to_string(id) + ")");
 		return true;
 	}
 	
@@ -272,7 +272,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EWarning, "Scene", "Try to get non existent scene element (" + to_string(id) + ")");
+			Engine::Log(LogType::EWarning, "Scene", "Try to get non existent scene element (" + to_string(id) + ")");
 			return SceneElementPtr();
 		}
 
@@ -287,7 +287,7 @@ namespace MyEngine {
 				return pair.second;
 		}
 
-		Engine::Log(EWarning, "Scene", "Try to get non existent scene element '" + name + "'");
+		Engine::Log(LogType::EWarning, "Scene", "Try to get non existent scene element '" + name + "'");
 		return NULL;
 	}
 

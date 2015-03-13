@@ -45,7 +45,7 @@ namespace MyEngine {
 		ifstream ifile(filePath, ios_base::in | ios_base::binary);
 		if (!ifile || !ifile.is_open())
 		{
-			Engine::Log(EError, "ContentManager", "Cannot import package file: " + filePath);
+			Engine::Log(LogType::EError, "ContentManager", "Cannot import package file: " + filePath);
 			ifile.close();
 			return false;
 		}
@@ -70,14 +70,14 @@ namespace MyEngine {
 				this->AddElement(elem);
 			else
 			{
-				Engine::Log(EError, "ContentManager", "Package file is corrupted: " + filePath);
+				Engine::Log(LogType::EError, "ContentManager", "Package file is corrupted: " + filePath);
 				ifile.close();
 				return false;
 			}
 		}
 
 		ifile.close();
-		Engine::Log(ELog, "ContentManager", "Import package file: " + filePath);
+		Engine::Log(LogType::ELog, "ContentManager", "Import package file: " + filePath);
 		return true;
 	}
 
@@ -85,7 +85,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EError, "ContentManager", "Cannot export non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EError, "ContentManager", "Cannot export non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -93,7 +93,7 @@ namespace MyEngine {
 		ofstream ofile(filePath, ios_base::app | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
-			Engine::Log(EWarning, "ContentManager", "Cannot open package file: " + filePath);
+			Engine::Log(LogType::EWarning, "ContentManager", "Cannot open package file: " + filePath);
 			ofile.close();
 			return false;
 		}
@@ -113,7 +113,7 @@ namespace MyEngine {
 	{
 		if (this->ContainPath(fullPath))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to create already exists path '" + fullPath + "'");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to create already exists path '" + fullPath + "'");
 			return false;
 		}
 
@@ -125,7 +125,7 @@ namespace MyEngine {
 
 		this->addRequest(ESaveDatabase);
 
-		Engine::Log(ELog, "ContentManager", "Create path '" + fullPath + "'");
+		Engine::Log(LogType::ELog, "ContentManager", "Create path '" + fullPath + "'");
 		return true;
 	}
 
@@ -133,7 +133,7 @@ namespace MyEngine {
 	{
 		if (this->ContainPath(newFullPath))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to rename non existent path '" + oldFullPath + "'");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to rename non existent path '" + oldFullPath + "'");
 			return false;
 		}
 		
@@ -172,7 +172,7 @@ namespace MyEngine {
 					this->addRequest(ESaveDatabase);
 				}
 
-				Engine::Log(ELog, "ContentManager", "Rename path '" + oldPackage + "#" + path + "' to '" + newPackage + "#" + npath + "'");
+				Engine::Log(LogType::ELog, "ContentManager", "Rename path '" + oldPackage + "#" + path + "' to '" + newPackage + "#" + npath + "'");
 			}
 		}
 		for (const auto& path : forDelete)
@@ -210,7 +210,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainPath(fullPath))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to delete non existent path '" + fullPath + "'");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to delete non existent path '" + fullPath + "'");
 			return false;
 		}
 
@@ -247,7 +247,7 @@ namespace MyEngine {
 		}
 		this->addRequest(ESaveDatabase);
 
-		Engine::Log(ELog, "ContentManager", "Delete path '" + fullPath + "'");
+		Engine::Log(LogType::ELog, "ContentManager", "Delete path '" + fullPath + "'");
 		return true;
 	}
 	
@@ -307,7 +307,7 @@ namespace MyEngine {
 		}
 
 		if (this->ContainElement(element->ID) || this->ContainElement(element->GetFullName()))
-			Engine::Log(EWarning, "ContentManager", "Add content element '" + element->GetFullName() + "' (" + to_string(element->ID) + ") that already exists");
+			Engine::Log(LogType::EWarning, "ContentManager", "Add content element '" + element->GetFullName() + "' (" + to_string(element->ID) + ") that already exists");
 
 		lock lck(this->thread->mutex("content"));
 		this->content[element->ID] = ContentElementPtr(element);
@@ -316,7 +316,7 @@ namespace MyEngine {
 		this->addRequest(ESaveElement, element->ID);
 		this->addRequest(ESaveDatabase);
 
-		Engine::Log(ELog, "ContentManager", "Add content element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
+		Engine::Log(LogType::ELog, "ContentManager", "Add content element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
 		return true;
 	}
 
@@ -324,19 +324,19 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to move non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to move non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 		if (!this->ContainPath(newFullPath))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to move element to non existent path '" + newFullPath + "'");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to move element to non existent path '" + newFullPath + "'");
 			return false;
 		}
 
 		ContentElementPtr element = this->GetElement(id, true, true);
 		if (this->ContainElement(newFullPath + element->Name))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
 				") to path '" + newFullPath + "', but there is already element with the same name");
 			return false;
 		}
@@ -351,7 +351,7 @@ namespace MyEngine {
 		this->addRequest(ESaveElement, id);
 		this->addRequest(ESaveDatabase);
 
-		Engine::Log(ELog, "ContentManager", "Move content element '" + element->Name + "' (" + to_string(id) + ") to '" + newFullPath + "'");
+		Engine::Log(LogType::ELog, "ContentManager", "Move content element '" + element->Name + "' (" + to_string(id) + ") to '" + newFullPath + "'");
 		return true;
 	}
 
@@ -389,7 +389,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to delete non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to delete non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -402,7 +402,7 @@ namespace MyEngine {
 
 		this->addRequest(ESaveDatabase);
 
-		Engine::Log(ELog, "ContentManager", "Delete content element (" + to_string(id) + ")");
+		Engine::Log(LogType::ELog, "ContentManager", "Delete content element (" + to_string(id) + ")");
 		return true;
 	}
 
@@ -410,7 +410,7 @@ namespace MyEngine {
 	{
 		if (!this->ContainElement(id))
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to get non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element (" + to_string(id) + ")");
 			return ContentElementPtr();
 		}
 
@@ -434,7 +434,7 @@ namespace MyEngine {
 
 		if (this->packageInfos.find(package) == this->packageInfos.end())
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
 			return ContentElementPtr();
 		}
 
@@ -442,7 +442,7 @@ namespace MyEngine {
 
 		if (info.Paths.find(path) == info.Paths.end())
 		{
-			Engine::Log(EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
+			Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
 			return ContentElementPtr();
 		}
 
@@ -500,7 +500,7 @@ namespace MyEngine {
 					this->saveElement(request.second);
 					break;
 				default:
-					Engine::Log(EWarning, "ContentManager", "Invalid request");
+					Engine::Log(LogType::EWarning, "ContentManager", "Invalid request");
 					break;
 				}
 
@@ -564,12 +564,12 @@ namespace MyEngine {
 		lock lck(this->thread->mutex("content"));
 
 		string filePath = string(CONTENT_FOLDER) + string("\\") + string(CONTENT_DB_FILE);
-		Engine::Log(ELog, "ContentManager", "Load database file: " + filePath);
+		Engine::Log(LogType::ELog, "ContentManager", "Load database file: " + filePath);
 
 		ifstream ifile(filePath, ios_base::in | ios_base::binary);
 		if (!ifile || !ifile.is_open())
 		{
-			Engine::Log(EError, "ContentManager", "Cannot load database file: " + filePath);
+			Engine::Log(LogType::EError, "ContentManager", "Cannot load database file: " + filePath);
 			ifile.close();
 			return;
 		}
@@ -628,13 +628,13 @@ namespace MyEngine {
 		lock lck(this->thread->mutex("content"));
 
 		string filePath = string(CONTENT_FOLDER) + string("\\") + string(CONTENT_DB_FILE);
-		Engine::Log(ELog, "ContentManager", "Save database file: " + filePath);
+		Engine::Log(LogType::ELog, "ContentManager", "Save database file: " + filePath);
 
 		// Save
 		ofstream ofile(filePath, ios_base::out | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
-			Engine::Log(EError, "ContentManager", "Cannot create database file: " + filePath);
+			Engine::Log(LogType::EError, "ContentManager", "Cannot create database file: " + filePath);
 			ofile.close();
 			return;
 		}
@@ -678,7 +678,7 @@ namespace MyEngine {
 		ContentElementPtr element = this->GetElement(id, false);
 		if (!element)
 		{
-			Engine::Log(EError, "ContentManager", "Cannot load non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EError, "ContentManager", "Cannot load non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -690,7 +690,7 @@ namespace MyEngine {
 		ifstream ifile(filePath, ios_base::in | ios_base::binary);
 		if (!ifile || !ifile.is_open())
 		{
-			Engine::Log(EError, "ContentManager", "Cannot load package file: " + filePath);
+			Engine::Log(LogType::EError, "ContentManager", "Cannot load package file: " + filePath);
 			ifile.close();
 			return false;
 		}
@@ -703,14 +703,14 @@ namespace MyEngine {
 			this->content[elem->ID].reset(elem);
 		else
 		{
-			Engine::Log(EError, "ContentManager", "Cannot load content element '" + element->Name + "'#" +
+			Engine::Log(LogType::EError, "ContentManager", "Cannot load content element '" + element->Name + "'#" +
 				to_string(element->Version) + " (" + to_string(element->ID) + ")");
 			ifile.close();
 			return false;
 		}
 
 		ifile.close();
-		Engine::Log(ELog, "ContentManager", "Load content element '" + elem->Name + "'#" +
+		Engine::Log(LogType::ELog, "ContentManager", "Load content element '" + elem->Name + "'#" +
 			to_string(elem->Version) + " (" + to_string(elem->ID) + ")");
 		return true;
 	}
@@ -741,7 +741,7 @@ namespace MyEngine {
 		ContentElementPtr element = this->GetElement(id, false);
 		if (!element)
 		{
-			Engine::Log(EError, "ContentManager", "Cannot save non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EError, "ContentManager", "Cannot save non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -757,7 +757,7 @@ namespace MyEngine {
 			ofile.open(filePath, ios_base::out | ios_base::binary);
 			if (!ofile || !ofile.is_open())
 			{
-				Engine::Log(EError, "ContentManager", "Cannot open package file: " + filePath);
+				Engine::Log(LogType::EError, "ContentManager", "Cannot open package file: " + filePath);
 				ofile.close();
 				return false;
 			}
@@ -782,7 +782,7 @@ namespace MyEngine {
 		element->PackageOffset = ofile.tellp();
 		element->WriteToFile(ofile);
 		ofile.close();
-		Engine::Log(ELog, "ContentManager", "Save content element '" + element->Name + "'#" +
+		Engine::Log(LogType::ELog, "ContentManager", "Save content element '" + element->Name + "'#" +
 			to_string(element->Version) + " (" + to_string(element->ID) + ")");
 
 		return true;
@@ -795,7 +795,7 @@ namespace MyEngine {
 		ContentElementPtr element = this->GetElement(id, false);
 		if (!element)
 		{
-			Engine::Log(EError, "ContentManager", "Cannot erase non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EError, "ContentManager", "Cannot erase non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -812,7 +812,7 @@ namespace MyEngine {
 		fstream ofile(filePath, ios_base::in | ios_base::out | ios_base::binary);
 		if (!ofile || !ofile.is_open())
 		{
-			Engine::Log(EError, "ContentManager", "Cannot open package file: " + filePath);
+			Engine::Log(LogType::EError, "ContentManager", "Cannot open package file: " + filePath);
 			ofile.close();
 			return false;
 		}
@@ -845,7 +845,7 @@ namespace MyEngine {
 			info.FreeSpaces.push_back(make_pair(element->PackageOffset, size));
 		sort(info.FreeSpaces.begin(), info.FreeSpaces.end(), [](const pair<long long, long long>& a, const pair<long long, long long>& b){ return a.second < b.second; });
 
-		Engine::Log(ELog, "ContentManager", "Erase content element '" + element->Name + "'#" +
+		Engine::Log(LogType::ELog, "ContentManager", "Erase content element '" + element->Name + "'#" +
 			to_string(element->Version) + " (" + to_string(element->ID) + ")");
 		return true;
 	}
@@ -863,7 +863,7 @@ namespace MyEngine {
 
 		this->ExportToPackage(backupPath, element->ID);
 
-		Engine::Log(ELog, "ContentManager", "Backup content element '" + element->Name + "'#" +
+		Engine::Log(LogType::ELog, "ContentManager", "Backup content element '" + element->Name + "'#" +
 			to_string(element->Version) + " (" + to_string(element->ID) + ") to: " + backupPath);
 	}
 
@@ -872,7 +872,7 @@ namespace MyEngine {
 		ContentElementPtr element = this->GetElement(id, false);
 		if (!element)
 		{
-			Engine::Log(EError, "ContentManager", "Cannot unload non existent content element (" + to_string(id) + ")");
+			Engine::Log(LogType::EError, "ContentManager", "Cannot unload non existent content element (" + to_string(id) + ")");
 			return false;
 		}
 
@@ -884,7 +884,7 @@ namespace MyEngine {
 		lock lck(this->thread->mutex("content"));
 		this->content[elem->ID].reset(elem);
 
-		Engine::Log(ELog, "ContentManager", "UnLoad content element '" + elem->Name + "'#" +
+		Engine::Log(LogType::ELog, "ContentManager", "UnLoad content element '" + elem->Name + "'#" +
 			to_string(elem->Version) + " (" + to_string(elem->ID) + ")");
 		return true;
 	}

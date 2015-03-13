@@ -19,7 +19,7 @@ namespace MyEngine {
 	{
 		ofstream ofile(LOG_FILE);
 		ofile.close();
-		Engine::Log(ELog, "Engine", "Create engine");
+		Engine::Log(LogType::ELog, "Engine", "Create engine");
 
 		this->ContentManager = make_shared<MyEngine::ContentManager>(this);
 		this->SceneManager = make_shared<MyEngine::SceneManager>(this);
@@ -29,7 +29,7 @@ namespace MyEngine {
 
 	Engine::~Engine()
 	{
-		Engine::Log(ELog, "Engine", "Destroy engine");
+		Engine::Log(LogType::ELog, "Engine", "Destroy engine");
 	}
 
 

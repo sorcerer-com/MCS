@@ -146,6 +146,7 @@ namespace MCS
                     {
                         this.Engine.SceneManager.New();
                         this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+                        this.Engine.SceneManager.ActiveCamera.Material = this.Engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
                         this.OnPropertyChanged("SelectedElement");
 
                         this.sceneSaved = true;
@@ -413,7 +414,8 @@ namespace MCS
                     {
                         MSceneElement mse = this.Engine.SceneManager.GetElement(id);
                         MSceneElement newMse = this.Engine.SceneManager.CloneElement(mse, mse.Name + "2");
-                        newSelectedElements.Add(newMse);
+                        if (newMse != null)
+                            newSelectedElements.Add(newMse);
                     }
                     this.SelectElement(0);
 
@@ -511,6 +513,7 @@ namespace MCS
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+            this.Engine.SceneManager.ActiveCamera.Material = this.Engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             this.OnPropertyChanged("SelectedElement");
             this.sceneSaved = true;
             this.updateTitle();
@@ -704,7 +707,8 @@ namespace MCS
             bool deselect = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
             if (!deselect && !(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
                 this.SelectElement(0, false); // deselect all
-            this.SelectElement(mse.ID, deselect);
+            if (mse != null)
+                this.SelectElement(mse.ID, deselect);
         }
 
         void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)

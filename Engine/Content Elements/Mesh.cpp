@@ -46,7 +46,7 @@ namespace MyEngine {
 		ifstream ifile(filePath);
 		if (!ifile || !ifile.is_open())
 		{
-			Engine::Log(EError, "Mesh", "Cannot load obj file: " + filePath);
+			Engine::Log(LogType::EError, "Mesh", "Cannot load obj file: " + filePath);
 			ifile.close();
 			return false;
 		}
@@ -118,7 +118,7 @@ namespace MyEngine {
 
 		ifile.close();
 
-		Engine::Log(ELog, "Mesh", "Load obj file: " + filePath);
+		Engine::Log(LogType::ELog, "Mesh", "Load obj file: " + filePath);
 		return true;
 	}
 
@@ -127,7 +127,7 @@ namespace MyEngine {
 		ofstream ofile(filePath);
 		if (!ofile || !ofile.is_open())
 		{
-			Engine::Log(EError, "Mesh", "Cannot save obj file: " + filePath);
+			Engine::Log(LogType::EError, "Mesh", "Cannot save obj file: " + filePath);
 			ofile.close();
 			return false;
 		}
@@ -170,7 +170,7 @@ namespace MyEngine {
 			ofile << endl;
 		}
 
-		Engine::Log(ELog, "Mesh", "Save obj file: " + filePath);
+		Engine::Log(LogType::ELog, "Mesh", "Save obj file: " + filePath);
 		ofile.close();
 
 		return true;

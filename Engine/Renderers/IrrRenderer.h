@@ -11,6 +11,7 @@ namespace irr
 	{
 		class IVideoDriver;
 		class SMaterial;
+		class SColor;
 	}
 
 	namespace scene
@@ -39,12 +40,14 @@ namespace MyEngine {
 	{
 	private:
 		void* windowHandle;
-		irr::IrrlichtDevice* device;
-		irr::video::IVideoDriver* driver;
-		irr::scene::ISceneManager* smgr;
-		irr::gui::IGUIEnvironment* guienv;
+		irr::IrrlichtDevice* irrDevice;
+		irr::video::IVideoDriver* irrDriver;
+		irr::scene::ISceneManager* irrSmgr;
+		irr::gui::IGUIEnvironment* irrGuienv;
 
 		map<uint, irr::scene::SMesh*> meshesCache;
+
+		static irr::video::SColor irrInvalidColor;
 
 	public:
 		IrrRenderer(Engine* owner);
