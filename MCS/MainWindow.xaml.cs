@@ -413,7 +413,7 @@ namespace MCS
                     foreach (var id in MainWindow.SelectedElements)
                     {
                         MSceneElement mse = this.Engine.SceneManager.GetElement(id);
-                        MSceneElement newMse = this.Engine.SceneManager.CloneElement(mse, mse.Name + "2");
+                        MSceneElement newMse = this.Engine.SceneManager.CloneElement(id, mse.Name + "2");
                         if (newMse != null)
                             newSelectedElements.Add(newMse);
                     }

@@ -27,6 +27,7 @@ namespace MyEngine {
 		SceneElementType Type;
 		uint ID;
 		string Name;
+		string Layer;
 		uint ContentID;
 		uint MaterialID;
 		// TODO: textures, attach?

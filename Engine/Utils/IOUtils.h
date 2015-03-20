@@ -26,7 +26,7 @@ namespace MyEngine {
 		int size = (int)value.size();
 		ofile.write((char*)&size, sizeof(size));
 		for (int i = 0; i < size; i++)
-			ofile.write((char*)&value[i], sizeof(value[i]));
+			Write(ofile, value[i]);
 	}
 
 #pragma endregion
@@ -58,11 +58,12 @@ namespace MyEngine {
 		int size = 0;
 		ifile.read((char*)&size, sizeof(size));
 
+		value.clear();
 		value.reserve((size_t)size);
 		for (int i = 0; i < size; i++)
 		{
 			T t;
-			ifile.read((char*)&t, sizeof(t));
+			Read(ifile, t);
 			value.push_back(t);
 		}
 	}

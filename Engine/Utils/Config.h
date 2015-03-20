@@ -13,3 +13,5 @@
 
 #define PACKAGE_EXT ".mpk"
 #define SCENE_EXT ".msn"
+
+#define DEFAULT_LAYER_NAME "Default"

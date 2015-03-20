@@ -57,6 +57,12 @@ namespace MyEngine {
 			String^ get() { return gcnew String(element->Name.c_str()); }
 		}
 
+		[MPropertyAttribute(Group = "Base")]
+		property String^ Layer
+		{
+			String^ get() { return gcnew String(element->Layer.c_str()); }
+		}
+
 		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Content
 		{

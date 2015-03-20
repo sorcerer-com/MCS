@@ -18,6 +18,7 @@ namespace MyEngine {
 	{
 	public:
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
+		using LayerVectorType = vector < string > ; // layer name
 
 		Camera* ActiveCamera;
 		Color4 AmbientLight;
@@ -28,7 +29,7 @@ namespace MyEngine {
 
 	private:
 		SceneMapType sceneElements;
-		// TODO: layers
+		LayerVectorType layers;
 
 	public:
 		SceneManager(Engine* owner);
@@ -45,7 +46,14 @@ namespace MyEngine {
 		bool DeleteElement(uint id);
 		SceneElementPtr GetElement(uint id);
 		SceneElementPtr GetElement(const string& name);
-		vector<SceneElementPtr> GetElements();
+		vector<SceneElementPtr> GetElements() const;
+
+		bool CreateLayer(const string& layer);
+		bool RenameLayer(const string& oldLayer, const string& newLayer);
+		bool ContainLayer(const string& layer) const;
+		bool DeleteLayer(const string& layer);
+		vector<string> GetLayers() const;
+		vector<SceneElementPtr> GetLayerElements(const string& layer) const;
 
 	};
 

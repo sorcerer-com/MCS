@@ -33,6 +33,8 @@ namespace MyEngine {
 	{
 		Engine::Log(LogType::ELog, "Scene", "New scene");
 		this->sceneElements.clear();
+		this->layers.clear();
+		this->layers.push_back(DEFAULT_LAYER_NAME);
 		this->ActiveCamera = NULL;
 		this->AmbientLight = Color4(0.2, 0.2, 0.2, 1.0);
 		this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -75,6 +77,9 @@ namespace MyEngine {
 		Write(ofile, (int)this->sceneElements.size());
 		for (const auto& sce : this->sceneElements)
 			sce.second->WriteToFile(ofile);
+
+		// Layers
+		Write(ofile, this->layers);
 
 		// active camera name
 		if (this->ActiveCamera)
@@ -154,6 +159,9 @@ namespace MyEngine {
 				}
 			}
 
+			// Layers
+			Read(ifile, this->layers);
+
 			// active camera name
 			uint cameraId;
 			Read(ifile, cameraId);
@@ -230,9 +238,6 @@ namespace MyEngine {
 		this->sceneElements[element->ID] = SceneElementPtr(element);
 		Engine::Log(LogType::ELog, "Scene", "Add scene element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
 
-		/* if (element->Type != ESystemObject)
-			this->AddLayerID("Default", element->ID); */
-
 		return true;
 	}
 
@@ -260,7 +265,6 @@ namespace MyEngine {
 			return false;
 		}
 
-		//this->RemoveLayerID(id); // remove it from all layers
 		//this->ContentManager.ClearInstances(id); // delete all used instaces for this scene element
 		this->sceneElements.erase(id);
 
@@ -291,11 +295,108 @@ namespace MyEngine {
 		return NULL;
 	}
 
-	vector<SceneElementPtr> SceneManager::GetElements()
+	vector<SceneElementPtr> SceneManager::GetElements() const
 	{
 		vector<SceneElementPtr> result;
 		for (const auto& pair : this->sceneElements)
 			result.push_back(pair.second);
+
+		return result;
+	}
+
+
+	/* L A Y E R S */
+	bool SceneManager::CreateLayer(const string& layer)
+	{
+		if (this->ContainLayer(layer))
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to create already exists layer '" + layer + "'");
+			return false;
+		}
+
+		this->layers.push_back(layer);
+		Engine::Log(LogType::ELog, "Scene", "Create layer '" + layer + "'");
+		return true;
+	}
+
+	bool SceneManager::RenameLayer(const string& oldLayer, const string& newLayer)
+	{
+		if (oldLayer == DEFAULT_LAYER_NAME)
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to rename 'Default' layer");
+			return false;
+		}
+		if (!this->ContainLayer(oldLayer))
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to rename non existent layer '" + oldLayer + "'");
+			return false;
+		}
+		if (this->ContainLayer(newLayer))
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to rename layer '" + oldLayer + "' to '" + newLayer +
+				"', but already exists one with that name");
+			return false;
+		}
+
+		for (const auto& pair : this->sceneElements)
+			pair.second->Layer = newLayer;
+
+		const auto& it = find(this->layers.begin(), this->layers.end(), oldLayer);
+		this->layers.erase(it);
+		this->layers.push_back(newLayer);
+		Engine::Log(LogType::ELog, "Scene", "Rename layer '" + oldLayer + "' to '" + newLayer + "'");
+		return true;
+	}
+
+	bool SceneManager::ContainLayer(const string& layer) const
+	{
+		return find(this->layers.begin(), this->layers.end(), layer) != this->layers.end();
+	}
+
+	bool SceneManager::DeleteLayer(const string& layer)
+	{
+		if (layer == DEFAULT_LAYER_NAME)
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to delete 'Default' layer");
+			return false;
+		}
+		if (!this->ContainLayer(layer))
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to delete non existent layer '" + layer + "'");
+			return false;
+		}
+
+		for (const auto& pair : this->sceneElements)
+			pair.second->Layer = DEFAULT_LAYER_NAME;
+
+		const auto& it = find(this->layers.begin(), this->layers.end(), layer);
+		this->layers.erase(it);
+
+		Engine::Log(LogType::ELog, "Scene", "Delete layer '" + layer + "'");
+		return true;
+	}
+
+	vector<string> SceneManager::GetLayers() const
+	{
+		vector<string> result;
+		for (const auto& pair : this->layers)
+			result.push_back(pair);
+
+		return result;
+	}
+
+	vector<SceneElementPtr> SceneManager::GetLayerElements(const string& layer) const
+	{
+		vector<SceneElementPtr> result;
+		if (!this->ContainLayer(layer))
+		{
+			Engine::Log(LogType::EWarning, "Scene", "Try to get elements in non existent layer '" + layer + "'");
+			return result;
+		}
+
+		for (const auto& pair : this->sceneElements)
+			if (pair.second->Layer == layer)
+				result.push_back(pair.second);
 
 		return result;
 	}

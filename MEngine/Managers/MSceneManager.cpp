@@ -15,9 +15,20 @@ namespace MyEngine {
 	{
 		List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
 
-		auto elements = this->sceneManager->GetElements();
+		const auto elements = this->sceneManager->GetElements();
 		for (const auto& element : elements)
 			collection->Add(MSceneManager::getMSceneElement(element));
+
+		return collection;
+	}
+	
+	List<String^>^ MSceneManager::Layers::get()
+	{
+		List<String^>^ collection = gcnew List<String^>();
+
+		const auto layers = this->sceneManager->GetLayers();
+		for (const auto& layer : layers)
+			collection->Add(gcnew String(layer.c_str()));
 
 		return collection;
 	}
@@ -120,9 +131,9 @@ namespace MyEngine {
 		return mse;
 	}
 
-	MSceneElement^ MSceneManager::CloneElement(MSceneElement^ element, String^ newName)
+	MSceneElement^ MSceneManager::CloneElement(uint id, String^ newName)
 	{
-		SceneElementPtr elem = this->sceneManager->GetElement(element->ID);
+		SceneElementPtr elem = this->sceneManager->GetElement(id);
 		if (!elem)
 			return nullptr;
 
@@ -163,6 +174,19 @@ namespace MyEngine {
 		this->OnChanged(this->getMSceneElement(elem));
 		return true;
 	}
+	
+	bool MSceneManager::SetElementLayer(uint id, String^ layer)
+	{
+		SceneElementPtr elem = this->sceneManager->GetElement(id);
+		if (!elem)
+			return false;
+
+		if (!this->sceneManager->ContainLayer(to_string(layer)))
+			return false;
+
+		elem->Layer = to_string(layer);
+		return true;
+	}
 
 	bool MSceneManager::DeleteElement(uint id)
 	{
@@ -188,6 +212,47 @@ namespace MyEngine {
 			return nullptr;
 
 		return this->getMSceneElement(elem);
+	}
+
+
+	bool MSceneManager::CreateLayer(String^ layer)
+	{
+		bool res = this->sceneManager->CreateLayer(to_string(layer));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
+	}
+
+	bool MSceneManager::RenameLayer(String^ oldLayer, String^ newLayer)
+	{
+		bool res = this->sceneManager->RenameLayer(to_string(oldLayer), to_string(newLayer));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
+	}
+
+	bool MSceneManager::ContainLayer(String^ layer)
+	{
+		return this->sceneManager->ContainLayer(to_string(layer));
+	}
+
+	bool MSceneManager::DeleteLayer(String^ layer)
+	{
+		bool res = this->sceneManager->DeleteLayer(to_string(layer));
+		if (res)
+			this->OnChanged(nullptr);
+		return res;
+	}
+	
+	List<MSceneElement^>^ MSceneManager::GetLayerElements(String^ layer)
+	{
+		List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
+
+		const auto elements = this->sceneManager->GetLayerElements(to_string(layer));
+		for (const auto& element : elements)
+			collection->Add(MSceneManager::getMSceneElement(element));
+
+		return collection;
 	}
 
 

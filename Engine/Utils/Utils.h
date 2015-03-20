@@ -27,7 +27,7 @@ namespace MyEngine {
 
 	inline string dateTimeFileName()
 	{
-		auto now = chrono::system_clock::now();
+		const auto now = chrono::system_clock::now();
 		time_t time = chrono::system_clock::to_time_t(now);
 		tm local_tm;
 		localtime_s(&local_tm, &time);

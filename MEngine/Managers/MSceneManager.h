@@ -25,6 +25,11 @@ namespace MyEngine {
 			List<MSceneElement^>^ get();
 		}
 
+		property List<String^>^ Layers
+		{
+			List<String^>^ get();
+		}
+
 		property MCamera^ ActiveCamera
 		{
 			MCamera^ get();
@@ -62,13 +67,20 @@ namespace MyEngine {
 
 		MSceneElement^ AddElement(ESceneElementType type, String^ name, uint contentID);
 		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName);
-		MSceneElement^ CloneElement(MSceneElement^ element, String^ newName);
+		MSceneElement^ CloneElement(uint id, String^ newName);
 		bool ContainElement(uint id);
 		bool ContainElement(String^ name);
 		bool RenameElement(String^ oldName, String^ newName);
+		bool SetElementLayer(uint id, String^ layer);
 		bool DeleteElement(uint id);
 		MSceneElement^ GetElement(uint id);
 		MSceneElement^ GetElement(String^ name);
+
+		bool CreateLayer(String^ layer);
+		bool RenameLayer(String^ oldLayer, String^ newLayer);
+		bool ContainLayer(String^ layer);
+		bool DeleteLayer(String^ layer);
+		List<MSceneElement^>^ GetLayerElements(String^ layer);
 
 	private:
 		void OnChanged(MSceneElement^ element);

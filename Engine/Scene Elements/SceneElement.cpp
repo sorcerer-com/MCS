@@ -40,6 +40,7 @@ namespace MyEngine {
 			Read(file, this->Type);
 			Read(file, this->ID);
 			Read(file, this->Name);
+			Read(file, this->Layer);
 			Read(file, this->ContentID);
 			Read(file, this->MaterialID);
 			Read(file, this->Visible);
@@ -55,6 +56,7 @@ namespace MyEngine {
 		this->Type = SceneElementType::ECamera;
 		this->ID = INVALID_ID;
 		this->Name = "";
+		this->Layer = DEFAULT_LAYER_NAME;
 		this->ContentID = INVALID_ID;
 		this->MaterialID = INVALID_ID;
 		this->Visible = true;
@@ -85,6 +87,7 @@ namespace MyEngine {
 		Write(file, this->Type);
 		Write(file, this->ID);
 		Write(file, this->Name);
+		Write(file, this->Layer);
 		Write(file, this->ContentID);
 		Write(file, this->MaterialID);
 		Write(file, this->Visible);

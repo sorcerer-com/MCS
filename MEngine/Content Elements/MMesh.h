@@ -34,7 +34,7 @@ namespace MyEngine {
 			{
 				List<MPoint>^ collection = gcnew List<MPoint>();
 
-				auto vertices = mesh->Vertices;
+				const auto vertices = mesh->Vertices;
 				for (const auto& vertex : vertices)
 					collection->Add(MPoint(vertex));
 				return collection;
@@ -48,7 +48,7 @@ namespace MyEngine {
 			{
 				List<MPoint>^ collection = gcnew List<MPoint>();
 
-				auto normals = mesh->Normals;
+				const auto normals = mesh->Normals;
 				for (const auto& normal : normals)
 					collection->Add(MPoint(normal));
 				return collection;
@@ -62,7 +62,7 @@ namespace MyEngine {
 			{
 				List<MPoint>^ collection = gcnew List<MPoint>();
 
-				auto texCoords = mesh->TexCoords;
+				const auto texCoords = mesh->TexCoords;
 				for (const auto& texCoord : texCoords)
 					collection->Add(MPoint(texCoord));
 				return collection;
@@ -76,7 +76,7 @@ namespace MyEngine {
 			{
 				List<MTriangle>^ collection = gcnew List<MTriangle>();
 
-				auto triangles = mesh->Triangles;
+				const auto triangles = mesh->Triangles;
 				for (const auto& triangle : triangles)
 				{
 					MTriangle mt;
