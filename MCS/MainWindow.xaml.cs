@@ -19,7 +19,7 @@ namespace MCS
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public MEngine Engine { get; private set; }
-
+        // TODO: implement somekind of static class Selector
         public static List<uint> SelectedElements = new List<uint>();
 
         public enum ECursorType
@@ -399,6 +399,15 @@ namespace MCS
         public string EnvironmentWindowCommandTooltip
         {
             get { return "Environment " + WindowsManager.GetHotkey(this.GetType(), "EnvironmentWindowCommand", true); }
+        }
+
+        public ICommand LayersWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LayersWindow), this.Engine.SceneManager); }); }
+        }
+        public string LayersWindowCommandTooltip
+        {
+            get { return "Layers " + WindowsManager.GetHotkey(this.GetType(), "LayersWindowCommand", true); }
         }
 
 

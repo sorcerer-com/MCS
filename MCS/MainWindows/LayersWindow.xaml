@@ -1,0 +1,44 @@
+﻿<Window x:Class="MCS.MainWindows.LayersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Layers Editor" Width="200" Height="300" Icon="/Images/MainWindow/Layers.PNG"
+        WindowStyle="ToolWindow" Topmost="True">    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Button Name="createButton" ToolTip="Create Layer" Margin="3" Command="{Binding Path=CreateLayerCommand}">
+                <Image Source="/Images/Common/Add.png" Width="18" Height="17" Stretch="Fill"/>
+            </Button>
+            <Button Name="renameButton" ToolTip="Rename Layer" Margin="3" Command="{Binding Path=RenameLayerCommand}">
+                <Image Source="/Images/Common/Rename.png" Width="18" Height="17" Stretch="Fill"/>
+            </Button>
+            <Button Name="deleteButton" ToolTip="Delete Layer" Margin="3" Command="{Binding Path=DeleteLayerCommand}">
+                <Image Source="/Images/Common/Delete.png" Width="18" Height="17" Stretch="Fill"/>
+            </Button>
+        </StackPanel>
+
+        <TreeView ItemsSource="{Binding Path=Items}" Grid.Row="1" SelectedItemChanged="TreeView_SelectedItemChanged"
+                  MouseMove="TreeView_MouseMove">
+
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Path=Elements}">
+                    <CheckBox IsChecked="{Binding Path=Visible}" Content="{Binding Path=Name}" VerticalAlignment="Center" Margin="0,0,5,0" AllowDrop="True" Drop="LayerCheckBox_Drop"/>
+
+                    <HierarchicalDataTemplate.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <CheckBox Focusable="False" IsChecked="{Binding Path=Visible}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <ContentPresenter Content="{Binding Path=Name}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </HierarchicalDataTemplate.ItemTemplate>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+    </Grid>
+</Window>

@@ -185,6 +185,7 @@ namespace MyEngine {
 			return false;
 
 		elem->Layer = to_string(layer);
+		this->OnChanged(this->getMSceneElement(elem));
 		return true;
 	}
 
@@ -282,6 +283,7 @@ namespace MyEngine {
 		else
 			melement = gcnew MSceneElement(element->Owner, element->ID);
 
+		// TODO: I should put here melement->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
 		return melement;
 	}
 

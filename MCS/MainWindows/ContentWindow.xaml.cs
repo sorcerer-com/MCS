@@ -17,10 +17,6 @@ namespace MCS.MainWindows
     /// </summary>
     public partial class ContentWindow : Window, INotifyPropertyChanged
     {
-        public MContentManager ContentManager { get; private set; }
-
-        private List<uint> changedElements;
-
         public static List<uint> SelectedElements = new List<uint>();
 
 
@@ -68,7 +64,7 @@ namespace MCS.MainWindows
             {
                 Dictionary<string, TreeItem> result = new Dictionary<string, TreeItem>();
 
-                List<string> paths = this.ContentManager.Paths;
+                List<string> paths = this.contentManager.Paths;
                 foreach(string fullPath in paths)
                 {
                     string package = MContentManager.GetPackage(fullPath);
@@ -91,6 +87,7 @@ namespace MCS.MainWindows
             }
         }
 
+        // TODO: update existing items don't change the whole collection (TODO: in other places too)
         public ObservableCollection<ContentItem> Contents
         {
             get
@@ -98,7 +95,7 @@ namespace MCS.MainWindows
                 List<ContentItem> result =
                     new List<ContentItem>();
 
-                List<MContentElement> elements = this.ContentManager.Content;
+                List<MContentElement> elements = this.contentManager.Content;
                 foreach(MContentElement element in elements)
                 {
                     if (!element.FullName.ToLowerInvariant().Contains(this.Filter) &&
@@ -160,7 +157,7 @@ namespace MCS.MainWindows
             get 
             {
                 if (ContentWindow.SelectedElements.Count > 0)
-                    return this.ContentManager.GetElement(ContentWindow.SelectedElements[0], true);
+                    return this.contentManager.GetElement(ContentWindow.SelectedElements[0], true);
 
                 return null;
             }
@@ -174,11 +171,15 @@ namespace MCS.MainWindows
                 {
                     List<object> res = new List<object>();
                     foreach (var id in ContentWindow.SelectedElements)
-                        res.Add(this.ContentManager.GetElement(id));
+                        res.Add(this.contentManager.GetElement(id));
                     return res;
                 };
             }
         }
+
+        private MContentManager contentManager;
+
+        private List<uint> changedElements;
 
         #region Commands
 
@@ -205,7 +206,7 @@ namespace MCS.MainWindows
                     string packageName = TextDialogBox.Show("Create Package", "Name");
                     if (!string.IsNullOrEmpty(packageName))
                     {
-                        if (!this.ContentManager.CreatePath(packageName + "#"))
+                        if (!this.contentManager.CreatePath(packageName + "#"))
                             ExtendedMessageBox.Show("Cannot create the package '" + packageName + "'!", "Create package", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -224,7 +225,7 @@ namespace MCS.MainWindows
                     string folderName = TextDialogBox.Show("Create Folder", "Name");
                     if (!string.IsNullOrEmpty(folderName))
                     {
-                        if (!this.ContentManager.CreatePath(this.SelectedTreeItem.Value.FullPath + folderName + "\\"))
+                        if (!this.contentManager.CreatePath(this.SelectedTreeItem.Value.FullPath + folderName + "\\"))
                             ExtendedMessageBox.Show("Cannot create the folder '" + folderName + "'!", "Create folder", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -253,7 +254,7 @@ namespace MCS.MainWindows
                         if (oldPath == newPath)
                             return;
 
-                        if (!this.ContentManager.RenamePath(oldPath, newPath))
+                        if (!this.contentManager.RenamePath(oldPath, newPath))
                             ExtendedMessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -273,7 +274,7 @@ namespace MCS.MainWindows
                     ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Are you sure that you want to delete '" + path + "'?", "Delete path", ExtendedMessageBoxButton.YesNo, ExtendedMessageBoxImage.Question);
                     if (res == ExtendedMessageBoxResult.Yes)
                     {
-                        if (!this.ContentManager.DeletePath(path))
+                        if (!this.contentManager.DeletePath(path))
                             ExtendedMessageBox.Show("Cannot delete path '" + path + "'!", "Delete path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -291,11 +292,11 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     string newName = TextDialogBox.Show("Clone", "Name", elem.Name + "2");
                     if (!string.IsNullOrEmpty(newName))
                     {
-                        if (this.ContentManager.CloneElement(elem.ID, newName) == null)
+                        if (this.contentManager.CloneElement(elem.ID, newName) == null)
                             ExtendedMessageBox.Show("Cannot clone content element '" + elem.Name + "' to '" + newName + "'!", "Clone element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -311,11 +312,11 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     string newName = TextDialogBox.Show("Rename", "Name", elem.Name);
                     if (!string.IsNullOrEmpty(newName) && elem.Name != newName)
                     {
-                        if (!this.ContentManager.RenameElement(elem.ID, newName))
+                        if (!this.contentManager.RenameElement(elem.ID, newName))
                             ExtendedMessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -331,11 +332,11 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
                     string newFullPath = TextDialogBox.Show("Move", "Name", elem.FullPath);
                     if (!string.IsNullOrEmpty(newFullPath) && elem.FullPath != newFullPath)
                     {
-                        if (!this.ContentManager.MoveElement(elem.ID, newFullPath))
+                        if (!this.contentManager.MoveElement(elem.ID, newFullPath))
                             ExtendedMessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
                 });
@@ -356,12 +357,12 @@ namespace MCS.MainWindows
                     List<uint> selectedElements = new List<uint>(ContentWindow.SelectedElements);
                     foreach (var id in selectedElements)
                     {
-                        MContentElement elem = this.ContentManager.GetElement(id, false);
+                        MContentElement elem = this.contentManager.GetElement(id, false);
                         if (res != ExtendedMessageBoxResult.YesToAll && res != ExtendedMessageBoxResult.NoToAll)
                             res = ExtendedMessageBox.Show("Are you sure that you want to delete '" + elem.Name + "'?", "Delete element", button, ExtendedMessageBoxImage.Question);
                         if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
                         {
-                            if (!this.ContentManager.DeleteElement(elem.ID))
+                            if (!this.contentManager.DeleteElement(elem.ID))
                                 ExtendedMessageBox.Show("Cannot delete content element '" + elem.Name + "'!", "Delete element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                         }
                     }
@@ -409,7 +410,7 @@ namespace MCS.MainWindows
                     if (ContentWindow.SelectedElements.Count != 1)
                         return;
 
-                    MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
 
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     saveFileDialog.FileName = elem.Name;
@@ -468,7 +469,7 @@ namespace MCS.MainWindows
                             File.Delete(saveFileDialog.FileName);
 
                         foreach(uint selection in ContentWindow.SelectedElements)
-                            this.ContentManager.ExportToPackage(saveFileDialog.FileName, selection);
+                            this.contentManager.ExportToPackage(saveFileDialog.FileName, selection);
                     }
 
                 });
@@ -498,7 +499,7 @@ namespace MCS.MainWindows
 
                         string package = MContentManager.GetPackage(this.SelectedTreeItem.Value.FullPath);
                         string path = MContentManager.GetPath(this.SelectedTreeItem.Value.FullPath);
-                        MContentElement elem = this.ContentManager.AddElement(type, name, package, path, 0);
+                        MContentElement elem = this.contentManager.AddElement(type, name, package, path, 0);
                         if (elem == null)
                             ExtendedMessageBox.Show("Cannot add content element '" + name + "' at '" + this.SelectedTreeItem.Value.FullPath + "'", type.ToString(), ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
@@ -514,8 +515,8 @@ namespace MCS.MainWindows
             InitializeComponent();
             this.DataContext = this;
 
-            this.ContentManager = contentManager;
-            this.ContentManager.Changed += (s, e) =>
+            this.contentManager = contentManager;
+            this.contentManager.Changed += (s, e) =>
             {
                 this.OnPropertyChanged("PathsTree");
                 this.OnPropertyChanged("Contents");
@@ -529,7 +530,7 @@ namespace MCS.MainWindows
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             foreach(var elemID in this.changedElements)
-                this.ContentManager.SaveElement(elemID);
+                this.contentManager.SaveElement(elemID);
         }
 
 
@@ -600,11 +601,11 @@ namespace MCS.MainWindows
                 if (relativePath != string.Empty) relativePath += "\\";
                 string fullPath = selectedTreeItem.FullPath + relativePath;
 
-                if (!this.ContentManager.ContainPath(fullPath))
-                    this.ContentManager.CreatePath(fullPath);
+                if (!this.contentManager.ContainPath(fullPath))
+                    this.contentManager.CreatePath(fullPath);
 
                 // if allready exists
-                MContentElement elem = this.ContentManager.GetElement(fullPath + name, true);
+                MContentElement elem = this.contentManager.GetElement(fullPath + name, true);
                 uint id = 0;
                 if (elem != null)
                 {
@@ -612,7 +613,7 @@ namespace MCS.MainWindows
                     if (res != ExtendedMessageBoxResult.YesToAll && res != ExtendedMessageBoxResult.NoToAll)
                         res = ExtendedMessageBox.Show("Element '" + name + "' already exists in Content! \nDo you want to replace it?", "Confirm", button, ExtendedMessageBoxImage.Question);
                     if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
-                        this.ContentManager.DeleteElement(id);
+                        this.contentManager.DeleteElement(id);
                     else
                         continue;
                 }
@@ -620,19 +621,19 @@ namespace MCS.MainWindows
                 // add element
                 string package = MContentManager.GetPackage(fullPath);
                 string path = MContentManager.GetPath(fullPath);
-                elem = this.ContentManager.AddElement(type, name, package, path, id);
+                elem = this.contentManager.AddElement(type, name, package, path, id);
 
                 if (elem != null)
                 {
                     elem.LoadFromFile(filenames[i]);
-                    this.ContentManager.SaveElement(elem.ID);
+                    this.contentManager.SaveElement(elem.ID);
                 }
             }
         }
 
         private void export(string filename)
         {
-            MContentElement elem = this.ContentManager.GetElement(ContentWindow.SelectedElements[0]);
+            MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0]);
             if (elem != null)
                 elem.SaveToFile(filename);
         }

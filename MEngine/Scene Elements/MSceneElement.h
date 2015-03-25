@@ -106,6 +106,7 @@ namespace MyEngine {
 		}
 
 
+		// TODO: add EventArgs that describes what is changed, and may be sender to object
 		delegate void ChangedEventHandler(MSceneElement^ sender);
 		event ChangedEventHandler^ Changed;
 

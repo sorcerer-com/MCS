@@ -130,6 +130,9 @@
     <Compile Include="MainWindows\FindWindow.xaml.cs">
       <DependentUpon>FindWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindows\LayersWindow.xaml.cs">
+      <DependentUpon>LayersWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Managers\ConfigManager.cs" />
     <Compile Include="Managers\DelegateCommand.cs" />
     <Compile Include="Managers\WindowsManager.cs" />
@@ -146,6 +149,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindows\FindWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindows\LayersWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -218,7 +225,7 @@
     <Resource Include="Images\MainWindow\BuildLightMaps.png" />
     <Resource Include="Images\MainWindow\Render.PNG" />
     <Resource Include="Images\MainWindow\Contents.PNG" />
-    <Resource Include="Images\MainWindow\Cursor.PNG" />
+    <Resource Include="Images\MainWindow\SelectCursor.PNG" />
     <Resource Include="Images\MainWindow\Environment.png" />
     <Resource Include="Images\MainWindow\Find.PNG" />
     <Resource Include="Images\MainWindow\Layers.png" />
@@ -226,19 +233,19 @@
     <Resource Include="Images\MainWindow\New.png" />
     <Resource Include="Images\MainWindow\Open.PNG" />
     <Resource Include="Images\MainWindow\Packaging.png" />
-    <Resource Include="Images\MainWindow\Play.png" />
+    <Resource Include="Images\Common\Play.png" />
     <Resource Include="Images\MainWindow\Profiling.png" />
     <Resource Include="Images\MainWindow\Rotate.PNG" />
     <Resource Include="Images\MainWindow\Save.PNG" />
     <Resource Include="Images\MainWindow\Scale.PNG" />
     <Resource Include="Images\MainWindow\Scripts.png" />
-    <Resource Include="Images\MainWindow\Stop.png" />
+    <Resource Include="Images\Common\Stop.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\MainWindow\MoveCursor.png" />
     <Resource Include="Images\MainWindow\RotateCursor.PNG" />
     <Resource Include="Images\MainWindow\ScaleCursor.PNG" />
-    <Resource Include="Images\MainWindow\move.png" />
+    <Resource Include="Images\MainWindow\Move.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\ContentWindow\folder.png" />
@@ -251,14 +258,19 @@
     <Resource Include="Images\ContentWindow\UIScreen.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\ContentWindow\search.png" />
+    <Resource Include="Images\Common\Search.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\ContentWindow\clear.png" />
+    <Resource Include="Images\Common\Clear.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\MainWindow\Export.png" />
     <Resource Include="Images\MainWindow\Import.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Common\Add.png" />
+    <Resource Include="Images\Common\Delete.png" />
+    <Resource Include="Images\Common\Rename.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

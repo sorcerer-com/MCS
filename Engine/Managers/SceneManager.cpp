@@ -339,7 +339,8 @@ namespace MyEngine {
 		}
 
 		for (const auto& pair : this->sceneElements)
-			pair.second->Layer = newLayer;
+			if (pair.second->Layer == oldLayer)
+				pair.second->Layer = newLayer;
 
 		const auto& it = find(this->layers.begin(), this->layers.end(), oldLayer);
 		this->layers.erase(it);
@@ -367,7 +368,8 @@ namespace MyEngine {
 		}
 
 		for (const auto& pair : this->sceneElements)
-			pair.second->Layer = DEFAULT_LAYER_NAME;
+			if (pair.second->Layer == layer)
+				pair.second->Layer = DEFAULT_LAYER_NAME;
 
 		const auto& it = find(this->layers.begin(), this->layers.end(), layer);
 		this->layers.erase(it);

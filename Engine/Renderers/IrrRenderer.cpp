@@ -200,6 +200,7 @@ namespace MyEngine {
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
+		// TODO: set different color for selected and invisible objects
 		// Set Material
 		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
 		this->updateIrrMaterial(sceneElement, irrMaterial);
