@@ -84,7 +84,7 @@ namespace MyEngine {
 
 	private:
 		void OnChanged(MSceneElement^ element);
-		void OnElementChanged(MSceneElement ^sender);
+		void OnElementChanged(MSceneElement^ sender);
 
 		static MSceneElement^ getMSceneElement(const SceneElementPtr& element);
 	};

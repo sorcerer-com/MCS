@@ -11,6 +11,11 @@
 
 namespace MyEngine {
 
+	/* S E L E C T O R */
+	set<uint> Selector::ContentElements;
+	set<uint> Selector::SceneElements;
+
+
 	/* E N G I N E */
 	EngineMode Engine::Mode = EngineMode::EEditor;
 

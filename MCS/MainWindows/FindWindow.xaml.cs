@@ -11,7 +11,7 @@ namespace MCS.MainWindows
     /// <summary>
     /// Interaction logic for FindWindow.xaml
     /// </summary>
-    public partial class FindWindow : Window, INotifyPropertyChanged
+    public partial class FindWindow : Window
     {
         public struct FindGridRow
         {
@@ -23,39 +23,13 @@ namespace MCS.MainWindows
             public bool IsSelected { get; set; }
         }
 
-        public ObservableCollection<FindGridRow> Rows
-        {
-            get
-            {
-                ObservableCollection<FindGridRow> rows = new ObservableCollection<FindGridRow>();
-
-                List<MSceneElement> mses = this.sceneManager.Elements;
-                foreach (MSceneElement mse in mses)
-                {
-                    if (mse.Type == ESceneElementType.SystemObject)
-                        continue;
-
-                    if (!mse.Name.ToLower().Contains(this.FindText.ToLower()))
-                        continue;
-
-                    FindGridRow row = new FindGridRow();
-                    row.Number = rows.Count;
-                    row.ID = mse.ID;
-                    row.Name = mse.Name;
-                    row.Type = mse.Type.ToString();
-                    row.Content = mse.Content != null ? mse.Content.ToString() : "None";
-                    if (MainWindow.SelectedElements.Contains(mse.ID))
-                        row.IsSelected = true;
-
-                    rows.Add(row);
-                }
-                return rows;
-            }
-        }
-
-        public string FindText { get; set; }
 
         private MSceneManager sceneManager;
+
+
+        public ObservableCollection<FindGridRow> Rows { get; private set; }
+
+        public string FindText { get; set; }
 
 
         public FindWindow(MSceneManager sceneManager)
@@ -65,10 +39,12 @@ namespace MCS.MainWindows
             if (sceneManager == null)
                 throw new ArgumentNullException("sceneManager");
 
+            this.Rows = new ObservableCollection<FindGridRow>();
             this.FindText = string.Empty;
             this.DataContext = this;
             this.sceneManager = sceneManager;
 
+            // TODO: remove timer - use SceneManager's Changed event and SelectedElements changed
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = new TimeSpan(0, 0, 0, 3);
             timer.Tick += new EventHandler(timer_Tick);
@@ -78,7 +54,27 @@ namespace MCS.MainWindows
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            this.OnPropertyChanged("Rows");
+            this.Rows.Clear();
+            List<MSceneElement> mses = this.sceneManager.Elements;
+            foreach (MSceneElement mse in mses)
+            {
+                if (mse.Type == ESceneElementType.SystemObject)
+                    continue;
+
+                if (!mse.Name.ToLower().Contains(this.FindText.ToLower()))
+                    continue;
+
+                FindGridRow row = new FindGridRow();
+                row.Number = this.Rows.Count;
+                row.ID = mse.ID;
+                row.Name = mse.Name;
+                row.Type = mse.Type.ToString();
+                row.Content = mse.Content != null ? mse.Content.ToString() : "None";
+                if (MSelector.IsSelected(MSelector.ESelectionType.SceneElement, mse.ID))
+                    row.IsSelected = true;
+
+                this.Rows.Add(row);
+            }
         }
 
         private void DataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -88,20 +84,10 @@ namespace MCS.MainWindows
                 return;
 
             foreach (FindGridRow item in e.RemovedItems)
-                mainWindow.SelectElement(item.ID, true);
+                MSelector.Select(MSelector.ESelectionType.SceneElement, item.ID);
 
             foreach (FindGridRow item in e.AddedItems)
-                if (!MainWindow.SelectedElements.Contains(item.ID))
-                    mainWindow.SelectElement(item.ID);
-        }
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged(string info)
-        {
-            if (this.PropertyChanged != null)
-                this.PropertyChanged(this, new PropertyChangedEventArgs(info));
+                MSelector.Select(MSelector.ESelectionType.SceneElement, item.ID);
         }
     }
 }

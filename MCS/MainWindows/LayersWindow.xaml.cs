@@ -55,11 +55,13 @@ namespace MCS.MainWindows
             }
         }
 
+
+        private MSceneManager sceneManager;
+
+
         public ObservableCollection<LayerItem> Items { get; private set; }
 
         public Object SelectedItem { get; set; }
-
-        private MSceneManager sceneManager;
 
         #region Commands
 
@@ -137,6 +139,11 @@ namespace MCS.MainWindows
             sceneManager_Changed(null, null);
         }
 
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            this.sceneManager.Changed -= sceneManager_Changed;
+        }
+
         private void sceneManager_Changed(MSceneManager sender, MSceneElement element)
         {
             this.Items.Clear();
@@ -165,8 +172,8 @@ namespace MCS.MainWindows
             MSceneElement mse = this.SelectedItem as MSceneElement;
             if (mse != null)
             {
-                MainWindow.SelectedElements.Clear();
-                MainWindow.SelectedElements.Add(mse.ID);
+                MSelector.Clear(MSelector.ESelectionType.SceneElement);
+                MSelector.Select(MSelector.ESelectionType.SceneElement, mse.ID);
             }
         }
 

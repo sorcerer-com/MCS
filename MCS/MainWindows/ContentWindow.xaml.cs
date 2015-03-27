@@ -17,9 +17,6 @@ namespace MCS.MainWindows
     /// </summary>
     public partial class ContentWindow : Window, INotifyPropertyChanged
     {
-        public static List<uint> SelectedElements = new List<uint>();
-
-
         #region Helpers Structures
 
         public struct TreeItem
@@ -57,6 +54,12 @@ namespace MCS.MainWindows
         }
 
         #endregion
+
+
+        private MContentManager contentManager;
+
+        private List<uint> changedElements;
+
 
         public Dictionary<string, TreeItem> PathsTree
         {
@@ -156,13 +159,15 @@ namespace MCS.MainWindows
         {
             get 
             {
-                if (ContentWindow.SelectedElements.Count > 0)
-                    return this.contentManager.GetElement(ContentWindow.SelectedElements[0], true);
+                var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
+                if (selectedElements.Count > 0)
+                    return this.contentManager.GetElement(selectedElements[0], true);
 
                 return null;
             }
         }
 
+        // TODO: make it somehow static or something (there is the same in MainWindow)
         public MCS.Controls.PropertyGrid.GetListDelegate GetSelectedContentElementsList
         {
             get
@@ -170,16 +175,13 @@ namespace MCS.MainWindows
                 return (s) =>
                 {
                     List<object> res = new List<object>();
-                    foreach (var id in ContentWindow.SelectedElements)
+                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
+                    foreach (var id in selectedElements)
                         res.Add(this.contentManager.GetElement(id));
                     return res;
                 };
             }
         }
-
-        private MContentManager contentManager;
-
-        private List<uint> changedElements;
 
         #region Commands
 
@@ -194,8 +196,9 @@ namespace MCS.MainWindows
                     });
             }
         }
-        
 
+
+        // TODO: add enabled predicate for all appropriate commands
         // Path commands
         public ICommand CreatePackageCommand
         {
@@ -289,10 +292,10 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count != 1)
+                    if (this.SelectedElement == null)
                         return;
 
-                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.SelectedElement;
                     string newName = TextDialogBox.Show("Clone", "Name", elem.Name + "2");
                     if (!string.IsNullOrEmpty(newName))
                     {
@@ -309,10 +312,10 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count != 1)
+                    if (this.SelectedElement == null)
                         return;
 
-                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.SelectedElement;
                     string newName = TextDialogBox.Show("Rename", "Name", elem.Name);
                     if (!string.IsNullOrEmpty(newName) && elem.Name != newName)
                     {
@@ -329,10 +332,10 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count != 1)
+                    if (this.SelectedElement == null)
                         return;
 
-                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.SelectedElement;
                     string newFullPath = TextDialogBox.Show("Move", "Name", elem.FullPath);
                     if (!string.IsNullOrEmpty(newFullPath) && elem.FullPath != newFullPath)
                     {
@@ -349,12 +352,12 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count == 0)
+                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
+                    if (selectedElements.Count == 0)
                         return;
 
                     ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
-                    ExtendedMessageBoxButton button = ContentWindow.SelectedElements.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
-                    List<uint> selectedElements = new List<uint>(ContentWindow.SelectedElements);
+                    ExtendedMessageBoxButton button = selectedElements.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
                     foreach (var id in selectedElements)
                     {
                         MContentElement elem = this.contentManager.GetElement(id, false);
@@ -369,7 +372,7 @@ namespace MCS.MainWindows
 
                     if (res == ExtendedMessageBoxResult.Yes || res == ExtendedMessageBoxResult.YesToAll)
                     {
-                        ContentWindow.SelectedElements.Clear();
+                        MSelector.Clear(MSelector.ESelectionType.ContentElement);
                     }
                 });
             }
@@ -407,10 +410,10 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count != 1)
+                    if (this.SelectedElement == null)
                         return;
 
-                    MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0], false);
+                    MContentElement elem = this.SelectedElement;
 
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     saveFileDialog.FileName = elem.Name;
@@ -453,7 +456,8 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (ContentWindow.SelectedElements.Count == 0)
+                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
+                    if (selectedElements.Count == 0)
                         return;
 
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -468,7 +472,7 @@ namespace MCS.MainWindows
                         if (File.Exists(saveFileDialog.FileName))
                             File.Delete(saveFileDialog.FileName);
 
-                        foreach(uint selection in ContentWindow.SelectedElements)
+                        foreach (uint selection in selectedElements)
                             this.contentManager.ExportToPackage(saveFileDialog.FileName, selection);
                     }
 
@@ -516,11 +520,7 @@ namespace MCS.MainWindows
             this.DataContext = this;
 
             this.contentManager = contentManager;
-            this.contentManager.Changed += (s, e) =>
-            {
-                this.OnPropertyChanged("PathsTree");
-                this.OnPropertyChanged("Contents");
-            };
+            this.contentManager.Changed += contentManager_Changed;
             this.changedElements = new List<uint>();
 
             this.filter = string.Empty;
@@ -531,6 +531,14 @@ namespace MCS.MainWindows
         {
             foreach(var elemID in this.changedElements)
                 this.contentManager.SaveElement(elemID);
+
+            this.contentManager.Changed -= contentManager_Changed;
+        }
+
+        private void contentManager_Changed(MContentManager sender, MContentElement element)
+        {
+            this.OnPropertyChanged("PathsTree");
+            this.OnPropertyChanged("Contents");
         }
 
 
@@ -543,11 +551,10 @@ namespace MCS.MainWindows
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             foreach (ContentItem item in e.RemovedItems)
-                ContentWindow.SelectedElements.Remove(item.ID);
+                MSelector.Deselect(MSelector.ESelectionType.ContentElement, item.ID);
 
             foreach (ContentItem item in e.AddedItems)
-                if (!ContentWindow.SelectedElements.Contains(item.ID))
-                    ContentWindow.SelectedElements.Add(item.ID);
+                MSelector.Select(MSelector.ESelectionType.ContentElement, item.ID);
 
             this.OnPropertyChanged("SelectedElement");
         }
@@ -633,9 +640,8 @@ namespace MCS.MainWindows
 
         private void export(string filename)
         {
-            MContentElement elem = this.contentManager.GetElement(ContentWindow.SelectedElements[0]);
-            if (elem != null)
-                elem.SaveToFile(filename);
+            if (this.SelectedElement == null)
+                this.SelectedElement.SaveToFile(filename);
         }
 
 

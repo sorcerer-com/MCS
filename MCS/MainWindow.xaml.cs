@@ -18,10 +18,6 @@ namespace MCS
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        public MEngine Engine { get; private set; }
-        // TODO: implement somekind of static class Selector
-        public static List<uint> SelectedElements = new List<uint>();
-
         public enum ECursorType
         {
             Select,
@@ -30,6 +26,8 @@ namespace MCS
             Scale
         }
 
+
+        private MEngine engine;
 
         private bool sceneSaved;
         private string sceneFilePath;
@@ -41,10 +39,11 @@ namespace MCS
         {
             get
             {
-                if (MainWindow.SelectedElements.Count > 0)
-                    return this.Engine.SceneManager.GetElement(MainWindow.SelectedElements[0]);
+                var selectedElements = MSelector.Elements(MSelector.ESelectionType.SceneElement);
+                if (selectedElements.Count > 0)
+                    return this.engine.SceneManager.GetElement(selectedElements[0]);
 
-                return this.Engine.SceneManager.ActiveCamera;
+                return this.engine.SceneManager.ActiveCamera;
             }
         }
 
@@ -55,8 +54,9 @@ namespace MCS
                 return (s) =>
                     {
                         List<object> res = new List<object>();
-                        foreach (var id in ContentWindow.SelectedElements)
-                            res.Add(this.Engine.ContentManager.GetElement(id));
+                        var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
+                        foreach (var id in selectedElements)
+                            res.Add(this.engine.ContentManager.GetElement(id));
                         return res;
                     };
             }
@@ -66,10 +66,11 @@ namespace MCS
         {
             get
             {
-                if (MainWindow.SelectedElements.Count == 1)
+                var selectedElements = MSelector.Elements(MSelector.ESelectionType.SceneElement);
+                if (selectedElements.Count == 1)
                     return string.Format("'{0}' object selected", this.SelectedElement.Name);
                 else
-                    return string.Format("{0} objects selected", MainWindow.SelectedElements.Count);
+                    return string.Format("{0} objects selected", selectedElements.Count);
             }
         }
 
@@ -144,9 +145,9 @@ namespace MCS
                 {
                     if (this.CheckSceneSaved())
                     {
-                        this.Engine.SceneManager.New();
-                        this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
-                        this.Engine.SceneManager.ActiveCamera.Material = this.Engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
+                        this.engine.SceneManager.New();
+                        this.engine.SceneManager.ActiveCamera = this.engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+                        this.engine.SceneManager.ActiveCamera.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
                         this.OnPropertyChanged("SelectedElement");
 
                         this.sceneSaved = true;
@@ -177,7 +178,7 @@ namespace MCS
                     ofd.RestoreDirectory = true;
                     if (ofd.ShowDialog() == true)
                     {
-                        if (!this.Engine.SceneManager.Load(ofd.FileName))
+                        if (!this.engine.SceneManager.Load(ofd.FileName))
                         {
                             ExtendedMessageBox.Show("Cannot open scene file: \n " + ofd.FileName + "!", "Open scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                             return;
@@ -217,7 +218,7 @@ namespace MCS
                     }
 
                     // save scene
-                    if (!this.Engine.SceneManager.Save(this.sceneFilePath))
+                    if (!this.engine.SceneManager.Save(this.sceneFilePath))
                     {
                         ExtendedMessageBox.Show("Cannot save scene to file: \n " + this.sceneFilePath + "!", "Save scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                         return;
@@ -268,19 +269,19 @@ namespace MCS
                             string content = string.Empty;
                             if (xmlElement.HasAttribute("Content"))
                                 content = xmlElement.GetAttribute("Content");
-                            MSceneElement mse = this.Engine.SceneManager.AddElement(type, name, content);
+                            MSceneElement mse = this.engine.SceneManager.AddElement(type, name, content);
                             if (xmlElement.HasAttribute("Material"))
-                                mse.Material = this.Engine.ContentManager.GetElement(xmlElement.GetAttribute("Material"));
+                                mse.Material = this.engine.ContentManager.GetElement(xmlElement.GetAttribute("Material"));
                             mse.Visible = bool.Parse(xmlElement.GetAttribute("Visible"));
                             mse.Position = MPoint.Parse(xmlElement.GetAttribute("Position"));
                             mse.Rotation = MPoint.Parse(xmlElement.GetAttribute("Rotation"));
                             mse.Scale = MPoint.Parse(xmlElement.GetAttribute("Scale"));
                         }
 
-                        this.Engine.SceneManager.AmbientLight = MColor.Parse(xmlRoot.GetAttribute("AmbientLight"));
-                        this.Engine.SceneManager.FogColor = MColor.Parse(xmlRoot.GetAttribute("FogColor"));
-                        this.Engine.SceneManager.FogDensity = double.Parse(xmlRoot.GetAttribute("FogDensity"));
-                        this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.GetElement(xmlRoot.GetAttribute("ActiveCamera")) as MCamera;
+                        this.engine.SceneManager.AmbientLight = MColor.Parse(xmlRoot.GetAttribute("AmbientLight"));
+                        this.engine.SceneManager.FogColor = MColor.Parse(xmlRoot.GetAttribute("FogColor"));
+                        this.engine.SceneManager.FogDensity = double.Parse(xmlRoot.GetAttribute("FogDensity"));
+                        this.engine.SceneManager.ActiveCamera = this.engine.SceneManager.GetElement(xmlRoot.GetAttribute("ActiveCamera")) as MCamera;
                     }
 
                     this.sceneSaved = false;
@@ -310,13 +311,13 @@ namespace MCS
                         System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
 
                         System.Xml.XmlElement xmlRoot = xmlDoc.CreateElement("Scene");
-                        xmlRoot.SetAttribute("AmbientLight", this.Engine.SceneManager.AmbientLight.ToString());
-                        xmlRoot.SetAttribute("FogColor", this.Engine.SceneManager.FogColor.ToString());
-                        xmlRoot.SetAttribute("FogDensity", this.Engine.SceneManager.FogDensity.ToString());
-                        xmlRoot.SetAttribute("ActiveCamera", this.Engine.SceneManager.ActiveCamera.Name);
+                        xmlRoot.SetAttribute("AmbientLight", this.engine.SceneManager.AmbientLight.ToString());
+                        xmlRoot.SetAttribute("FogColor", this.engine.SceneManager.FogColor.ToString());
+                        xmlRoot.SetAttribute("FogDensity", this.engine.SceneManager.FogDensity.ToString());
+                        xmlRoot.SetAttribute("ActiveCamera", this.engine.SceneManager.ActiveCamera.Name);
                         xmlDoc.AppendChild(xmlRoot);
 
-                        var mses = this.Engine.SceneManager.Elements;
+                        var mses = this.engine.SceneManager.Elements;
                         foreach (var mse in mses)
                         {
                             if (mse.Type == ESceneElementType.SystemObject)
@@ -376,7 +377,7 @@ namespace MCS
 
         public ICommand ContentWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), this.Engine.ContentManager); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ContentWindow), this.engine.ContentManager); }); }
         }
         public string ContentWindowCommandTooltip
         {
@@ -385,7 +386,7 @@ namespace MCS
 
         public ICommand FindWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(FindWindow), this.Engine.SceneManager); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(FindWindow), this.engine.SceneManager); }); }
         }
         public string FindWindowCommandTooltip
         {
@@ -394,7 +395,7 @@ namespace MCS
 
         public ICommand EnvironmentWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(EnvironmentWindow), this.Engine.SceneManager); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(EnvironmentWindow), this.engine.SceneManager); }); }
         }
         public string EnvironmentWindowCommandTooltip
         {
@@ -403,7 +404,7 @@ namespace MCS
 
         public ICommand LayersWindowCommand
         {
-            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LayersWindow), this.Engine.SceneManager); }); }
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(LayersWindow), this.engine.SceneManager); }); }
         }
         public string LayersWindowCommandTooltip
         {
@@ -419,18 +420,20 @@ namespace MCS
                 return new DelegateCommand((o) =>
                 {
                     List<MSceneElement> newSelectedElements = new List<MSceneElement>();
-                    foreach (var id in MainWindow.SelectedElements)
+                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.SceneElement);
+                    foreach (var id in selectedElements)
                     {
-                        MSceneElement mse = this.Engine.SceneManager.GetElement(id);
-                        MSceneElement newMse = this.Engine.SceneManager.CloneElement(id, mse.Name + "2");
+                        MSceneElement mse = this.engine.SceneManager.GetElement(id);
+                        MSceneElement newMse = this.engine.SceneManager.CloneElement(id, mse.Name + "2");
                         if (newMse != null)
                             newSelectedElements.Add(newMse);
                     }
-                    this.SelectElement(0);
+                    MSelector.Clear(MSelector.ESelectionType.SceneElement);
 
                     foreach (MSceneElement mse in newSelectedElements)
-                        this.SelectElement(mse.ID);
-                }, (o) => { return MainWindow.SelectedElements.Count != 0; });
+                        MSelector.Select(MSelector.ESelectionType.SceneElement, mse.ID);
+
+                }, (o) => { return MSelector.Elements(MSelector.ESelectionType.SceneElement).Count != 0; });
             }
         }
 
@@ -440,14 +443,14 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    MSceneElement mse = this.Engine.SceneManager.GetElement(MainWindow.SelectedElements[0]);
+                    MSceneElement mse = this.engine.SceneManager.GetElement(MSelector.Elements(MSelector.ESelectionType.SceneElement)[0]);
                     string newName = TextDialogBox.Show("Rename", "Name", mse.Name);
                     if (!string.IsNullOrEmpty(newName) && mse.Name != newName)
                     {
-                        if (!this.Engine.SceneManager.RenameElement(mse.Name, newName))
+                        if (!this.engine.SceneManager.RenameElement(mse.Name, newName))
                             ExtendedMessageBox.Show("Cannot rename scene element '" + mse.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                }, (o) => { return MainWindow.SelectedElements.Count == 1; });
+                }, (o) => { return MSelector.Elements(MSelector.ESelectionType.SceneElement).Count == 1; });
             }
         }
 
@@ -457,10 +460,12 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    foreach (uint id in MainWindow.SelectedElements)
-                        this.Engine.SceneManager.DeleteElement(id);
-                    this.SelectElement(0);
-                }, (o) => { return MainWindow.SelectedElements.Count != 0; });
+                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.SceneElement);
+                    foreach (uint id in selectedElements)
+                        this.engine.SceneManager.DeleteElement(id);
+                    MSelector.Clear(MSelector.ESelectionType.SceneElement);
+
+                }, (o) => { return MSelector.Elements(MSelector.ESelectionType.SceneElement).Count != 0; });
             }
         }
 
@@ -472,26 +477,26 @@ namespace MCS
                 {
                     Point p = this.render.ContextMenu.PointToScreen(new Point());
                     p = this.render.PointFromScreen(p);
-                    MPoint dir = this.Engine.ViewPortRenderer.GetDirection(p.X, p.Y);;
-                    double dist = this.Engine.ViewPortRenderer.GetIntesectionPoint(p.X, p.Y).Length();
+                    MPoint dir = this.engine.ViewPortRenderer.GetDirection(p.X, p.Y);;
+                    double dist = this.engine.ViewPortRenderer.GetIntesectionPoint(p.X, p.Y).Length();
                     if (dist == 0 || dist > 1000)
                         dist = 100;
 
                     MContentElement element = o as MContentElement;
                     string name = element != null ? element.Name : o.ToString();
                     int count = 0;
-                    while (this.Engine.SceneManager.ContainElement(name + count)) count++;
+                    while (this.engine.SceneManager.ContainElement(name + count)) count++;
 
                     MSceneElement mse = null;
                     if (element != null)
-                        mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, name + count, element.ID);
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, name + count, element.ID);
                     else if (name == "Camera")
-                        mse = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, name + count, @"MPackage#Meshes\System\Camera");
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.Camera, name + count, @"MPackage#Meshes\System\Camera");
                     else if (name == "Light")
-                        mse = this.Engine.SceneManager.AddElement(ESceneElementType.Light, name + count, 0);
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.Light, name + count, 0);
 
-                    if (mse != null && this.Engine.SceneManager.ActiveCamera != null)
-                        mse.Position = this.Engine.SceneManager.ActiveCamera.Position + dir * dist;
+                    if (mse != null && this.engine.SceneManager.ActiveCamera != null)
+                        mse.Position = this.engine.SceneManager.ActiveCamera.Position + dir * dist;
                 });
             }
         }
@@ -504,12 +509,9 @@ namespace MCS
             InitializeComponent();
             this.DataContext = this;
 
-            this.Engine = new MEngine();
-            this.Engine.SceneManager.Changed += (s, ee) =>
-            {
-                this.sceneSaved = false;
-                this.updateTitle();
-            };
+            this.engine = new MEngine();
+            this.engine.SceneManager.Changed += SceneManager_Changed;
+            MSelector.SelectionChanged += MSelector_SelectionChanged;
 
             this.sceneSaved = true;
             this.sceneFilePath = string.Empty;
@@ -521,8 +523,8 @@ namespace MCS
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.Engine.SceneManager.ActiveCamera = this.Engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
-            this.Engine.SceneManager.ActiveCamera.Material = this.Engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
+            this.engine.SceneManager.ActiveCamera = this.engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
+            this.engine.SceneManager.ActiveCamera.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             this.OnPropertyChanged("SelectedElement");
             this.sceneSaved = true;
             this.updateTitle();
@@ -530,7 +532,7 @@ namespace MCS
             this.render.Child = new System.Windows.Forms.UserControl();
             this.render.Child.Resize += (s, ee) =>
             {
-                this.Engine.ViewPortRenderer.ReSize(this.render.Child.Width, this.render.Child.Height);
+                this.engine.ViewPortRenderer.ReSize(this.render.Child.Width, this.render.Child.Height);
             };
             this.render.Child.MouseDown += (s, ee) =>
             {
@@ -546,31 +548,31 @@ namespace MCS
             this.render.Child.MouseWheel += render_MouseWheel;
             this.render.Child.MouseUp += render_MouseUp;
             this.render.ContextMenu.DataContext = this;
-            this.Engine.ViewPortRenderer.Init(this.render.Child.Handle);
+            this.engine.ViewPortRenderer.Init(this.render.Child.Handle);
 
             this.KeyDown += WindowsManager.Window_KeyDown;
 
             // TODO: remove:
-            MSceneElement mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
+            MSceneElement mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
             mse.Position = new MPoint(0, 0, 100);
             mse.Rotation = new MPoint(20, 20, 0);
-            mse.Material = this.Engine.ContentManager.GetElement(@"Apartment#Apartment\test");
+            mse.Material = this.engine.ContentManager.GetElement(@"Apartment#Apartment\test");
             for (int i = 0; i < 10; i++)
             {
-                mse = this.Engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");
+                mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");
                 mse.Position = new MPoint(50 + i * 50, 0, 100 + i * 10);
             }
-            this.Engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
-            MLight light = this.Engine.SceneManager.AddElement(ESceneElementType.Light, "light", 0) as MLight;
+            this.engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
+            MLight light = this.engine.SceneManager.AddElement(ESceneElementType.Light, "light", 0) as MLight;
             light.Position = new MPoint(15, 30, 100);
             light.Color = new MColor(1.0f, 0.1f, 0.1f);
             light.Intensity = 5000;
-            light = this.Engine.SceneManager.AddElement(ESceneElementType.Light, "light1", 0) as MLight;
+            light = this.engine.SceneManager.AddElement(ESceneElementType.Light, "light1", 0) as MLight;
             light.Position = new MPoint(15, 30, 50);
             light.Color = new MColor(0.1f, 1.0f, 0.1f);
             light.Intensity = 500;
-            this.Engine.SceneManager.FogColor = new MColor(0.5, 0.5, 0.5);
-            this.Engine.SceneManager.FogDensity = 0.01;
+            this.engine.SceneManager.FogColor = new MColor(0.5, 0.5, 0.5);
+            this.engine.SceneManager.FogDensity = 0.01;
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -585,14 +587,28 @@ namespace MCS
             this.KeyDown -= WindowsManager.Window_KeyDown;
             WindowsManager.CloseAllWindows();
 
-            this.Engine.Dispose();
+            MSelector.SelectionChanged -= MSelector_SelectionChanged;
+            this.engine.SceneManager.Changed -= SceneManager_Changed;
+            this.engine.Dispose();
+        }
+
+        private void SceneManager_Changed(MSceneManager sender, MSceneElement element)
+        {
+            this.sceneSaved = false;
+            this.updateTitle();
+        }
+
+        private void MSelector_SelectionChanged(MSelector.ESelectionType selectionType, uint id)
+        {
+            this.OnPropertyChanged("SelectedElement");
+            this.OnPropertyChanged("InfoLabelContent");
         }
 
 
         void render_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             // camera movement
-            MCamera camera = this.Engine.SceneManager.ActiveCamera;
+            MCamera camera = this.engine.SceneManager.ActiveCamera;
             if (e.KeyCode == System.Windows.Forms.Keys.W && camera != null)
                 camera.Move(0, 0, 1);
             else if (e.KeyCode == System.Windows.Forms.Keys.S && camera != null)
@@ -608,7 +624,7 @@ namespace MCS
 
             // shortcuts
             else if (e.KeyCode == System.Windows.Forms.Keys.Escape) // deselect
-                this.SelectElement(0, true);
+                MSelector.Clear(MSelector.ESelectionType.SceneElement);
             else if (e.KeyCode == System.Windows.Forms.Keys.Space) // change cursors
             {
                 if (this.selectedCursor == ECursorType.Select) // translate
@@ -642,7 +658,7 @@ namespace MCS
             if (e.Button == System.Windows.Forms.MouseButtons.Left &&
                 (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt))) // rotete camera
             {
-                MCamera camera =  this.Engine.SceneManager.ActiveCamera;
+                MCamera camera =  this.engine.SceneManager.ActiveCamera;
                 if (camera != null)
                 {
                     MPoint angle = camera.Rotation;
@@ -653,7 +669,7 @@ namespace MCS
             }
             else if (e.Button == System.Windows.Forms.MouseButtons.Left) // move camera
             {
-                MCamera camera = this.Engine.SceneManager.ActiveCamera;
+                MCamera camera = this.engine.SceneManager.ActiveCamera;
                 if (camera != null)
                 {
                     if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
@@ -665,12 +681,12 @@ namespace MCS
             // transform object
             else if (e.Button == System.Windows.Forms.MouseButtons.Middle &&
                 this.selectedCursor != ECursorType.Select &&
-                MainWindow.SelectedElements.Count > 0)
+                MSelector.Elements(MSelector.ESelectionType.SceneElement).Count > 0)
             {
                 MPoint rot = new MPoint();
-                if (this.Engine.SceneManager.ActiveCamera != null)
+                if (this.engine.SceneManager.ActiveCamera != null)
                 {
-                    rot = this.Engine.SceneManager.ActiveCamera.Rotation;
+                    rot = this.engine.SceneManager.ActiveCamera.Rotation;
                     rot.X = Math.Round(rot.X / 90) * 90;
                     rot.Y = Math.Round(rot.Y / 90) * 90;
                     rot.Z = Math.Round(rot.Z / 90) * 90;
@@ -682,9 +698,10 @@ namespace MCS
                 delta.RotateBy(rot);
                 delta *= this.SnapDropDownSelectedItem; // snap value by the drop down value
 
-                foreach(var id in MainWindow.SelectedElements)
+                var selectedElements = MSelector.Elements(MSelector.ESelectionType.SceneElement);
+                foreach(var id in selectedElements)
                 {
-                    MSceneElement mse = this.Engine.SceneManager.GetElement(id);
+                    MSceneElement mse = this.engine.SceneManager.GetElement(id);
                     if (mse != null)
                     {
                         if (this.selectedCursor == ECursorType.Move)
@@ -703,7 +720,7 @@ namespace MCS
 
         void render_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (this.Engine.SceneManager.ActiveCamera != null && this.SelectedElement.Equals(this.Engine.SceneManager.ActiveCamera))
+            if (this.engine.SceneManager.ActiveCamera != null && this.SelectedElement.Equals(this.engine.SceneManager.ActiveCamera))
             {
                 this.OnPropertyChanged("SelectedElement");
             }
@@ -711,13 +728,18 @@ namespace MCS
 
         void render_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            uint id = this.Engine.ViewPortRenderer.GetSceneElementID(e.X, e.Y);
-            MSceneElement mse = this.Engine.SceneManager.GetElement(id);
+            uint id = this.engine.ViewPortRenderer.GetSceneElementID(e.X, e.Y);
+            MSceneElement mse = this.engine.SceneManager.GetElement(id);
             bool deselect = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
             if (!deselect && !(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
-                this.SelectElement(0, false); // deselect all
+                MSelector.Clear(MSelector.ESelectionType.SceneElement); // deselect all
             if (mse != null)
-                this.SelectElement(mse.ID, deselect);
+            {
+                if (!deselect)
+                    MSelector.Select(MSelector.ESelectionType.SceneElement, mse.ID);
+                else
+                    MSelector.Deselect(MSelector.ESelectionType.SceneElement, mse.ID);
+            }
         }
 
         void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -732,9 +754,9 @@ namespace MCS
                 this.SnapDropDownSelectedItem = this.SnapDropDownItems[currIndex];
                 this.OnPropertyChanged("SnapDropDownSelectedItem");
             }
-            else if (this.Engine.SceneManager.ActiveCamera != null) // move camera
+            else if (this.engine.SceneManager.ActiveCamera != null) // move camera
             {
-                this.Engine.SceneManager.ActiveCamera.Move(0, 0, e.Delta / 10);
+                this.engine.SceneManager.ActiveCamera.Move(0, 0, e.Delta / 10);
                 this.OnPropertyChanged("SelectedElement");
             }
         }
@@ -754,56 +776,6 @@ namespace MCS
                     return false;
             }
             return true;
-        }
-
-        public void SelectElement(uint mseID, bool deselect = false)
-        {
-            if (mseID == 0) // deselect all
-            {
-                MainWindow.SelectedElements.Clear();
-                //this.objectsComboBox.SelectedIndex = -1;
-                //this.scaleValueBox.Value = 0.0;
-                //this.selectedCursor = ECursorType.Select;
-            }
-            else
-            {
-                if (!deselect) // select
-                {
-                    if (!MainWindow.SelectedElements.Contains(mseID))
-                        MainWindow.SelectedElements.Add(mseID);
-                    //MPoint scale = mse.Scale;
-                    //this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
-                    //if (MScene.SelectedElements.Count == 1)
-                    //    this.objectsComboBox.SelectedItem = mse;
-                }
-                else // deselect
-                {
-                    for (int i = 0; i < MainWindow.SelectedElements.Count; i++)
-                        if (MainWindow.SelectedElements[i] == mseID)
-                        {
-                            MainWindow.SelectedElements.RemoveAt(i);
-                            break;
-                        }
-
-                    /*
-                    if (MainWindow.SelectedElements.Count > 0)
-                    {
-                        this.objectsComboBox.SelectedItem = MScene.SelectedElements[0];
-                        MPoint scale = MScene.SelectedElements[0].Scale;
-                        this.scaleValueBox.Value = (scale.X + scale.Y + scale.Z) / 3;
-                    }
-                    else
-                    {
-                        this.objectsComboBox.SelectedIndex = -1;
-                        this.scaleValueBox.Value = 0.0;
-                        this.selectedCursor = ECursorType.Select;
-                    }*/
-                }
-            }
-            //this.updateCursor(false);
-
-            this.OnPropertyChanged("SelectedElement");
-            this.OnPropertyChanged("InfoLabelContent");
         }
 
 

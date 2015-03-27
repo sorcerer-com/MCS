@@ -23,6 +23,13 @@ namespace MyEngine {
 		EEngine
 	};
 
+	class Selector
+	{
+	public:
+		static set<uint> ContentElements;
+		static set<uint> SceneElements;
+	};
+
 	class Engine
 	{
 	public:
