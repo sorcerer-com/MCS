@@ -90,7 +90,6 @@ namespace MCS.MainWindows
             }
         }
 
-        // TODO: update existing items don't change the whole collection (TODO: in other places too)
         public ObservableCollection<ContentItem> Contents
         {
             get
@@ -167,7 +166,6 @@ namespace MCS.MainWindows
             }
         }
 
-        // TODO: make it somehow static or something (there is the same in MainWindow)
         public MCS.Controls.PropertyGrid.GetListDelegate GetSelectedContentElementsList
         {
             get
@@ -198,7 +196,6 @@ namespace MCS.MainWindows
         }
 
 
-        // TODO: add enabled predicate for all appropriate commands
         // Path commands
         public ICommand CreatePackageCommand
         {
@@ -222,16 +219,13 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedTreeItem == null)
-                        return;
-
                     string folderName = TextDialogBox.Show("Create Folder", "Name");
                     if (!string.IsNullOrEmpty(folderName))
                     {
                         if (!this.contentManager.CreatePath(this.SelectedTreeItem.Value.FullPath + folderName + "\\"))
                             ExtendedMessageBox.Show("Cannot create the folder '" + folderName + "'!", "Create folder", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedTreeItem != null; });
             }
         }
 
@@ -241,9 +235,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedTreeItem == null)
-                        return;
-
                     string folderName = TextDialogBox.Show("Rename", "Name", this.SelectedTreeItem.Value.Name);
                     if (!string.IsNullOrEmpty(folderName))
                     {
@@ -260,7 +251,7 @@ namespace MCS.MainWindows
                         if (!this.contentManager.RenamePath(oldPath, newPath))
                             ExtendedMessageBox.Show("Cannot rename path '" + folderName + "'!", "Rename path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedTreeItem != null; });
             }
         }
 
@@ -270,9 +261,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedTreeItem == null)
-                        return;
-
                     string path = this.SelectedTreeItem.Value.FullPath;
                     ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Are you sure that you want to delete '" + path + "'?", "Delete path", ExtendedMessageBoxButton.YesNo, ExtendedMessageBoxImage.Question);
                     if (res == ExtendedMessageBoxResult.Yes)
@@ -280,7 +268,7 @@ namespace MCS.MainWindows
                         if (!this.contentManager.DeletePath(path))
                             ExtendedMessageBox.Show("Cannot delete path '" + path + "'!", "Delete path", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedTreeItem != null; });
             }
         }
 
@@ -292,9 +280,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedElement == null)
-                        return;
-
                     MContentElement elem = this.SelectedElement;
                     string newName = TextDialogBox.Show("Clone", "Name", elem.Name + "2");
                     if (!string.IsNullOrEmpty(newName))
@@ -302,7 +287,7 @@ namespace MCS.MainWindows
                         if (this.contentManager.CloneElement(elem.ID, newName) == null)
                             ExtendedMessageBox.Show("Cannot clone content element '" + elem.Name + "' to '" + newName + "'!", "Clone element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedElement != null; });
             }
         }
 
@@ -312,9 +297,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedElement == null)
-                        return;
-
                     MContentElement elem = this.SelectedElement;
                     string newName = TextDialogBox.Show("Rename", "Name", elem.Name);
                     if (!string.IsNullOrEmpty(newName) && elem.Name != newName)
@@ -322,7 +304,7 @@ namespace MCS.MainWindows
                         if (!this.contentManager.RenameElement(elem.ID, newName))
                             ExtendedMessageBox.Show("Cannot rename content element '" + elem.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedElement != null; });
             }
         }
 
@@ -332,9 +314,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedElement == null)
-                        return;
-
                     MContentElement elem = this.SelectedElement;
                     string newFullPath = TextDialogBox.Show("Move", "Name", elem.FullPath);
                     if (!string.IsNullOrEmpty(newFullPath) && elem.FullPath != newFullPath)
@@ -342,7 +321,7 @@ namespace MCS.MainWindows
                         if (!this.contentManager.MoveElement(elem.ID, newFullPath))
                             ExtendedMessageBox.Show("Cannot move content element '" + elem.Name + "' to '" + newFullPath + "'!", "Move element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedElement != null; });
             }
         }
 
@@ -353,9 +332,6 @@ namespace MCS.MainWindows
                 return new DelegateCommand((o) =>
                 {
                     var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
-                    if (selectedElements.Count == 0)
-                        return;
-
                     ExtendedMessageBoxResult res = ExtendedMessageBoxResult.None;
                     ExtendedMessageBoxButton button = selectedElements.Count > 1 ? ExtendedMessageBoxButton.YesYesToAllNoNoToAll : ExtendedMessageBoxButton.YesNo;
                     foreach (var id in selectedElements)
@@ -374,7 +350,7 @@ namespace MCS.MainWindows
                     {
                         MSelector.Clear(MSelector.ESelectionType.ContentElement);
                     }
-                });
+                }, (o) => MSelector.Count(MSelector.ESelectionType.ContentElement) != 0);
             }
         }
 
@@ -385,9 +361,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedTreeItem == null)
-                        return;
-
                     OpenFileDialog openFileDialog = new OpenFileDialog();
                     string filter = "All Compatible Files (*.obj, *.xml, *.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr, *.wav)|*.obj;*.xml;*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr;*.wav|";
                     filter += "Object Files (*.obj)|*.obj|";
@@ -400,7 +373,7 @@ namespace MCS.MainWindows
 
                     if (openFileDialog.ShowDialog() == true)
                         this.import(new List<string>(openFileDialog.FileNames));
-                });
+                }, (o) => { return this.SelectedTreeItem != null; });
             }
         }
 
@@ -410,9 +383,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedElement == null)
-                        return;
-
                     MContentElement elem = this.SelectedElement;
 
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -446,7 +416,7 @@ namespace MCS.MainWindows
                     if (saveFileDialog.ShowDialog() == true)
                         this.export(saveFileDialog.FileName);
 
-                });
+                }, (o) => { return this.SelectedElement != null; });
             }
         }
 
@@ -456,10 +426,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
-                    if (selectedElements.Count == 0)
-                        return;
-
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
                     saveFileDialog.FileName = "package.mpk";
                     saveFileDialog.DefaultExt = "mpk";
@@ -472,11 +438,12 @@ namespace MCS.MainWindows
                         if (File.Exists(saveFileDialog.FileName))
                             File.Delete(saveFileDialog.FileName);
 
+                        var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
                         foreach (uint selection in selectedElements)
                             this.contentManager.ExportToPackage(saveFileDialog.FileName, selection);
                     }
 
-                });
+                }, (o) => MSelector.Count(MSelector.ESelectionType.ContentElement) != 0);
             }
         }
 
@@ -488,9 +455,6 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    if (this.SelectedTreeItem == null)
-                        return;
-
                     string name = TextDialogBox.Show("Add " + o.ToString(), "Name");
                     if (!string.IsNullOrEmpty(name))
                     {
@@ -507,7 +471,7 @@ namespace MCS.MainWindows
                         if (elem == null)
                             ExtendedMessageBox.Show("Cannot add content element '" + name + "' at '" + this.SelectedTreeItem.Value.FullPath + "'", type.ToString(), ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                });
+                }, (o) => { return this.SelectedTreeItem != null; });
             }
         }
 
@@ -541,6 +505,21 @@ namespace MCS.MainWindows
             this.OnPropertyChanged("Contents");
         }
 
+
+        private void contextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            FrameworkElement frameworkElement = sender as FrameworkElement;
+            if (frameworkElement == null)
+                return;
+
+            List<object> items = new List<object>();
+            foreach (var item in frameworkElement.ContextMenu.Items)
+                items.Add(item);
+
+            frameworkElement.ContextMenu.Items.Clear();
+            foreach (var item in items)
+                frameworkElement.ContextMenu.Items.Add(item);
+        }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {

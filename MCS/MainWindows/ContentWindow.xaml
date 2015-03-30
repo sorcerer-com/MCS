@@ -14,7 +14,8 @@
         </Grid.ColumnDefinitions>
 
         <!-- Path Tree -->
-        <TreeView ItemsSource="{Binding Path=PathsTree}" Grid.Column="0" IsTextSearchEnabled="True" SelectedItemChanged="TreeView_SelectedItemChanged">
+        <TreeView ItemsSource="{Binding Path=PathsTree}" Grid.Column="0" IsTextSearchEnabled="True" SelectedItemChanged="TreeView_SelectedItemChanged"
+                  ContextMenuOpening="contextMenuOpening">
 
             <TreeView.ContextMenu>
                 <ContextMenu>
@@ -66,7 +67,8 @@
             
             <!-- Content List -->
             <ListView Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Disabled" SelectionMode="Extended" AllowDrop="True" 
-                      ItemsSource="{Binding Path=Contents}" SelectionChanged="ListView_SelectionChanged" Drop="ListView_Drop">
+                      ItemsSource="{Binding Path=Contents}" SelectionChanged="ListView_SelectionChanged" Drop="ListView_Drop"
+                      ContextMenuOpening="contextMenuOpening">
                 
                 <ListView.ContextMenu>
                     <ContextMenu>

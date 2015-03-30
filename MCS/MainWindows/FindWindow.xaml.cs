@@ -44,15 +44,28 @@ namespace MCS.MainWindows
             this.DataContext = this;
             this.sceneManager = sceneManager;
 
-            // TODO: remove timer - use SceneManager's Changed event and SelectedElements changed
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = new TimeSpan(0, 0, 0, 3);
-            timer.Tick += new EventHandler(timer_Tick);
-            timer.Start();
-            timer_Tick(null, null);
+            this.sceneManager.Changed += sceneManager_Changed;
+            MSelector.SelectionChanged += MSelector_SelectionChanged;
+            this.updateRows();
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            this.sceneManager.Changed -= sceneManager_Changed;
+            MSelector.SelectionChanged -= MSelector_SelectionChanged;
+        }
+
+        private void MSelector_SelectionChanged(MSelector.ESelectionType selectionType, uint id)
+        {
+            this.updateRows();
+        }
+
+        private void sceneManager_Changed(MSceneManager sender, MSceneElement element)
+        {
+            this.updateRows();
+        }
+
+        private void updateRows()
         {
             this.Rows.Clear();
             List<MSceneElement> mses = this.sceneManager.Elements;
@@ -84,7 +97,7 @@ namespace MCS.MainWindows
                 return;
 
             foreach (FindGridRow item in e.RemovedItems)
-                MSelector.Select(MSelector.ESelectionType.SceneElement, item.ID);
+                MSelector.Deselect(MSelector.ESelectionType.SceneElement, item.ID);
 
             foreach (FindGridRow item in e.AddedItems)
                 MSelector.Select(MSelector.ESelectionType.SceneElement, item.ID);

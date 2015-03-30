@@ -35,6 +35,11 @@ namespace MyEngine {
 			return collection;
 		}
 
+		static int Count(ESelectionType selectionType)
+		{
+			return (int)getSelection(selectionType).size();
+		}
+
 
 		static bool Select(ESelectionType selectionType, uint id)
 		{

@@ -433,7 +433,7 @@ namespace MCS
                     foreach (MSceneElement mse in newSelectedElements)
                         MSelector.Select(MSelector.ESelectionType.SceneElement, mse.ID);
 
-                }, (o) => { return MSelector.Elements(MSelector.ESelectionType.SceneElement).Count != 0; });
+                }, (o) => { return MSelector.Count(MSelector.ESelectionType.SceneElement) != 0; });
             }
         }
 
@@ -450,7 +450,7 @@ namespace MCS
                         if (!this.engine.SceneManager.RenameElement(mse.Name, newName))
                             ExtendedMessageBox.Show("Cannot rename scene element '" + mse.Name + "' to '" + newName + "'!", "Rename element", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                     }
-                }, (o) => { return MSelector.Elements(MSelector.ESelectionType.SceneElement).Count == 1; });
+                }, (o) => { return MSelector.Count(MSelector.ESelectionType.SceneElement) == 1; });
             }
         }
 
@@ -465,7 +465,7 @@ namespace MCS
                         this.engine.SceneManager.DeleteElement(id);
                     MSelector.Clear(MSelector.ESelectionType.SceneElement);
 
-                }, (o) => { return MSelector.Elements(MSelector.ESelectionType.SceneElement).Count != 0; });
+                }, (o) => { return MSelector.Count(MSelector.ESelectionType.SceneElement) != 0; });
             }
         }
 
@@ -649,6 +649,11 @@ namespace MCS
         void render_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             Point mousePosition = new Point(e.X, e.Y);
+            if (lastMousePosition.X == 0.0 && lastMousePosition.Y == 0.0)
+            {
+                lastMousePosition = mousePosition;
+                return;
+            }
 
             double dx = lastMousePosition.X - mousePosition.X;
             double dy = lastMousePosition.Y - mousePosition.Y;
@@ -681,7 +686,7 @@ namespace MCS
             // transform object
             else if (e.Button == System.Windows.Forms.MouseButtons.Middle &&
                 this.selectedCursor != ECursorType.Select &&
-                MSelector.Elements(MSelector.ESelectionType.SceneElement).Count > 0)
+                MSelector.Count(MSelector.ESelectionType.SceneElement) > 0)
             {
                 MPoint rot = new MPoint();
                 if (this.engine.SceneManager.ActiveCamera != null)
