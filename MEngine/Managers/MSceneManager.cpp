@@ -17,7 +17,7 @@ namespace MyEngine {
 
 		const auto elements = this->sceneManager->GetElements();
 		for (const auto& element : elements)
-			collection->Add(MSceneManager::getMSceneElement(element));
+			collection->Add(this->getMSceneElement(element));
 
 		return collection;
 	}
@@ -112,10 +112,7 @@ namespace MyEngine {
 		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), contentID);
 		MSceneElement^ mse = this->getMSceneElement(elem);
 		if (mse != nullptr)
-		{
-			mse->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
 			this->OnChanged(mse);
-		}
 		return mse;
 	}
 
@@ -124,10 +121,7 @@ namespace MyEngine {
 		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), to_string(contentFullName));
 		MSceneElement^ mse = this->getMSceneElement(elem);
 		if (mse != nullptr)
-		{
-			mse->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
 			this->OnChanged(mse);
-		}
 		return mse;
 	}
 
@@ -251,7 +245,7 @@ namespace MyEngine {
 
 		const auto elements = this->sceneManager->GetLayerElements(to_string(layer));
 		for (const auto& element : elements)
-			collection->Add(MSceneManager::getMSceneElement(element));
+			collection->Add(this->getMSceneElement(element));
 
 		return collection;
 	}
@@ -269,22 +263,31 @@ namespace MyEngine {
 
 	MSceneElement^ MSceneManager::getMSceneElement(const SceneElementPtr& element)
 	{
+		MSceneElement^ mse = MSceneManager::GetMSceneElement(element);
+
+		if (mse != nullptr)
+			mse->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
+		return mse;
+	}
+
+
+	MSceneElement^ MSceneManager::GetMSceneElement(const SceneElementPtr& element)
+	{
 		if (!element)
 			return nullptr;
 
-		MSceneElement^ melement = nullptr;
+		MSceneElement^ mse = nullptr;
 		if (element->Type == SceneElementType::ECamera)
-			melement = gcnew MCamera(element->Owner, element->ID);
+			mse = gcnew MCamera(element->Owner, element->ID);
 		else if (element->Type == SceneElementType::ELight)
-			melement = gcnew MLight(element->Owner, element->ID);
+			mse = gcnew MLight(element->Owner, element->ID);
 		/* TODO: add scene elements
 		else if (element->Type == ECharacter)
-			melement = gcnew MCharacter(element->GetOwner(), element->ID); */
+			mse = gcnew MCharacter(element->GetOwner(), element->ID); */
 		else
-			melement = gcnew MSceneElement(element->Owner, element->ID);
+			mse = gcnew MSceneElement(element->Owner, element->ID);
 
-		// TODO: I should put here melement->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
-		return melement;
+		return mse;
 	}
 
 }

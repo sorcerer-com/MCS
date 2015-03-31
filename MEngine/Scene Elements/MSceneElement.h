@@ -66,14 +66,14 @@ namespace MyEngine {
 		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Content
 		{
-			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetContent()); }
+			MContentElement^ get() { return MContentManager::GetMContentElement(this->element->GetContent()); }
 			void set(MContentElement^ value) { if (value != nullptr) element->ContentID = value->ID; else element->ContentID = 0; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Material
 		{
-			MContentElement^ get() { return MContentManager::getMContentElement(this->element->GetMaterial()); }
+			MContentElement^ get() { return MContentManager::GetMContentElement(this->element->GetMaterial()); }
 			void set(MContentElement^ value) { if (value != nullptr) element->MaterialID = value->ID; else element->MaterialID = 0; OnChanged(); }
 		}
 

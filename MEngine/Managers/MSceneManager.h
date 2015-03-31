@@ -86,7 +86,10 @@ namespace MyEngine {
 		void OnChanged(MSceneElement^ element);
 		void OnElementChanged(MSceneElement^ sender);
 
-		static MSceneElement^ getMSceneElement(const SceneElementPtr& element);
+		MSceneElement^ getMSceneElement(const SceneElementPtr& element);
+
+	public:
+		static MSceneElement^ GetMSceneElement(const SceneElementPtr& element);
 	};
 
 }

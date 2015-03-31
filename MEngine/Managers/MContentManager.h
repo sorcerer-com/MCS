@@ -59,9 +59,11 @@ namespace MyEngine {
 	private:
 		void OnChanged(MContentElement^ element);
 		void OnElementChanged(MContentElement ^sender);
-		
+
+		MContentElement^ getMContentElement(const ContentElementPtr& element);
+
 	public:
-		static MContentElement^ getMContentElement(const ContentElementPtr& element);
+		static MContentElement^ GetMContentElement(const ContentElementPtr& element);
 
 		static String^ GetPackage(String^ fullName);
 		static String^ GetPath(String^ fullName);

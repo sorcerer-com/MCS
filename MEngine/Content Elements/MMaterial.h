@@ -60,14 +60,14 @@ namespace MyEngine {
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
 		property MContentElement^ Texture
 		{
-			MContentElement^ get() { return MContentManager::getMContentElement(material->GetTexture()); }
+			MContentElement^ get() { return MContentManager::GetMContentElement(material->GetTexture()); }
 			void set(MContentElement^ value) { if (value != nullptr) material->TextureID = value->ID; else material->TextureID = 0; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
 		property MContentElement^ Bumpmap
 		{
-			MContentElement^ get() { return MContentManager::getMContentElement(material->GetBumpmap()); }
+			MContentElement^ get() { return MContentManager::GetMContentElement(material->GetBumpmap()); }
 			void set(MContentElement^ value) { if (value != nullptr) material->BumpmapID = value->ID; else material->BumpmapID = 0; OnChanged(); }
 		}
 
@@ -125,13 +125,13 @@ namespace MyEngine {
 					{
 						int value = 0;
 						Int32::TryParse(docElem->GetAttribute("Value"), value);
-						this->Texture = MContentManager::getMContentElement(this->owner->GetElement(value, true));
+						this->Texture = MContentManager::GetMContentElement(this->owner->GetElement(value, true));
 					}
 					else if (docElem->Name == "BumpMap")
 					{
 						int value = 0;
 						Int32::TryParse(docElem->GetAttribute("Value"), value);
-						this->Bumpmap = MContentManager::getMContentElement(this->owner->GetElement(value, true));
+						this->Bumpmap = MContentManager::GetMContentElement(this->owner->GetElement(value, true));
 					}
 				}
 			}

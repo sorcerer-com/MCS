@@ -596,6 +596,7 @@ namespace MCS
         {
             this.sceneSaved = false;
             this.updateTitle();
+            this.OnPropertyChanged("SelectedElement");
         }
 
         private void MSelector_SelectionChanged(MSelector.ESelectionType selectionType, uint id)

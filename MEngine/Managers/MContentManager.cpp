@@ -27,7 +27,7 @@ namespace MyEngine {
 
 		const auto elements = this->contentManager->GetElements();
 		for (const auto& element : elements)
-			collection->Add(MContentManager::getMContentElement(element));
+			collection->Add(this->getMContentElement(element));
 
 		return collection;
 	}
@@ -194,9 +194,18 @@ namespace MyEngine {
 	{
 		this->OnChanged(sender);
 	}
-
-
+	
 	MContentElement^ MContentManager::getMContentElement(const ContentElementPtr& element)
+	{
+		MContentElement^ mce = MContentManager::GetMContentElement(element);
+
+		if (mce != nullptr)
+			mce->Changed += gcnew MContentElement::ChangedEventHandler(this, &MContentManager::OnElementChanged);
+		return mce;
+	}
+
+
+	MContentElement^ MContentManager::GetMContentElement(const ContentElementPtr& element)
 	{
 		if (!element)
 			return nullptr;
@@ -204,25 +213,24 @@ namespace MyEngine {
 		if (!element->IsLoaded)
 			return gcnew MContentElement(element->Owner, element->ID);
 
-		MContentElement^ melement = nullptr;
+		MContentElement^ mce = nullptr;
 		if (element->Type == ContentElementType::EMesh)
-			melement = gcnew MMesh(element->Owner, element->ID);
+			mce = gcnew MMesh(element->Owner, element->ID);
 		else if (element->Type == EMaterial)
-			melement = gcnew MMaterial(element->Owner, element->ID);
+			mce = gcnew MMaterial(element->Owner, element->ID);
 		/* TODO: add content elements
 		else if (element->Type == ETexture)
-			melement = gcnew MTexture(element->GetOwner(), element->ID);
+			mce = gcnew MTexture(element->GetOwner(), element->ID);
 		else if (element->Type == EUIScreen)
-			melement = gcnew MUIScreen(element->GetOwner(), element->ID);
+			mce = gcnew MUIScreen(element->GetOwner(), element->ID);
 		else if (element->Type == ESkeleton)
-			melement = gcnew MSkeleton(element->GetOwner(), element->ID);
+			mce = gcnew MSkeleton(element->GetOwner(), element->ID);
 		else if (element->Type == ESound)
-			melement = gcnew MSound(element->GetOwner(), element->ID);
+			mce = gcnew MSound(element->GetOwner(), element->ID);
 			*/
-		return melement;
+		return mce;
 	}
-
-
+	
 	String^ MContentManager::GetPackage(String^ fullName)
 	{
 		return gcnew String(ContentManager::GetPackage(to_string(fullName)).c_str());
