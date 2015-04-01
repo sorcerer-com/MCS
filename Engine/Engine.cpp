@@ -15,6 +15,17 @@ namespace MyEngine {
 	set<uint> Selector::ContentElements;
 	set<uint> Selector::SceneElements;
 
+	bool Selector::IsSelected(uint id)
+	{
+		if (Selector::ContentElements.find(id) != Selector::ContentElements.end())
+			return true;
+
+		if (Selector::SceneElements.find(id) != Selector::SceneElements.end())
+			return true;
+
+		return false;
+	}
+
 
 	/* E N G I N E */
 	EngineMode Engine::Mode = EngineMode::EEditor;

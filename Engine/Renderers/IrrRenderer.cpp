@@ -200,10 +200,18 @@ namespace MyEngine {
 		const Vector3& scl = sceneElement->Scale;
 		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
 
-		// TODO: set different color for selected and invisible objects
 		// Set Material
 		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
 		this->updateIrrMaterial(sceneElement, irrMaterial);
+
+		if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
+			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
+		else
+			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
+		if (!sceneElement->Visible) // if scene element is invisible
+			irrMaterial.DiffuseColor.setAlpha(128);
+		if (irrSceneNode->isDebugObject())
+			irrMaterial.Lighting = false;
 
 		// TODO: set textures
 
@@ -372,9 +380,11 @@ namespace MyEngine {
 		irrMaterial.Shininess = material->Shininess;
 
 		irrMaterial.FogEnable = true;
-		irrMaterial.BackfaceCulling = false;
+		//irrMaterial.BackfaceCulling = false; // broke transparency
 		irrMaterial.NormalizeNormals = true;
+		irrMaterial.Lighting = true;
 		irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
+		irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it;
 		return true;
 	}
 

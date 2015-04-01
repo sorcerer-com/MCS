@@ -28,6 +28,8 @@ namespace MyEngine {
 	public:
 		static set<uint> ContentElements;
 		static set<uint> SceneElements;
+
+		static bool IsSelected(uint id);
 	};
 
 	class Engine
