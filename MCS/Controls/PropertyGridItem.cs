@@ -279,6 +279,21 @@ namespace MCS.Controls
                     }
                 };
             }
+            else if (type.IsSubclassOf(typeof(System.Drawing.Image)))
+            {
+                System.Drawing.Image img = this.Object as System.Drawing.Image;
+                System.IO.MemoryStream renderStream = new System.IO.MemoryStream();
+                img.Save(renderStream, System.Drawing.Imaging.ImageFormat.Bmp);
+                System.Windows.Media.Imaging.BitmapImage bitmapImage = new System.Windows.Media.Imaging.BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = renderStream;
+                bitmapImage.EndInit();
+
+                Image image = new Image();
+                image.Source = bitmapImage;
+                image.ToolTip = this.Name;
+                this.Children.Add(image);
+            }
             else
             {
                 TextBox tb = new TextBox();

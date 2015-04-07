@@ -556,7 +556,7 @@ namespace MCS
             MSceneElement mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
             mse.Position = new MPoint(0, 0, 100);
             mse.Rotation = new MPoint(20, 20, 0);
-            mse.Material = this.engine.ContentManager.GetElement(@"Apartment#Apartment\test");
+            mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             for (int i = 0; i < 10; i++)
             {
                 mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");

@@ -5,6 +5,7 @@
 #include <string>
 
 using namespace System;
+using namespace System::IO;
 using namespace System::ComponentModel;
 using namespace System::Collections::Generic;
 using namespace System::Collections::Specialized;
@@ -39,6 +40,15 @@ namespace MyEngine {
 		std::string sstr = cstr;
 		System::Runtime::InteropServices::Marshal::FreeHGlobal(System::IntPtr((void*)cstr));
 		return sstr;
+	}
+
+	static inline int power_of_two(int input)
+	{
+		int val = 1;
+
+		while (val < input)
+			val <<= 1;
+		return val;
 	}
 
 }

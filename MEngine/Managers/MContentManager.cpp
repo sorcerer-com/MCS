@@ -6,6 +6,7 @@
 #include "..\Content Elements\MContentElement.h"
 #include "..\Content Elements\MMesh.h"
 #include "..\Content Elements\MMaterial.h"
+#include "..\Content Elements\MTexture.h"
 
 
 namespace MyEngine {
@@ -216,11 +217,11 @@ namespace MyEngine {
 		MContentElement^ mce = nullptr;
 		if (element->Type == ContentElementType::EMesh)
 			mce = gcnew MMesh(element->Owner, element->ID);
-		else if (element->Type == EMaterial)
+		else if (element->Type == ContentElementType::EMaterial)
 			mce = gcnew MMaterial(element->Owner, element->ID);
+		else if (element->Type == ContentElementType::ETexture)
+			mce = gcnew MTexture(element->Owner, element->ID);
 		/* TODO: add content elements
-		else if (element->Type == ETexture)
-			mce = gcnew MTexture(element->GetOwner(), element->ID);
 		else if (element->Type == EUIScreen)
 			mce = gcnew MUIScreen(element->GetOwner(), element->ID);
 		else if (element->Type == ESkeleton)

@@ -6,7 +6,7 @@
         KeyDown="ExtendedMessageBox_KeyDown">
     
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
     </Window.Resources>
     
     <Grid>
@@ -37,13 +37,13 @@
 
             <Button Content="{Binding Path=YesButtonText}" Grid.Column="1" Margin="10,10,5,10" Padding="5" MinWidth="88" Command="{Binding Path=YesButtonCommand}"/>
             <Button Content="Yes To All" Grid.Column="2" Margin="5,10" Padding="5" MinWidth="88" Command="{Binding Path=YesToAllButtonCommand}"
-                    Visibility="{Binding Path=IsYesToAllButtonVisible, Converter={StaticResource BoolToVis}}"/>
+                    Visibility="{Binding Path=IsYesToAllButtonVisible, Converter={StaticResource BoolToVisibility}}"/>
             <Button Content="_No" Grid.Column="3" Margin="5,10" Padding="5" MinWidth="88" Command="{Binding Path=NoButtonCommand}"
-                    Visibility="{Binding Path=IsNoButtonVisible, Converter={StaticResource BoolToVis}}"/>
+                    Visibility="{Binding Path=IsNoButtonVisible, Converter={StaticResource BoolToVisibility}}"/>
             <Button Content="No To All" Grid.Column="4" Margin="5,10" Padding="5" MinWidth="88" Command="{Binding Path=NoToAllButtonCommand}"
-                    Visibility="{Binding Path=IsNoToAllButtonVisible, Converter={StaticResource BoolToVis}}"/>
+                    Visibility="{Binding Path=IsNoToAllButtonVisible, Converter={StaticResource BoolToVisibility}}"/>
             <Button Content="_Cancel" Grid.Column="5" Margin="5,10,10,10" Padding="5" MinWidth="88" Command="{Binding Path=CancelButtonCommand}"
-                    Visibility="{Binding Path=IsCancelButtonVisible, Converter={StaticResource BoolToVis}}"/>
+                    Visibility="{Binding Path=IsCancelButtonVisible, Converter={StaticResource BoolToVisibility}}"/>
             
         </Grid>
 

@@ -19,5 +19,6 @@
 using namespace std;
 
 using uint = unsigned int;
+using byte = unsigned char;
 
 #define Now chrono::system_clock::now().time_since_epoch().count()

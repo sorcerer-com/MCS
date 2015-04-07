@@ -21,6 +21,7 @@ namespace MyEngine {
 		MColor(double _r, double _g, double _b) { Set(_r, _g, _b, 1.0); }
 		MColor(double _r, double _g, double _b, double _a) { Set(_r, _g, _b, _a); }
 		MColor(const Color4& c) { Set(c.r, c.g, c.b, c.a); }
+		MColor(System::Drawing::Color c) { Set((double)c.R / 255, (double)c.G / 255, (float)c.B / 255, (double)c.A / 255); }
 
 		void Set(double _r, double _g, double _b, double _a)
 		{
@@ -38,6 +39,15 @@ namespace MyEngine {
 		Color4 ToColor4()
 		{
 			return Color4(R, G, B, A);
+		}
+
+		System::Drawing::Color ToColor()
+		{
+			int r = (int)(std::max(std::min(R, 1.0), 0.0) * 255);
+			int g = (int)(std::max(std::min(G, 1.0), 0.0) * 255);
+			int b = (int)(std::max(std::min(B, 1.0), 0.0) * 255);
+			int a = (int)(std::max(std::min(A, 1.0), 0.0) * 255);
+			return System::Drawing::Color::FromArgb(a, r, g, b);
 		}
 
 		virtual String^ ToString() override

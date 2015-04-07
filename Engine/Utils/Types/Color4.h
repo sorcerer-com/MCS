@@ -72,4 +72,20 @@ namespace MyEngine {
 		}
 	};
 
+	inline Color4 operator *(const Color4& a, float f)
+	{
+		return Color4(a.r * f, a.g * f, a.b * f, a.a * f);
+	}
+
+	inline Color4 operator +(const Color4& a, const Color4& b)
+	{
+		return Color4(a.r + b.r, a.g + b.g, a.b + b.b, a.a + b.a);
+	}
+
+
+	inline Color4 linearFilter(const Color4& a, const Color4& b, const Color4& c, const Color4& d, float u, float v)
+	{
+		return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
+	}
+
 }

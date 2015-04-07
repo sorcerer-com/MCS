@@ -1,4 +1,4 @@
-// MMesh.h
+// MMaterial.h
 #pragma once
 
 #include "Engine\Content Elements\Material.h"

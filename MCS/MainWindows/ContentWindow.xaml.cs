@@ -401,12 +401,12 @@ namespace MCS.MainWindows
                         saveFileDialog.Filter = "Material XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
                         saveFileDialog.DefaultExt = "xml";
                     }
-                    /* TODO: add other content elements
                     else if (elem.Type == EContentElementType.Texture)
                     {
                         saveFileDialog.Filter = "Picture Files (*.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr)|*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr|All Files (*.*)|*.*";
                         saveFileDialog.DefaultExt = "png";
                     }
+                    /* TODO: add other content elements
                     else if (elem.Type == EContentElementType.Sound)
                     {
                         saveFileDialog.Filter = "WAVE Files (*.wav)|*.wav|All Files (*.*)|*.*";
@@ -574,9 +574,9 @@ namespace MCS.MainWindows
                     type = EContentElementType.Mesh;
                 else if (ext == ".xml")
                     type = EContentElementType.Material;
-                /* TODO: add other content elements
                 else if (textureExts.Contains(ext))
                     type = EContentElementType.Texture;
+                /* TODO: add other content elements
                 else if (ext == ".wave")
                     type = EContentElementType.Sound; // */
                 else

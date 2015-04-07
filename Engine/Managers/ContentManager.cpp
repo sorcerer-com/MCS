@@ -11,6 +11,7 @@
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
 #include "..\Content Elements\Material.h"
+#include "..\Content Elements\Texture.h"
 
 
 namespace MyEngine {
@@ -270,11 +271,11 @@ namespace MyEngine {
 		ContentElement *element = NULL;
 		if (type == ContentElementType::EMesh)
 			element = new Mesh(this, name, package, path);
-		else if (type == EMaterial)
+		else if (type == ContentElementType::EMaterial)
 			element = new Material(this, name, package, path);
-		/* TODO: add different content types
-		else if (type == ETexture)
+		else if (type == ContentElementType::ETexture)
 			element = new Texture(this, name, package, path);
+		/* TODO: add different content types
 		else if (type == EUIScreen)
 			element = new UIScreen(this, name, package, path);
 		else if (type == ESkeleton)
@@ -613,7 +614,7 @@ namespace MyEngine {
 		{
 			ContentElement* element = new ContentElement(this, ifile);
 
-			if (element && !ifile.fail())
+			if (element && element->ID != INVALID_ID && !ifile.fail())
 			{
 				this->content[element->ID] = ContentElementPtr(element);
 				this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
@@ -720,11 +721,11 @@ namespace MyEngine {
 		ContentElement* element = NULL;
 		if (type == ContentElementType::EMesh)
 			element = new Mesh(this, ifile);
-		else if (type == EMaterial)
+		else if (type == ContentElementType::EMaterial)
 			element = new Material(this, ifile);
-		/* TODO: add different content types
-		else if (type == ETexture)
+		else if (type == ContentElementType::ETexture)
 			element = new Texture(this, ifile);
+		/* TODO: add different content types
 		else if (type == EUIScreen)
 			element = new UIScreen(this, ifile);
 		else if (type == ESkeleton)
