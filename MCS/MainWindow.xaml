@@ -150,9 +150,9 @@
                 <Separator/>
                 <!-- <MC:ValueBox x:Name="scaleValueBox" Width="50" Value="0.0" Changed="scaleValueBox_Changed"/> -->
                 <Separator/>
-                <Image Source="{Binding Path=SnapDropDownImage}" Visibility="{Binding Path=SnapDropDownVisibility}" Height="26"/>
-                <ComboBox Width="Auto" ItemsSource="{Binding Path=SnapDropDownItems}" SelectedItem="{Binding Path=SnapDropDownSelectedItem, Mode=TwoWay}" Visibility="{Binding Path=SnapDropDownVisibility}"/>
-                <Separator Visibility="{Binding Path=SnapDropDownVisibility}"/>
+                <Image Source="{Binding Path=SnapDropDownImage}" Height="26" IsEnabled="{Binding Path=SnapDropDownIsEnabled}"/>
+                <ComboBox Width="Auto" ItemsSource="{Binding Path=SnapDropDownItems}" SelectedItem="{Binding Path=SnapDropDownSelectedItem, Mode=TwoWay}" IsEnabled="{Binding Path=SnapDropDownIsEnabled}"/>
+                <Separator/>
                 <Label Width="Auto" Content="{Binding Path=InfoLabelContent}"/>
             </StatusBar>
         </Grid>

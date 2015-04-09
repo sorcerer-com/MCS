@@ -21,6 +21,7 @@ namespace MCS.MainWindows
 
         public ObservableCollection<LogGridRow> Rows { get; private set; }
 
+        private DispatcherTimer timer;
 
         public LogWindow()
         {
@@ -29,11 +30,16 @@ namespace MCS.MainWindows
             this.Rows = new ObservableCollection<LogGridRow>();
             this.DataContext = this;
 
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = new TimeSpan(0, 0, 0, 3);
-            timer.Tick += new EventHandler(timer_Tick);
-            timer.Start();
-            timer_Tick(null, null);
+            this.timer = new DispatcherTimer();
+            this.timer.Interval = new TimeSpan(0, 0, 0, 3);
+            this.timer.Tick += new EventHandler(this.timer_Tick);
+            this.timer.Start();
+            this.timer_Tick(null, null);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.timer.Stop();
         }
 
         private void timer_Tick(object sender, EventArgs e)

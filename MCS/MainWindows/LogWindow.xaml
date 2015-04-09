@@ -1,7 +1,8 @@
 ﻿<Window x:Class="MCS.MainWindows.LogWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Log" Width="640" Height="480" Icon="/Images/MainWindow/Log.PNG">
+        Title="Log" Width="640" Height="480" Icon="/Images/MainWindow/Log.PNG"
+        Closing="Window_Closing">
     <Grid>
         <DataGrid Name="logDataGrid" ItemsSource="{Binding Path=Rows}"/>
     </Grid>

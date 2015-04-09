@@ -86,8 +86,8 @@ namespace MCS
                     return "/Images/MainWindow/rotate.png";
                 else if (selectedCursor == ECursorType.Scale)
                     return "/Images/MainWindow/scale.png";
-                
-                return "/Images/MainWindow/scale.png";
+
+                return "/Images/MainWindow/select.png";
             }
         }
 
@@ -101,7 +101,7 @@ namespace MCS
                     return new double[] { 1.0, 5.0, 15.0, 45.0, 90.0 };
                 else if (selectedCursor == ECursorType.Scale)
                     return new double[] { 1.0, 10.0, 30.0, 50.0 };
-                return null;
+                return new double[] { 1.0 };
             }
         }
 
@@ -122,14 +122,9 @@ namespace MCS
             }
         }
 
-        public Visibility SnapDropDownVisibility
+        public bool SnapDropDownIsEnabled
         {
-            get
-            {
-                if (this.selectedCursor == ECursorType.Select)
-                    return Visibility.Collapsed;
-                return Visibility.Visible;
-            }
+            get { return (this.selectedCursor != ECursorType.Select); }
         }
 
         #endregion
@@ -360,7 +355,7 @@ namespace MCS
                         this.OnPropertyChanged("SnapDropDownImage");
                         this.OnPropertyChanged("SnapDropDownItems");
                         this.OnPropertyChanged("SnapDropDownSelectedItem");
-                        this.OnPropertyChanged("SnapDropDownVisibility");
+                        this.OnPropertyChanged("SnapDropDownIsEnabled");
                     }
                 });
             }
@@ -424,7 +419,14 @@ namespace MCS
                     foreach (var id in selectedElements)
                     {
                         MSceneElement mse = this.engine.SceneManager.GetElement(id);
-                        MSceneElement newMse = this.engine.SceneManager.CloneElement(id, mse.Name + "2");
+
+                        string newName = mse.Name;
+                        while (char.IsDigit(newName[newName.Length - 1])) newName = newName.Substring(0, newName.Length - 1);
+                        int count = 1;
+                        while (this.engine.SceneManager.ContainElement(newName + count.ToString("000"))) count++;
+                        newName = newName + count.ToString("000");
+
+                        MSceneElement newMse = this.engine.SceneManager.CloneElement(id, newName);
                         if (newMse != null)
                             newSelectedElements.Add(newMse);
                     }
@@ -484,16 +486,17 @@ namespace MCS
 
                     MContentElement element = o as MContentElement;
                     string name = element != null ? element.Name : o.ToString();
-                    int count = 0;
-                    while (this.engine.SceneManager.ContainElement(name + count)) count++;
+                    int count = 1;
+                    while (this.engine.SceneManager.ContainElement(name + count.ToString("000"))) count++;
+                    name = name + count.ToString("000");
 
                     MSceneElement mse = null;
                     if (element != null)
-                        mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, name + count, element.ID);
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, name, element.ID);
                     else if (name == "Camera")
-                        mse = this.engine.SceneManager.AddElement(ESceneElementType.Camera, name + count, @"MPackage#Meshes\System\Camera");
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.Camera, name, @"MPackage#Meshes\System\Camera");
                     else if (name == "Light")
-                        mse = this.engine.SceneManager.AddElement(ESceneElementType.Light, name + count, 0);
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.Light, name, 0);
 
                     if (mse != null && this.engine.SceneManager.ActiveCamera != null)
                         mse.Position = this.engine.SceneManager.ActiveCamera.Position + dir * dist;
@@ -641,7 +644,7 @@ namespace MCS
                 this.OnPropertyChanged("SnapDropDownImage");
                 this.OnPropertyChanged("SnapDropDownItems");
                 this.OnPropertyChanged("SnapDropDownSelectedItem");
-                this.OnPropertyChanged("SnapDropDownVisibility");
+                this.OnPropertyChanged("SnapDropDownIsEnabled");
             }
 
             this.OnPropertyChanged("SelectedElement");

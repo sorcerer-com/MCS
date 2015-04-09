@@ -272,6 +272,9 @@
     <Resource Include="Images\Common\Delete.png" />
     <Resource Include="Images\Common\Rename.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\MainWindow\select.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
