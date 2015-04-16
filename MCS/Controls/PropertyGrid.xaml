@@ -15,13 +15,16 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Label Content="Search:" Margin="5" Grid.Column="0" Grid.Row="0" FontWeight="Bold"/>
             <TextBox Name="filterTextBox" Margin="5" Grid.Column="1" Grid.Row="0" FontStyle="Italic" TextChanged="filterTextBox_TextChanged"/>
             <Border Grid.ColumnSpan="2" Grid.Row="0" BorderThickness="1" BorderBrush="DarkGray"/>
+            <Image Source="/Images/Common/unlock.png" ToolTip="Lock" Margin="5" Grid.Column="2" Grid.Row="0" Height="26" MouseDown="lockImage_MouseDown"/>
+            <Border Grid.Column="2" Grid.Row="0" BorderThickness="1" BorderBrush="DarkGray"/>
 
-            <Grid Name="propertiesGrid" Margin="5" Grid.ColumnSpan="2" Grid.Row="2">
+            <Grid Name="propertiesGrid" Margin="5" Grid.ColumnSpan="3" Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>

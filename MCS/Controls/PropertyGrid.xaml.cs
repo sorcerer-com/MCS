@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace MCS.Controls
 {
@@ -48,6 +50,8 @@ namespace MCS.Controls
         }
         private List<string> expandedGroups;
 
+        public bool Locked { get; set; }
+
         public GetListDelegate GetList
         {
             get { return (GetListDelegate)GetValue(GetListProperty); }
@@ -62,6 +66,7 @@ namespace MCS.Controls
             this.ShowParentProperties = true;
             this.Expanded = false;
             this.expandedGroups = new List<string>();
+            this.Locked = false;
         }
 
         public PropertyGrid(object obj)
@@ -89,12 +94,38 @@ namespace MCS.Controls
             if (pg == null)
                 return;
 
-            pg.Refresh();
+            if (pg.Locked && e.Property == PropertyGrid.ObjectProperty)
+                return;
+
+            if (e.OldValue != null && e.NewValue != null && e.OldValue.GetType().Equals(e.NewValue.GetType()))
+                pg.Update();
+            else
+                pg.Refresh();
         }
 
         private void filterTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.Refresh();
+        }
+
+        private void lockImage_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Image image = sender as Image;
+            if (image == null)
+                return;
+            
+            this.Locked = !this.Locked;
+            if (this.Locked)
+            {
+                image.Source = new BitmapImage(new Uri("/Images/Common/Lock.png", UriKind.RelativeOrAbsolute));
+                image.ToolTip = "Unlock";
+            }
+            else
+            {
+                image.Source = new BitmapImage(new Uri("/Images/Common/Unlock.png", UriKind.RelativeOrAbsolute));
+                image.ToolTip = "Lock";
+                this.Refresh();
+            }
         }
 
 
@@ -152,6 +183,58 @@ namespace MCS.Controls
                     value = new object();
 
                 this.addPropery(pi.Name, value, pi.CanWrite, att.Description, att.Choosable);
+            }
+        }
+
+        public void Update()
+        {
+            if (this.Object == null)
+                return;
+
+            Type type = this.Object.GetType();
+
+            PropertyInfo[] pis = type.GetProperties();
+            // sort
+            Array.Sort(pis, (a, b) =>
+            {
+
+                MyEngine.MPropertyAttribute aAtt = a.GetCustomAttribute(typeof(MyEngine.MPropertyAttribute)) as MyEngine.MPropertyAttribute;
+                string aGroup = aAtt != null ? aAtt.Group : string.Empty;
+                MyEngine.MPropertyAttribute bAtt = b.GetCustomAttribute(typeof(MyEngine.MPropertyAttribute)) as MyEngine.MPropertyAttribute;
+                string bGroup = bAtt != null ? bAtt.Group : string.Empty;
+                if (aGroup != bGroup)
+                    return aGroup.CompareTo(bGroup);
+
+                return a.Name.CompareTo(b.Name);
+            });
+
+            string group = string.Empty;
+            foreach (PropertyInfo pi in pis)
+            {
+                if (!this.ShowParentProperties)
+                    if (type.BaseType.GetProperty(pi.Name) != null)
+                        continue;
+
+                MyEngine.MPropertyAttribute att = pi.GetCustomAttribute(typeof(MyEngine.MPropertyAttribute)) as MyEngine.MPropertyAttribute;
+                if (att == null)
+                    continue;
+
+                if (!pi.Name.ToLowerInvariant().Contains(this.filterTextBox.Text.ToLowerInvariant()))
+                    continue;
+
+                object value = pi.GetValue(this.Object, null);
+                if (value == null)
+                    value = new object();
+
+                foreach(var child in this.propertiesGrid.Children)
+                {
+                    PropertyGridItem pgi = child as PropertyGridItem;
+                    if (pgi != null && pgi.Name == pi.Name)
+                    {
+                        pgi.Object = value;
+                        break;
+                    }
+                }
             }
         }
 

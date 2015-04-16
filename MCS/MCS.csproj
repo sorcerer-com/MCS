@@ -275,6 +275,10 @@
   <ItemGroup>
     <Resource Include="Images\MainWindow\select.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Common\Lock.png" />
+    <Resource Include="Images\Common\Unlock.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

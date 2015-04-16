@@ -70,10 +70,14 @@ namespace MCS.Controls
         private static void OnPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             PropertyGridItem pgi = source as PropertyGridItem;
+            pgi.IsEnabled = pgi.CanWrite;
             if (pgi == null || (e.OldValue != null && e.OldValue.Equals(e.NewValue)))
                 return;
 
-            pgi.Refresh();
+            if (e.OldValue != null && e.NewValue != null && e.OldValue.GetType().Equals(e.NewValue.GetType()))
+                pgi.Update();
+            else
+                pgi.Refresh();
         }
 
 
@@ -142,7 +146,8 @@ namespace MCS.Controls
                 ComboBox cb = new ComboBox();
                 cb.Items.Add("True");
                 cb.Items.Add("False");
-                cb.SelectedItem = this.Object.ToString();
+                cb.Text = this.Object.ToString();
+                cb.SelectedItem = cb.Text;
                 cb.ToolTip = cb.Text;
                 cb.SelectionChanged += new SelectionChangedEventHandler(value_Changed);
                 this.Children.Add(cb);
@@ -152,7 +157,8 @@ namespace MCS.Controls
                 ComboBox cb = new ComboBox();
                 foreach (var enm in Enum.GetNames(type))
                     cb.Items.Add(enm.ToString());
-                cb.SelectedItem = this.Object.ToString();
+                cb.Text = this.Object.ToString();
+                cb.SelectedItem = cb.Text;
                 cb.ToolTip = cb.Text;
                 cb.SelectionChanged += new SelectionChangedEventHandler(value_Changed);
                 this.Children.Add(cb);
@@ -262,7 +268,7 @@ namespace MCS.Controls
                 foreach (var item in collection)
                 {
                     PropertyGridItem pgi = new PropertyGridItem(item);
-                    pgi.IsEnabled = this.IsEnabled;
+                    pgi.CanWrite = this.CanWrite;
                     pgi.Changed += new RoutedEventHandler(value_Changed);
                     sp.Children.Add(pgi);
                 }
@@ -301,6 +307,125 @@ namespace MCS.Controls
                 tb.ToolTip = tb.Text;
                 tb.TextChanged += new TextChangedEventHandler(value_Changed);
                 this.Children.Add(tb);
+            }
+        }
+
+        public void Update()
+        {
+            if (this.Object == null)
+                return;
+
+            Type type = this.Object.GetType();
+            if (type == typeof(object) || this.GetList != null)
+            {
+                TextBox tb = this.Children[0] as TextBox;
+                if (type == typeof(object))
+                    tb.Text = "None";
+                else
+                    tb.Text = this.Object.ToString();
+                tb.ToolTip = tb.Text;
+            }
+            else if (type == typeof(uint) || type == typeof(int) ||
+                type == typeof(float) || type == typeof(double))
+            {
+                NumberBox nb = this.Children[0] as NumberBox;
+                if (type == typeof(uint))
+                    nb.Value = (uint)this.Object;
+                else if (type == typeof(int))
+                    nb.Value = (int)this.Object;
+                else
+                    nb.Value = (double)this.Object;
+                nb.ToolTip = nb.Text;
+            }
+            else if (type == typeof(bool))
+            {
+                ComboBox cb = this.Children[0] as ComboBox;
+                cb.Text = this.Object.ToString();
+                cb.SelectedItem = cb.Text;
+                cb.ToolTip = cb.Text;
+            }
+            else if (type.IsEnum)
+            {
+                ComboBox cb = this.Children[0] as ComboBox;
+                cb.Text = this.Object.ToString();
+                cb.SelectedItem = cb.Text;
+                cb.ToolTip = cb.Text;
+            }
+            else if (type == typeof(MyEngine.MColor))
+            {
+                MyEngine.MColor color = (MyEngine.MColor)this.Object;
+                Color c = Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
+
+                NumberBox nb = this.Children[0] as NumberBox;
+                nb.Value = color.R;
+                nb.ToolTip = nb.Text;
+
+                nb = this.Children[1] as NumberBox;
+                nb.Value = color.G;
+                nb.ToolTip = nb.Text;
+
+                nb = this.Children[2] as NumberBox;
+                nb.Value = color.B;
+                nb.ToolTip = nb.Text;
+
+                nb = this.Children[3] as NumberBox;
+                nb.Value = color.A;
+                nb.ToolTip = nb.Text;
+            }
+            else if (type == typeof(MyEngine.MPoint))
+            {
+                MyEngine.MPoint point = (MyEngine.MPoint)this.Object;
+
+                NumberBox nb = this.Children[0] as NumberBox;
+                nb.Value = point.X;
+                nb.ToolTip = nb.Text;
+
+                nb = this.Children[1] as NumberBox;
+                nb.Value = point.Y;
+                nb.ToolTip = nb.Text;
+
+                nb = this.Children[2] as NumberBox;
+                nb.Value = point.Z;
+                nb.ToolTip = nb.Text;
+            }
+            else if (type.GetInterface("IList") != null)
+            {
+                IList collection = this.Object as IList;
+
+                Label label = this.Children[0] as Label;
+                label.Content = "(" + collection.Count + " Items)";
+
+                StackPanel sp = this.Children[1] as StackPanel;
+
+                int i = 0;
+                foreach (var item in collection)
+                {
+                    PropertyGridItem pgi = sp.Children[i] as PropertyGridItem;
+                    pgi.Object = item;
+                    pgi.CanWrite = this.CanWrite;
+                    i++;
+                }
+                this.IsEnabled = true;
+            }
+            else if (type.IsSubclassOf(typeof(System.Drawing.Image)))
+            {
+                System.Drawing.Image img = this.Object as System.Drawing.Image;
+                System.IO.MemoryStream renderStream = new System.IO.MemoryStream();
+                img.Save(renderStream, System.Drawing.Imaging.ImageFormat.Bmp);
+                System.Windows.Media.Imaging.BitmapImage bitmapImage = new System.Windows.Media.Imaging.BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = renderStream;
+                bitmapImage.EndInit();
+
+                Image image = this.Children[0] as Image;
+                image.Source = bitmapImage;
+                image.ToolTip = this.Name;
+            }
+            else
+            {
+                TextBox tb = this.Children[0] as TextBox;
+                tb.Text = this.Object.ToString();
+                tb.ToolTip = tb.Text;
             }
         }
 

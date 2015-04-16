@@ -58,7 +58,7 @@ namespace MCS.Controls
             this.timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
             this.timer.Tick += new EventHandler(timer_Tick);
 
-            this.KeyUp += NumberBox_KeyUp;
+            this.TextChanged += NumberBox_TextChanged;
             this.MouseWheel += NumberBox_MouseWheel;
             this.MouseMove += NumberBox_MouseMove;
         }
@@ -92,8 +92,8 @@ namespace MCS.Controls
                 nb.Text = ((double)e.NewValue).ToString("0");
         }
 
-
-        private void NumberBox_KeyUp(object sender, KeyEventArgs e)
+        
+        private void NumberBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.OnChanged();
             e.Handled = true;
@@ -128,7 +128,6 @@ namespace MCS.Controls
                 this.Value += d;
             }
 
-            this.OnChanged();
             e.Handled = true;
         }
 
@@ -152,9 +151,12 @@ namespace MCS.Controls
                 return;
             }
 
+            double d = Mouse.GetPosition(null).Y - this.mousePos.Y;
+            if (d == 0)
+                return;
+
             if (!this.IsInteger)
             {
-                double d = Mouse.GetPosition(null).Y - this.mousePos.Y;
                 if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                     d *= 10;
                 else if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
@@ -168,12 +170,9 @@ namespace MCS.Controls
             }
             else
             {
-                double d = Mouse.GetPosition(null).Y - this.mousePos.Y;
                 this.Value -= (int)(d / 5);
             }
-
-            this.OnChanged();
-
+            
             this.mousePos = Mouse.GetPosition(null);
         }
     }

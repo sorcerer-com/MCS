@@ -493,13 +493,16 @@ namespace MCS
                     MSceneElement mse = null;
                     if (element != null)
                         mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, name, element.ID);
-                    else if (name == "Camera")
+                    else if (name.StartsWith("Camera"))
                         mse = this.engine.SceneManager.AddElement(ESceneElementType.Camera, name, @"MPackage#Meshes\System\Camera");
-                    else if (name == "Light")
+                    else if (name.StartsWith("Light"))
                         mse = this.engine.SceneManager.AddElement(ESceneElementType.Light, name, 0);
 
                     if (mse != null && this.engine.SceneManager.ActiveCamera != null)
+                    {
                         mse.Position = this.engine.SceneManager.ActiveCamera.Position + dir * dist;
+                        mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
+                    }
                 });
             }
         }

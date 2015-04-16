@@ -36,7 +36,11 @@ namespace MyEngine {
 	MCamera^ MSceneManager::ActiveCamera::get()
 	{
 		if (this->sceneManager->ActiveCamera)
-			return gcnew MCamera(this->sceneManager, this->sceneManager->ActiveCamera->ID);
+		{
+			MCamera^ camera = gcnew MCamera(this->sceneManager, this->sceneManager->ActiveCamera->ID);
+			camera->Changed += gcnew MSceneElement::ChangedEventHandler(this, &MSceneManager::OnElementChanged);
+			return camera;
+		}
 
 		return nullptr;
 	}
