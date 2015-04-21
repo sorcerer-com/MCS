@@ -312,6 +312,9 @@ namespace MCS.Controls
             if (pgi != null && this.Object != null)
             {
                 PropertyInfo pi = this.Object.GetType().GetProperty(pgi.Name);
+                if (!pi.CanWrite)
+                    return;
+
                 if (pgi.Object.GetType() == typeof(object))
                     pi.SetValue(this.Object, null, null);
                 else

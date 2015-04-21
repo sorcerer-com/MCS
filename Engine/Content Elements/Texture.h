@@ -13,9 +13,9 @@ namespace MyEngine {
 	public:
 		uint Width;
 		uint Height;
-		// TODO: bool changed;?
 		byte* Pixels;
-		int rawDataSize;
+
+		bool Changed;
 
 	public:
 		Texture(ContentManager* owner, const string& name, const string& package, const string& path);
@@ -31,6 +31,8 @@ namespace MyEngine {
 		virtual ContentElement* Clone() const override;
 
 	private:
+		int rawDataSize;
+
 		void init();
 	};
 

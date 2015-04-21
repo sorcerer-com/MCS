@@ -57,7 +57,8 @@ namespace MCS.MainWindows
 
         private void MSelector_SelectionChanged(MSelector.ESelectionType selectionType, uint id)
         {
-            this.updateRows();
+            if (selectionType == MSelector.ESelectionType.SceneElement)
+                this.updateRows();
         }
 
         private void sceneManager_Changed(MSceneManager sender, MSceneElement element)

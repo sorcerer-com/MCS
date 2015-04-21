@@ -567,6 +567,7 @@ namespace MCS
             {
                 mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");
                 mse.Position = new MPoint(50 + i * 50, 0, 100 + i * 10);
+                mse.Material = this.engine.ContentManager.GetElement(@"test#test");
             }
             this.engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
             MLight light = this.engine.SceneManager.AddElement(ESceneElementType.Light, "light", 0) as MLight;
@@ -607,8 +608,11 @@ namespace MCS
 
         private void MSelector_SelectionChanged(MSelector.ESelectionType selectionType, uint id)
         {
-            this.OnPropertyChanged("SelectedElement");
-            this.OnPropertyChanged("InfoLabelContent");
+            if (selectionType == MSelector.ESelectionType.SceneElement)
+            {
+                this.OnPropertyChanged("SelectedElement");
+                this.OnPropertyChanged("InfoLabelContent");
+            }
         }
 
 

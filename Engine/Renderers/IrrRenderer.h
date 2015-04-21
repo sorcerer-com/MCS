@@ -11,6 +11,7 @@ namespace irr
 	{
 		class IVideoDriver;
 		class SMaterial;
+		class ITexture;
 		class SColor;
 	}
 
@@ -33,6 +34,7 @@ namespace MyEngine {
 
 	class ContentElement;
 	using ContentElementPtr = shared_ptr < ContentElement >;
+	class Material;
 	class SceneElement;
 	using SceneElementPtr = shared_ptr < SceneElement >;
 	
@@ -65,6 +67,7 @@ namespace MyEngine {
 		irr::scene::ISceneNode* createIrrSceneNode(const SceneElementPtr sceneElement);
 		bool updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh);
 		bool updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial);
+		bool updateIrrTexture(const Material* material, irr::video::ITexture*& irrTexture);
 
 		void render();
 

@@ -21,7 +21,7 @@ namespace MyEngine {
 			Texture* get() { return (Texture*)this->element; }
 		}
 
-		Bitmap^ imageCache;
+		static Dictionary<uint, Bitmap^>^ imagesCache = gcnew Dictionary<uint, Bitmap^>();
 
 	public:
 		[MPropertyAttribute(Group = "Image")]
@@ -41,44 +41,49 @@ namespace MyEngine {
 		{
 			Bitmap^ get()
 			{
-				if (imageCache != nullptr)
-					return this->imageCache;
+				if (imagesCache->ContainsKey(this->id))
+					return this->imagesCache[this->id];
 
-				this->imageCache = gcnew Bitmap(texture->Width, texture->Height);
+				Bitmap^ bmp = gcnew Bitmap(texture->Width, texture->Height);
 
-				for (int j = 0; j < this->imageCache->Height; j++)
-					for (int i = 0; i < this->imageCache->Width; i++)
+				for (int j = 0; j < bmp->Height; j++)
+				{
+					for (int i = 0; i < bmp->Width; i++)
 					{
 						MColor c = this->GetColor(i, j);
-						this->imageCache->SetPixel(i, j, c.ToColor());
+						bmp->SetPixel(i, j, c.ToColor());
 					}
-				return this->imageCache;
+				}
+				this->imagesCache[this->id] = bmp;
+				return this->imagesCache[this->id];
 			}
 			void set(Bitmap^ value)
 			{
 				if (value == nullptr)
 					return;
 
-				value = gcnew Bitmap(value);
-				int sx2 = power_of_two(value->Width);
-				int sy2 = power_of_two(value->Height);
-				if (value->Width != sx2 || value->Height != sy2)
+				Bitmap^ bmp = gcnew Bitmap(value);
+				int sx2 = power_of_two(bmp->Width);
+				int sy2 = power_of_two(bmp->Height);
+				if (bmp->Width != sx2 || bmp->Height != sy2)
 				{
-					Bitmap^ bmp2 = gcnew Bitmap(value, sx2, sy2);
-					delete value;
-					value = bmp2;
+					Bitmap^ bmp2 = gcnew Bitmap(bmp, sx2, sy2);
+					delete bmp;
+					bmp = bmp2;
 				}
 
-				this->texture->Init(value->Width, value->Height);
-				for (int j = 0; j < value->Height; j++)
-					for (int i = 0; i < value->Width; i++)
+				this->texture->Init(bmp->Width, bmp->Height);
+				for (int j = 0; j < bmp->Height; j++)
+				{
+					for (int i = 0; i < bmp->Width; i++)
 					{
-						Color c = value->GetPixel(i, j);
+						Color c = bmp->GetPixel(i, j);
 						this->SetColor(i, j, MColor(c));
 					}
-				delete value;
+				}
+				delete bmp;
 
-				this->imageCache = nullptr;
+				this->imagesCache->Remove(this->id);
 				OnChanged();
 			}
 		}
@@ -95,16 +100,18 @@ namespace MyEngine {
 			width = power_of_two(width);
 			height = power_of_two(height);
 			this->texture->Init(width, height);
+			this->imagesCache->Remove(this->id);
 		}
 
 		MColor GetColor(uint x, uint y)
 		{
-			return MColor(this->texture->GetColor(x, y));
+			return MColor(this->texture->GetColor(x, this->Height - y - 1)); // flip by y
 		}
 
 		void SetColor(uint x, uint y, MColor color)
 		{
-			this->texture->SetColor(x, y, color.ToColor4());
+			this->texture->SetColor(x, this->Height - y - 1, color.ToColor4()); // flip by y
+			this->imagesCache->Remove(this->id);
 		}
 
 

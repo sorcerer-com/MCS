@@ -48,6 +48,7 @@ namespace MyEngine {
 		this->Width = 0;
 		this->Height = 0;
 		this->Pixels = NULL;
+		this->Changed = true;
 		this->rawDataSize = 0;
 	}
 
@@ -60,6 +61,7 @@ namespace MyEngine {
 		this->Width = width;
 		this->Height = height;
 		this->Pixels = new byte[width * height * 4];
+		this->Changed = true;
 		this->rawDataSize = 0;
 	}
 
@@ -99,6 +101,7 @@ namespace MyEngine {
 			this->Pixels[(y * this->Width + x) * 4 + 1] = (byte)(color.g * 255);
 			this->Pixels[(y * this->Width + x) * 4 + 2] = (byte)(color.b * 255);
 			this->Pixels[(y * this->Width + x) * 4 + 3] = (byte)(color.a * 255);
+			this->Changed = true;
 		}
 	}
 
@@ -108,6 +111,7 @@ namespace MyEngine {
 		long long size = ContentElement::Size();
 		size += SizeOf(this->Width);
 		size += SizeOf(this->Height);
+		size += SizeOf(this->rawDataSize);
 		size += this->rawDataSize;
 		return size;
 	}
@@ -121,7 +125,7 @@ namespace MyEngine {
 
 		// write PNG data
 		byte* png = NULL;
-		size_t size;
+		size_t size = 0;
 		lodepng_encode_memory(&png, &size, (byte*)this->Pixels, this->Width, this->Height, LCT_RGBA, 8);
 		this->rawDataSize = (int)size;
 
@@ -140,6 +144,7 @@ namespace MyEngine {
 		newElem->ID = INVALID_ID;
 		newElem->PackageOffset = 0;
 		newElem->SavedSize = 0;
+		newElem->Changed = true;
 		return newElem;
 	}
 

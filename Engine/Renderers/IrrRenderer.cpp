@@ -18,6 +18,7 @@
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
 #include "..\Content Elements\Material.h"
+#include "..\Content Elements\Texture.h"
 
 
 namespace MyEngine {
@@ -213,8 +214,6 @@ namespace MyEngine {
 		if (irrSceneNode->isDebugObject())
 			irrMaterial.Lighting = false;
 
-		// TODO: set textures
-
 		// Set Content
 		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
 		if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
@@ -385,7 +384,57 @@ namespace MyEngine {
 		irrMaterial.Lighting = true;
 		irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
 		irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it;
+
+		if (material->TextureID != INVALID_ID)
+		{
+			irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->TextureID).c_str()));
+			if (this->updateIrrTexture(material, irrTexture) ||
+				irrMaterial.getTexture(0) != irrTexture)
+				irrMaterial.setTexture(0, irrTexture);
+		}
+
 		return true;
+	}
+
+	bool IrrRenderer::updateIrrTexture(const Material* material, irr::video::ITexture*& irrTexture)
+	{
+		ContentElementPtr contentElement = NULL;
+		if (this->Owner->ContentManager->ContainElement(material->TextureID))
+			contentElement = this->Owner->ContentManager->GetElement(material->TextureID, true, true);
+		if (!contentElement || contentElement->Type != ContentElementType::ETexture)
+		{
+			if (irrTexture != NULL)
+				return true;
+
+			Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid texture (" +
+				to_string(material->TextureID) + ")");
+
+			irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(material->TextureID).c_str()));
+			return true;
+		}
+		Texture* texture = (Texture*)contentElement.get();
+
+		if (irrTexture == NULL)
+			irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(texture->Width, texture->Height), irr::core::stringw(to_string(material->TextureID).c_str()));
+
+		if (irrTexture != NULL && texture->Changed)
+		{
+			byte* data = (byte*)irrTexture->lock(irr::video::E_TEXTURE_LOCK_MODE::ETLM_READ_WRITE);
+			for (uint i = 0; i < texture->Width * texture->Height; i++)
+			{
+				// from RGBA to BGRA
+				data[i * 4 + 2] = texture->Pixels[i * 4 + 0]; // R;
+				data[i * 4 + 1] = texture->Pixels[i * 4 + 1]; // G;
+				data[i * 4 + 0] = texture->Pixels[i * 4 + 2]; // B;
+				data[i * 4 + 3] = texture->Pixels[i * 4 + 3]; // A;
+			}
+			irrTexture->unlock();
+			irrTexture->regenerateMipMapLevels();
+			texture->Changed = false;
+			return true;
+		}
+
+		return false;
 	}
 
 
