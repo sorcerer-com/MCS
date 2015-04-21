@@ -16,7 +16,7 @@ namespace MCS.Controls
         public delegate List<object> GetListDelegate(string propertyName);
 
         public static readonly DependencyProperty ObjectProperty =
-            DependencyProperty.Register("Object", typeof(object), typeof(PropertyGrid), new PropertyMetadata(OnPropertyChanged));
+            DependencyProperty.Register("Object", typeof(object), typeof(PropertyGrid), new PropertyMetadata(null, OnPropertyChanged, OnCoerceValue));
         
         public static readonly DependencyProperty GetListProperty =
             DependencyProperty.Register("GetList", typeof(GetListDelegate), typeof(PropertyGrid), new PropertyMetadata(OnPropertyChanged));
@@ -50,7 +50,7 @@ namespace MCS.Controls
         }
         private List<string> expandedGroups;
 
-        public bool Locked { get; set; }
+        public bool IsLocked { get; set; }
 
         public GetListDelegate GetList
         {
@@ -66,7 +66,7 @@ namespace MCS.Controls
             this.ShowParentProperties = true;
             this.Expanded = false;
             this.expandedGroups = new List<string>();
-            this.Locked = false;
+            this.IsLocked = false;
         }
 
         public PropertyGrid(object obj)
@@ -94,13 +94,21 @@ namespace MCS.Controls
             if (pg == null)
                 return;
 
-            if (pg.Locked && e.Property == PropertyGrid.ObjectProperty)
-                return;
-
             if (e.OldValue != null && e.NewValue != null && e.OldValue.GetType().Equals(e.NewValue.GetType()))
                 pg.Update();
             else
                 pg.Refresh();
+        }
+
+        private static object OnCoerceValue(DependencyObject source, object value)
+        {
+            PropertyGrid pg = source as PropertyGrid;
+            if (pg == null)
+                return value;
+
+            if (pg.IsLocked)
+                return pg.Object;
+            return value;
         }
 
         private void filterTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -114,8 +122,8 @@ namespace MCS.Controls
             if (image == null)
                 return;
             
-            this.Locked = !this.Locked;
-            if (this.Locked)
+            this.IsLocked = !this.IsLocked;
+            if (this.IsLocked)
             {
                 image.Source = new BitmapImage(new Uri("/Images/Common/Lock.png", UriKind.RelativeOrAbsolute));
                 image.ToolTip = "Unlock";
@@ -301,7 +309,7 @@ namespace MCS.Controls
         private void property_Changed(object sender, RoutedEventArgs e)
         {
             PropertyGridItem pgi = sender as PropertyGridItem;
-            if (pgi != null)
+            if (pgi != null && this.Object != null)
             {
                 PropertyInfo pi = this.Object.GetType().GetProperty(pgi.Name);
                 if (pgi.Object.GetType() == typeof(object))

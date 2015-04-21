@@ -619,15 +619,20 @@ namespace MCS.MainWindows
 
         private void export(string filename)
         {
-            if (this.SelectedElement == null)
+            if (this.SelectedElement != null)
                 this.SelectedElement.SaveToFile(filename);
         }
 
 
         private void PropertyGrid_Changed(object sender, RoutedEventArgs e)
         {
-            if (!this.changedElements.Contains(this.SelectedElement.ID))
-                this.changedElements.Add(this.SelectedElement.ID);
+            MCS.Controls.PropertyGrid pg = sender as MCS.Controls.PropertyGrid;
+            if (pg != null && pg.Object is MContentElement)
+            {
+                MContentElement elem = pg.Object as MContentElement;
+                if (!this.changedElements.Contains(elem.ID))
+                    this.changedElements.Add(elem.ID);
+            }
         }
 
         
