@@ -24,6 +24,7 @@ namespace MyEngine {
 		float SpotCutoffInner;
 		float SpotCutoffOuter;
 		float Intensity;
+		// TODO: light on/off
 
 	public:
 		Light(SceneManager* owner, const string& name, uint contentID, LightType lightType);

@@ -94,7 +94,7 @@ namespace MCS.Controls
             if (pg == null)
                 return;
 
-            if (e.OldValue != null && e.NewValue != null && e.OldValue.GetType().Equals(e.NewValue.GetType()))
+            if (e.OldValue != null && e.NewValue != null && e.OldValue.Equals(e.NewValue))
                 pg.Update();
             else
                 pg.Refresh();

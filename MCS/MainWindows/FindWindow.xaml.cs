@@ -93,8 +93,7 @@ namespace MCS.MainWindows
 
         private void DataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
-            if (mainWindow == null)
+            if (this.Rows.Count == 0)
                 return;
 
             foreach (FindGridRow item in e.RemovedItems)

@@ -190,7 +190,7 @@ namespace MyEngine {
 			else
 				irrSceneNode->setVisible(sceneElement->Visible);
 		}
-		else
+		else 
 			irrSceneNode->setVisible(true); // show all objects in Editor mode
 
 		// Set Transformation
@@ -205,7 +205,8 @@ namespace MyEngine {
 		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
 		this->updateIrrMaterial(sceneElement, irrMaterial);
 
-		if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
+		if (Selector::IsSelected(sceneElement->ID) &&
+			sceneElement->Type != SceneElementType::ELight) // if scene element is selected
 			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
 		else
 			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
@@ -234,16 +235,34 @@ namespace MyEngine {
 
 			irr::scene::ILightSceneNode* irrLightSceneNode = (irr::scene::ILightSceneNode*) irrSceneNode;
 			irr::video::SLight irrLight = irrLightSceneNode->getLightData();
-			irrLight.Radius = light->Radius;
 			irrLight.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
-			irrLight.DiffuseColor = irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a);
+			irrLight.DiffuseColor = light->Visible ? irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a) : irr::video::SColorf();
 			irrLight.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
 			irrLight.Falloff = light->SpotExponent;
 			irrLight.InnerCone = light->SpotCutoffInner;
 			irrLight.OuterCone = light->SpotCutoffOuter;
-			irrLight.Attenuation = irr::core::vector3df(0, 0, 1.0f / light->Intensity);
+			irrLight.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
 			irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
 			irrLightSceneNode->setLightData(irrLight);
+			
+			string lightTexture = light->Visible ? "LightOn" : "LightOff";
+			Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
+
+			irr::scene::IBillboardSceneNode* irrBillboardSceneNode = (irr::scene::IBillboardSceneNode*)(*irrLightSceneNode->getChildren().begin());
+			irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(texture->ID).c_str()));
+			irr::video::SMaterial& irrMaterial = irrBillboardSceneNode->getMaterial(0);
+			irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
+			irrMaterial.Lighting = false;
+			if (this->updateIrrTexture(texture, irrTexture) ||
+				irrMaterial.getTexture(0) != irrTexture)
+				irrMaterial.setTexture(0, irrTexture);
+
+			if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
+				irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
+			else
+				irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
+			if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
+				irrBillboardSceneNode->setVisible(false);
 		}
 	}
 
@@ -254,11 +273,12 @@ namespace MyEngine {
 
 		if (sceneElement->Type == SceneElementType::ELight)
 		{
+			// TODO: set Light to be able to have a content(mesh)
 			irrSceneNode = this->irrSmgr->addLightSceneNode();
-			// TODO: add Billboard as a child when we have textures? set it as debug object
-			// TODO: selector from the bounding box of the Billboard
 
-			//irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
+			irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(10.0f, 10.0f));
+
+			irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
 		}
 		else
 		{
@@ -414,8 +434,13 @@ namespace MyEngine {
 		}
 		Texture* texture = (Texture*)contentElement.get();
 
+		return this->updateIrrTexture(texture, irrTexture);
+	}
+
+	bool IrrRenderer::updateIrrTexture(Texture* texture, irr::video::ITexture*& irrTexture)
+	{
 		if (irrTexture == NULL)
-			irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(texture->Width, texture->Height), irr::core::stringw(to_string(material->TextureID).c_str()));
+			irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(texture->Width, texture->Height), irr::core::stringw(to_string(texture->ID).c_str()));
 
 		if (irrTexture != NULL && texture->Changed)
 		{

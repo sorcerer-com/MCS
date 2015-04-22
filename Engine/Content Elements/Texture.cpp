@@ -61,6 +61,7 @@ namespace MyEngine {
 		this->Width = width;
 		this->Height = height;
 		this->Pixels = new byte[width * height * 4];
+		memset(this->Pixels, 255, width * height * 4);
 		this->Changed = true;
 		this->rawDataSize = 0;
 	}

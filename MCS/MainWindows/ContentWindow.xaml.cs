@@ -612,7 +612,8 @@ namespace MCS.MainWindows
                 if (elem != null)
                 {
                     elem.LoadFromFile(filenames[i]);
-                    this.contentManager.SaveElement(elem.ID);
+                    if (!this.changedElements.Contains(elem.ID))
+                        this.changedElements.Add(elem.ID);
                 }
             }
         }

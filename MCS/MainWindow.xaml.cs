@@ -567,7 +567,7 @@ namespace MCS
             {
                 mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");
                 mse.Position = new MPoint(50 + i * 50, 0, 100 + i * 10);
-                mse.Material = this.engine.ContentManager.GetElement(@"test#test");
+                mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             }
             this.engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
             MLight light = this.engine.SceneManager.AddElement(ESceneElementType.Light, "light", 0) as MLight;
