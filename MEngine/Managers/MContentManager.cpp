@@ -221,14 +221,7 @@ namespace MyEngine {
 			mce = gcnew MMaterial(element->Owner, element->ID);
 		else if (element->Type == ContentElementType::ETexture)
 			mce = gcnew MTexture(element->Owner, element->ID);
-		/* TODO: add content elements
-		else if (element->Type == EUIScreen)
-			mce = gcnew MUIScreen(element->GetOwner(), element->ID);
-		else if (element->Type == ESkeleton)
-			mce = gcnew MSkeleton(element->GetOwner(), element->ID);
-		else if (element->Type == ESound)
-			mce = gcnew MSound(element->GetOwner(), element->ID);
-			*/
+		/* TODO: add content elements */
 		return mce;
 	}
 	

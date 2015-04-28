@@ -11,10 +11,7 @@ namespace MyEngine {
 	{
 		EMesh,
 		EMaterial,
-		ETexture,
-		EUIScreen,
-		ESkeleton,
-		ESound
+		ETexture
 	};
 
 	class ContentElement

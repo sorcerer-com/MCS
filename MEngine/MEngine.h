@@ -36,7 +36,11 @@ namespace MyEngine {
 
 		property MRenderer^ ViewPortRenderer;
 
-		static EEngineMode Mode;
+        static property EEngineMode Mode
+        {
+            EEngineMode get();
+            void set(EEngineMode value);
+        }
 
 	public:
 		MEngine();

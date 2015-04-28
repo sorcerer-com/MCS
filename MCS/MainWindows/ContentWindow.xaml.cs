@@ -406,12 +406,7 @@ namespace MCS.MainWindows
                         saveFileDialog.Filter = "Picture Files (*.bmp, *.jpg, *.gif, *.png, *.tiff, *.hdr)|*.bmp;*.jpg;*.gif;*.png;*.tiff;*.hdr|All Files (*.*)|*.*";
                         saveFileDialog.DefaultExt = "png";
                     }
-                    /* TODO: add other content elements
-                    else if (elem.Type == EContentElementType.Sound)
-                    {
-                        saveFileDialog.Filter = "WAVE Files (*.wav)|*.wav|All Files (*.*)|*.*";
-                        saveFileDialog.DefaultExt = "wav";
-                    } // */
+                    /* TODO: add other content elements */
 
                     if (saveFileDialog.ShowDialog() == true)
                         this.export(saveFileDialog.FileName);
@@ -576,9 +571,7 @@ namespace MCS.MainWindows
                     type = EContentElementType.Material;
                 else if (textureExts.Contains(ext))
                     type = EContentElementType.Texture;
-                /* TODO: add other content elements
-                else if (ext == ".wave")
-                    type = EContentElementType.Sound; // */
+                /* TODO: add other content elements */
                 else
                     continue;
 

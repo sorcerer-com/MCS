@@ -285,9 +285,7 @@ namespace MyEngine {
 			mse = gcnew MCamera(element->Owner, element->ID);
 		else if (element->Type == SceneElementType::ELight)
 			mse = gcnew MLight(element->Owner, element->ID);
-		/* TODO: add scene elements
-		else if (element->Type == ECharacter)
-			mse = gcnew MCharacter(element->GetOwner(), element->ID); */
+		/* TODO: add scene elements */
 		else
 			mse = gcnew MSceneElement(element->Owner, element->ID);
 

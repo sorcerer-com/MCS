@@ -143,9 +143,7 @@ namespace MyEngine {
 					element = new Camera(this, ifile);
 				else if (type == SceneElementType::ELight)
 					element = new Light(this, ifile);
-				/* TODO: add different scene elements types
-				else if (element->Type == ECharacter)
-					element = new Character(this, ifile);*/
+				/* TODO: add different scene elements types */
 				else
 					element = new SceneElement(this, ifile);
 
@@ -192,9 +190,7 @@ namespace MyEngine {
 			element = new Camera(this, name, contentID);
 		else if (type == SceneElementType::ELight)
 			element = new Light(this, name, contentID, EStaticLight);
-		/* TODO: add other scene elements
-		else if (type == ECharacter)
-			element = new Character(this, name, contentID, INVALID_ID);*/
+		/* TODO: add other scene elements */
 		else
 			element = new SceneElement(this, type, name, contentID);
 		element->ID = id;

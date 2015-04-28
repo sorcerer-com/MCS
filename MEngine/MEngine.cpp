@@ -6,6 +6,17 @@
 
 namespace MyEngine {
 
+    EEngineMode MEngine::Mode::get()
+    {
+        return (EEngineMode)Engine::Mode;
+    }
+
+    void MEngine::Mode::set(EEngineMode value)
+    {
+        Engine::Mode = (EngineMode)value;
+    }
+
+
 	MEngine::MEngine()
 	{
 		this->engine = new Engine();

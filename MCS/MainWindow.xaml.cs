@@ -653,6 +653,11 @@ namespace MCS
                 this.OnPropertyChanged("SnapDropDownSelectedItem");
                 this.OnPropertyChanged("SnapDropDownIsEnabled");
             }
+            else if (e.KeyCode == System.Windows.Forms.Keys.F2) // change Editor Mode
+            {
+                MEngine.Mode = MEngine.Mode == EEngineMode.Editor ? EEngineMode.Engine : EEngineMode.Editor;
+                this.updateTitle();
+            }
 
             this.OnPropertyChanged("SelectedElement");
         }
@@ -709,6 +714,8 @@ namespace MCS
                 }
 
                 MPoint delta = new MPoint((int)-dx / 2, (int)dy / 2, 0);
+                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    delta = new MPoint((int)-dx / 2, 0, (int)dy / 2);
                 if (this.selectedCursor == ECursorType.Rotate) 
                     delta.RotateBy(new MPoint(0.0, 0.0, -90.0));
                 delta.RotateBy(rot);
@@ -798,6 +805,8 @@ namespace MCS
         private void updateTitle()
         {
             this.Title = "My Creative Studio";
+            if (MEngine.Mode != EEngineMode.Editor)
+                this.Title += "!";
             if (!string.IsNullOrEmpty(this.sceneFilePath))
                 this.Title += " - " + Path.GetFileNameWithoutExtension(this.sceneFilePath);
             if (!this.sceneSaved)

@@ -205,7 +205,8 @@ namespace MyEngine {
 		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
 		this->updateIrrMaterial(sceneElement, irrMaterial);
 
-		if (Selector::IsSelected(sceneElement->ID) &&
+        if (Engine::Mode == EngineMode::EEditor && 
+            Selector::IsSelected(sceneElement->ID) &&
 			sceneElement->Type != SceneElementType::ELight) // if scene element is selected
 			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
 		else
@@ -263,8 +264,11 @@ namespace MyEngine {
 				irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
 			if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
 				irrBillboardSceneNode->setVisible(false);
+            else
+                irrBillboardSceneNode->setVisible(true);
 		}
 	}
+
 
 	irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
 	{

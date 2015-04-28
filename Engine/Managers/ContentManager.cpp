@@ -275,13 +275,7 @@ namespace MyEngine {
 			element = new Material(this, name, package, path);
 		else if (type == ContentElementType::ETexture)
 			element = new Texture(this, name, package, path);
-		/* TODO: add different content types
-		else if (type == EUIScreen)
-			element = new UIScreen(this, name, package, path);
-		else if (type == ESkeleton)
-			element = new Skeleton(this, name, package, path);
-		else if (type == ESound)
-			element = new Sound(this, name, package, path);*/
+		/* TODO: add different content types */
 
 		if (element)
 		{
@@ -725,13 +719,7 @@ namespace MyEngine {
 			element = new Material(this, ifile);
 		else if (type == ContentElementType::ETexture)
 			element = new Texture(this, ifile);
-		/* TODO: add different content types
-		else if (type == EUIScreen)
-			element = new UIScreen(this, ifile);
-		else if (type == ESkeleton)
-			element = new Skeleton(this, ifile);
-		else if (type == ESound)
-			element = new Sound(this, ifile);*/
+		/* TODO: add different content types */
 		return element;
 	}
 
