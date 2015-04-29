@@ -82,6 +82,7 @@ namespace MyEngine {
 					}
 				}
 				delete bmp;
+                this->texture->UpdateRawData();
 
 				this->imagesCache->Remove(this->id);
 				OnChanged();

@@ -308,7 +308,7 @@ namespace MyEngine {
 		this->content[element->ID] = ContentElementPtr(element);
 		this->packageInfos[element->Package].Paths[element->Path].insert(element->ID);
 
-		this->addRequest(ESaveElement, element->ID);
+        this->addRequest(ESaveElement, element->ID);
 		this->addRequest(ESaveDatabase);
 
 		Engine::Log(LogType::ELog, "ContentManager", "Add content element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
@@ -429,7 +429,7 @@ namespace MyEngine {
 
 		if (this->packageInfos.find(package) == this->packageInfos.end())
 		{
-			Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
+            Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element '" + fullname + "'");
 			return ContentElementPtr();
 		}
 
@@ -437,7 +437,7 @@ namespace MyEngine {
 
 		if (info.Paths.find(path) == info.Paths.end())
 		{
-			Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element '" + path + "'");
+            Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element '" + fullname + "'");
 			return ContentElementPtr();
 		}
 
@@ -757,16 +757,18 @@ namespace MyEngine {
 		PackageInfo& info = this->packageInfos[element->Package];
 		for (auto it = info.FreeSpaces.begin(); it != info.FreeSpaces.end(); it++)
 		{
-			if ((*it).second >= element->Size())
+            long long size = element->Size();
+			if ((*it).second >= size)
 			{
 				ofile.seekp((*it).first);
-				(*it).second -= element->Size();
-				(*it).first += element->Size();
+                (*it).second -= size;
+                (*it).first += size;
 				if ((*it).second == 0)
 					info.FreeSpaces.erase(it);
 				break;
 			}
-		}
+        }
+        sort(info.FreeSpaces.begin(), info.FreeSpaces.end(), [](const pair<long long, long long>& a, const pair<long long, long long>& b){ return a.second < b.second; });
 
 		element->PackageOffset = ofile.tellp();
 		element->WriteToFile(ofile);

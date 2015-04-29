@@ -249,23 +249,26 @@ namespace MyEngine {
 			string lightTexture = light->Visible ? "LightOn" : "LightOff";
 			Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
 
-			irr::scene::IBillboardSceneNode* irrBillboardSceneNode = (irr::scene::IBillboardSceneNode*)(*irrLightSceneNode->getChildren().begin());
-			irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(texture->ID).c_str()));
-			irr::video::SMaterial& irrMaterial = irrBillboardSceneNode->getMaterial(0);
-			irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
-			irrMaterial.Lighting = false;
-			if (this->updateIrrTexture(texture, irrTexture) ||
-				irrMaterial.getTexture(0) != irrTexture)
-				irrMaterial.setTexture(0, irrTexture);
+            if (texture != NULL)
+            {
+                irr::scene::IBillboardSceneNode* irrBillboardSceneNode = (irr::scene::IBillboardSceneNode*)(*irrLightSceneNode->getChildren().begin());
+                irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(texture->ID).c_str()));
+                irr::video::SMaterial& irrMaterial = irrBillboardSceneNode->getMaterial(0);
+                irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
+                irrMaterial.Lighting = false;
+                if (this->updateIrrTexture(texture, irrTexture) ||
+                    irrMaterial.getTexture(0) != irrTexture)
+                    irrMaterial.setTexture(0, irrTexture);
 
-			if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
-				irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
-			else
-				irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
-			if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
-				irrBillboardSceneNode->setVisible(false);
-            else
-                irrBillboardSceneNode->setVisible(true);
+                if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
+                    irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
+                else
+                    irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
+                if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
+                    irrBillboardSceneNode->setVisible(false);
+                else
+                    irrBillboardSceneNode->setVisible(true);
+            }
 		}
 	}
 
@@ -280,7 +283,7 @@ namespace MyEngine {
 			// TODO: set Light to be able to have a content(mesh)
 			irrSceneNode = this->irrSmgr->addLightSceneNode();
 
-			irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(10.0f, 10.0f));
+			irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(5.0f, 5.0f));
 
 			irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
 		}

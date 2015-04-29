@@ -31,25 +31,35 @@ namespace MyEngine {
 			Read(file, this->Height);
 
 			// read PNG data
-			Read(file, this->rawDataSize);
-			byte* png = new byte[this->rawDataSize];
-			for (int i = 0; i < this->rawDataSize; i++)
-				Read(file, png[i]);
+            Read(file, this->rawDataSize);
+            this->rawData = new byte[this->rawDataSize];
+            for (int i = 0; i < this->rawDataSize; i++)
+                Read(file, this->rawData[i]);
 			
-			lodepng_decode_memory(&this->Pixels, &this->Width, &this->Height, png, this->rawDataSize, LCT_RGBA, 8);
-
-			delete[] png;
+            lodepng_decode_memory(&this->Pixels, &this->Width, &this->Height, this->rawData, this->rawDataSize, LCT_RGBA, 8);
 		}
 		this->IsLoaded = true;
-	}
+    }
+    
+    Texture::~Texture()
+    {
+        if (this->Pixels != NULL)
+            delete[] this->Pixels;
+        if (this->rawData != NULL)
+            delete[] this->rawData;
+
+        this->init();
+    }
 
 	void Texture::init()
 	{
 		this->Width = 0;
 		this->Height = 0;
 		this->Pixels = NULL;
-		this->Changed = true;
-		this->rawDataSize = 0;
+        this->Changed = true;
+
+        this->rawDataSize = 0;
+        this->rawData = NULL;
 	}
 
 
@@ -57,13 +67,15 @@ namespace MyEngine {
 	{
 		if (this->Pixels != NULL)
 			delete[] this->Pixels;
+        this->Pixels = NULL;
 
 		this->Width = width;
 		this->Height = height;
 		this->Pixels = new byte[width * height * 4];
 		memset(this->Pixels, 255, width * height * 4);
 		this->Changed = true;
-		this->rawDataSize = 0;
+
+        this->UpdateRawData();
 	}
 
 	Color4 Texture::GetColor(uint x, uint y) const
@@ -102,18 +114,27 @@ namespace MyEngine {
 			this->Pixels[(y * this->Width + x) * 4 + 1] = (byte)(color.g * 255);
 			this->Pixels[(y * this->Width + x) * 4 + 2] = (byte)(color.b * 255);
 			this->Pixels[(y * this->Width + x) * 4 + 3] = (byte)(color.a * 255);
-			this->Changed = true;
+            this->Changed = true;
 		}
-	}
+    }
+
+    void Texture::UpdateRawData()
+    {
+        this->rawDataSize = 0;
+        if (this->rawData != NULL)
+            delete[] this->rawData;
+        this->rawData = NULL;
+        lodepng_encode_memory(&this->rawData, (size_t*)&this->rawDataSize, (byte*)this->Pixels, this->Width, this->Height, LCT_RGBA, 8);
+    }
 
 
 	long long Texture::Size() const
 	{
 		long long size = ContentElement::Size();
 		size += SizeOf(this->Width);
-		size += SizeOf(this->Height);
-		size += SizeOf(this->rawDataSize);
-		size += this->rawDataSize;
+        size += SizeOf(this->Height);
+        size += SizeOf(this->rawDataSize);
+        size += this->rawDataSize;
 		return size;
 	}
 
@@ -124,17 +145,9 @@ namespace MyEngine {
 		Write(file, this->Width);
 		Write(file, this->Height);
 
-		// write PNG data
-		byte* png = NULL;
-		size_t size = 0;
-		lodepng_encode_memory(&png, &size, (byte*)this->Pixels, this->Width, this->Height, LCT_RGBA, 8);
-		this->rawDataSize = (int)size;
-
-		Write(file, this->rawDataSize);
-		for (int i = 0; i < this->rawDataSize; i++)
-			Write(file, png[i]);
-
-		free(png);
+        Write(file, this->rawDataSize);
+        for (long long i = 0; i < this->rawDataSize; i++)
+            Write(file, this->rawData[i]);
 
 		file.flush();
 	}

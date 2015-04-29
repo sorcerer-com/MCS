@@ -83,7 +83,8 @@ namespace MyEngine {
 		size += SizeOf(this->Name);
 		size += SizeOf(this->Package);
 		size += SizeOf(this->Path);
-		size += SizeOf(this->PackageOffset);
+        size += SizeOf(this->PackageOffset);
+        size += SizeOf(this->SavedSize);
 		return size;
 	}
 

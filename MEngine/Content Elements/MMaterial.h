@@ -122,16 +122,14 @@ namespace MyEngine {
 						this->Glossiness = value;
 					}
 					else if (docElem->Name == "Texture")
-					{
-						int value = 0;
-						Int32::TryParse(docElem->GetAttribute("Value"), value);
-						this->Texture = MContentManager::GetMContentElement(this->owner->GetElement(value, true));
+                    {
+                        String^ value = docElem->GetAttribute("Value");
+						this->Texture = MContentManager::GetMContentElement(this->owner->GetElement(to_string(value), true));
 					}
 					else if (docElem->Name == "BumpMap")
-					{
-						int value = 0;
-						Int32::TryParse(docElem->GetAttribute("Value"), value);
-						this->Bumpmap = MContentManager::GetMContentElement(this->owner->GetElement(value, true));
+                    {
+                        String^ value = docElem->GetAttribute("Value");
+                        this->Bumpmap = MContentManager::GetMContentElement(this->owner->GetElement(to_string(value), true));
 					}
 				}
 			}
@@ -189,14 +187,14 @@ namespace MyEngine {
 				if (this->Texture != nullptr)
 				{
 					docElem = doc->CreateElement("Texture");
-					docElem->SetAttribute("Value", this->Texture->ID.ToString());
+					docElem->SetAttribute("Value", this->Texture->FullName);
 					docRoot->AppendChild(docElem);
 				}
 
 				if (this->Bumpmap != nullptr)
 				{
 					docElem = doc->CreateElement("BumpMap");
-					docElem->SetAttribute("Value", this->Bumpmap->ID.ToString());
+					docElem->SetAttribute("Value", this->Bumpmap->FullName);
 					docRoot->AppendChild(docElem);
 				}
 
