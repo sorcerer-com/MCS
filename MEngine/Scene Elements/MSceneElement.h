@@ -95,7 +95,7 @@ namespace MyEngine {
 		property MPoint Rotation
 		{
 			MPoint get() { return MPoint(element->Rotation.toEulerAngle()); }
-			void set(MPoint value) { element->Rotation = value.ToVector3(); OnChanged(); }
+            void set(MPoint value) { element->Rotation = Quaternion(value.ToVector3()); OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Transform")]

@@ -23,231 +23,238 @@
 
 namespace MyEngine {
 
-	irr::video::SColor IrrRenderer::irrInvalidColor = irr::video::SColor(255, 255, 0, 255);
+    irr::video::SColor IrrRenderer::irrInvalidColor = irr::video::SColor(255, 255, 0, 255);
 
 
-	IrrRenderer::IrrRenderer(Engine* owner) :
-		Renderer(owner, EIrrRenderer)
-	{
-		this->irrDevice = NULL;
-		this->irrDriver = NULL;
-		this->irrSmgr = NULL;
-	}
+    IrrRenderer::IrrRenderer(Engine* owner) :
+        Renderer(owner, EIrrRenderer)
+    {
+        this->irrDevice = NULL;
+        this->irrDriver = NULL;
+        this->irrSmgr = NULL;
+    }
 
-	IrrRenderer::~IrrRenderer()
-	{
-		this->thread->join();
+    IrrRenderer::~IrrRenderer()
+    {
+        this->thread->join();
 
-		Engine::Log(LogType::ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
-	}
-
-
-	bool IrrRenderer::Init(void* params)
-	{
-		this->windowHandle = params;
-
-		this->thread->defWorker(&IrrRenderer::render, this);
-
-		Engine::Log(LogType::ELog, "IrrRenderer", "Init IrrLicht Renderer");
-		return true;
-	}
-
-	void IrrRenderer::ReSize(int width, int height)
-	{
-		this->Width = width;
-		this->Height = height;
-		this->Resized = true;
-		Engine::Log(LogType::ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
-	}
-
-	uint IrrRenderer::GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter)
-	{
-		if (!this->irrDevice || !this->irrDevice->run())
-			return INVALID_ID;
-
-		irr::scene::ISceneCollisionManager* collMan = this->irrSmgr->getSceneCollisionManager();
-
-		irr::core::vector2di coord((int)x, (int)y);
-		irr::core::line3df ray = collMan->getRayFromScreenCoordinates(coord);
-		dir = Vector3(ray.end.X, ray.end.Y, ray.end.Z) - Vector3(ray.start.X, ray.start.Y, ray.start.Z);
-		dir.normalize();
-		irr::core::vector3df intersection;
-		irr::core::triangle3df hitTriangle;
-		irr::scene::ISceneNode* hitSceneNode = collMan->getSceneNodeAndCollisionPointFromRay(ray, intersection, hitTriangle);
-		if (hitSceneNode)
-		{
-			inter = Vector3(intersection.X, intersection.Y, intersection.Z);
-			return hitSceneNode->getID();
-		}
-		inter = Vector3();
-		return INVALID_ID;
-	}
+        Engine::Log(LogType::ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
+    }
 
 
-	bool IrrRenderer::init()
-	{
-		irr::SIrrlichtCreationParameters irrParam;
-		irrParam.AntiAlias = true;
-		irrParam.DriverType = irr::video::E_DRIVER_TYPE::EDT_OPENGL;
-		irrParam.HandleSRGB = true;
-		irrParam.Stencilbuffer = true;
-		irrParam.WindowId = this->windowHandle;
-		irrParam.ZBufferBits = 32;
+    bool IrrRenderer::Init(void* params)
+    {
+        this->windowHandle = params;
 
-		this->irrDevice = irr::createDeviceEx(irrParam);
-		if (!this->irrDevice)
-		{
-			Engine::Log(LogType::EError, "IrrRenderer", "Cannot init IrrLicht Renderer");
-			return false;
-		}
+        this->thread->defWorker(&IrrRenderer::render, this);
 
-		this->irrDriver = this->irrDevice->getVideoDriver();
-		this->irrSmgr = this->irrDevice->getSceneManager();
-		this->irrGuienv = this->irrDevice->getGUIEnvironment();
+        Engine::Log(LogType::ELog, "IrrRenderer", "Init IrrLicht Renderer");
+        return true;
+    }
 
-		this->irrSmgr->setShadowColor(irr::video::SColor(150, 0, 0, 0));
+    void IrrRenderer::ReSize(int width, int height)
+    {
+        this->Width = width;
+        this->Height = height;
+        this->Resized = true;
+        Engine::Log(LogType::ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
+    }
 
-		this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_OPTIMIZED_FOR_QUALITY, true);
-		this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_CREATE_MIP_MAPS, true);
+    uint IrrRenderer::GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter)
+    {
+        if (!this->irrDevice || !this->irrDevice->run())
+            return INVALID_ID;
 
-		irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->addCameraSceneNode();
-		irrCamera->bindTargetAndRotation(true);
-		irrCamera->setNearValue(0.1f);
-		irrCamera->setFarValue(10000.0f);
-		irrCamera->remove();
+        irr::scene::ISceneCollisionManager* collMan = this->irrSmgr->getSceneCollisionManager();
 
-		return true;
-	}
+        irr::core::vector2di coord((int)x, (int)y);
+        irr::core::line3df ray = collMan->getRayFromScreenCoordinates(coord);
+        dir = Vector3(ray.end.X, ray.end.Y, ray.end.Z) - Vector3(ray.start.X, ray.start.Y, ray.start.Z);
+        dir.normalize();
+        irr::core::vector3df intersection;
+        irr::core::triangle3df hitTriangle;
+        irr::scene::ISceneNode* hitSceneNode = collMan->getSceneNodeAndCollisionPointFromRay(ray, intersection, hitTriangle);
+        if (hitSceneNode)
+        {
+            inter = Vector3(intersection.X, intersection.Y, intersection.Z);
+            return hitSceneNode->getID();
+        }
+        inter = Vector3();
+        return INVALID_ID;
+    }
 
 
-	void IrrRenderer::updateScene()
-	{
-		// Setup Camera
-		Camera* camera = this->Owner->SceneManager->ActiveCamera;
-		if (camera)
-		{
-			irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->getActiveCamera();
-			irrCamera->setFOV(camera->FOV * (3.14159265f / 180.0f)); // from deg to rad
+    bool IrrRenderer::init()
+    {
+        irr::SIrrlichtCreationParameters irrParam;
+        irrParam.AntiAlias = true;
+        irrParam.DriverType = irr::video::E_DRIVER_TYPE::EDT_OPENGL;
+        irrParam.HandleSRGB = true;
+        irrParam.Stencilbuffer = true;
+        irrParam.WindowId = this->windowHandle;
+        irrParam.ZBufferBits = 32;
 
-			irrCamera->updateAbsolutePosition();
-			const Vector3& pos = camera->Position;
-			irrCamera->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
-			const Vector3& rot = camera->Rotation.toEulerAngle();
-			irrCamera->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
-			const Vector3& scl = camera->Scale;
-			irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
-		}
+        this->irrDevice = irr::createDeviceEx(irrParam);
+        if (!this->irrDevice)
+        {
+            Engine::Log(LogType::EError, "IrrRenderer", "Cannot init IrrLicht Renderer");
+            return false;
+        }
 
-		// Set Global Ambient Light
-		const Color4& ambientLight = this->Owner->SceneManager->AmbientLight;
-		this->irrSmgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
+        this->irrDriver = this->irrDevice->getVideoDriver();
+        this->irrSmgr = this->irrDevice->getSceneManager();
+        this->irrGuienv = this->irrDevice->getGUIEnvironment();
 
-		// Setup Fog
-		const Color4& fogColor = this->Owner->SceneManager->FogColor;
-		const float& fogDensity = this->Owner->SceneManager->FogDensity;
-		this->irrDriver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::E_FOG_TYPE::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
+        this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_OPTIMIZED_FOR_QUALITY, true);
+        this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_CREATE_MIP_MAPS, true);
 
-		// Update SceneElements
-		vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
-		for (const auto& sceneElement : sceneElements)
-			this->updateSceneElement(sceneElement);
-		sceneElements.clear();
+        this->irrSmgr->setShadowColor(irr::video::SColor(150, 0, 0, 0));
+        this->irrSmgr->getParameters()->setAttribute(irr::scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
 
-		// Remove invalid irrSceneElements
-		irr::scene::ISceneNode* irrRootSceneNode = this->irrSmgr->getRootSceneNode();
-		const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
-		for (const auto& irrSceneNode : irrChildrenSceneNode)
-		{
-			if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
-				irrSceneNode->remove();
-		}
+        irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->addCameraSceneNode();
+        irrCamera->bindTargetAndRotation(true);
+        irrCamera->setNearValue(0.1f);
+        irrCamera->setFarValue(10000.0f);
+        irrCamera->remove();
 
-		// Clear meshes cache from unused meshes
-		vector<uint> forDelete;
-		for (const auto& pair : this->meshesCache)
-		{
-			if (pair.second->getReferenceCount() == 1)
-				forDelete.push_back(pair.first);
-		}
-		for (const auto& id : forDelete)
-			this->meshesCache.erase(id);
-	}
+        return true;
+    }
 
-	void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
-	{
-		irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->getSceneNodeFromId(sceneElement->ID);
-		if (!irrSceneNode)
-			irrSceneNode = this->createIrrSceneNode(sceneElement);
 
-		// Set Name and Visibility
-		irrSceneNode->setName(sceneElement->Name.c_str());
-		if (sceneElement.get() == this->Owner->SceneManager->ActiveCamera) // hide active camera
-			irrSceneNode->setVisible(false);
-		else if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
-		{
-			if (irrSceneNode->isDebugObject() == true) // hide all debug objects
-				irrSceneNode->setVisible(false);
-			else
-				irrSceneNode->setVisible(sceneElement->Visible);
-		}
-		else 
-			irrSceneNode->setVisible(true); // show all objects in Editor mode
+    void IrrRenderer::updateScene()
+    {
+        // Setup Camera
+        Camera* camera = this->Owner->SceneManager->ActiveCamera;
+        if (camera)
+        {
+            irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->getActiveCamera();
+            irrCamera->setFOV(camera->FOV * (3.14159265f / 180.0f)); // from deg to rad
 
-		// Set Transformation
-		const Vector3& pos = sceneElement->Position;
-		irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
-		const Vector3& rot = sceneElement->Rotation.toEulerAngle();
-		irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
-		const Vector3& scl = sceneElement->Scale;
-		irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+            // Change camera's coordinate system from left-hand to right-hand
+            irr::core::matrix4 projMatrix;
+            projMatrix.buildProjectionMatrixPerspectiveFovRH(irrCamera->getFOV(), irrCamera->getAspectRatio(), irrCamera->getNearValue(), irrCamera->getFarValue());
+            irrCamera->setProjectionMatrix(projMatrix);
 
-		// Set Material
-		irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
-		this->updateIrrMaterial(sceneElement, irrMaterial);
+            irrCamera->updateAbsolutePosition();
+            const Vector3& pos = camera->Position;
+            irrCamera->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
+            const Vector3& rot = camera->Rotation.toEulerAngle();
+            irrCamera->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
+            const Vector3& scl = camera->Scale;
+            irrCamera->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+        }
 
-        if (Engine::Mode == EngineMode::EEditor && 
+        // Set Global Ambient Light
+        const Color4& ambientLight = this->Owner->SceneManager->AmbientLight;
+        this->irrSmgr->setAmbientLight(irr::video::SColorf(ambientLight.r, ambientLight.g, ambientLight.b, ambientLight.a));
+
+        // Setup Fog
+        const Color4& fogColor = this->Owner->SceneManager->FogColor;
+        const float& fogDensity = this->Owner->SceneManager->FogDensity;
+        this->irrDriver->setFog(irr::video::SColorf(fogColor.r, fogColor.g, fogColor.b, fogColor.a).toSColor(), irr::video::E_FOG_TYPE::EFT_FOG_EXP2, 50.0f, 100.0f, fogDensity, true, true);
+
+        // Update SceneElements
+        vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
+        for (const auto& sceneElement : sceneElements)
+            this->updateSceneElement(sceneElement);
+        sceneElements.clear();
+
+        // Remove invalid irrSceneElements
+        irr::scene::ISceneNode* irrRootSceneNode = this->irrSmgr->getRootSceneNode();
+        const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
+        for (const auto& irrSceneNode : irrChildrenSceneNode)
+        {
+            if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
+                irrSceneNode->remove();
+        }
+
+        // Clear meshes cache from unused meshes
+        vector<uint> forDelete;
+        for (const auto& pair : this->meshesCache)
+        {
+            if (pair.second->getReferenceCount() == 1)
+                forDelete.push_back(pair.first);
+        }
+        for (const auto& id : forDelete)
+            this->meshesCache.erase(id);
+    }
+
+    void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
+    {
+        irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->getSceneNodeFromId(sceneElement->ID);
+        if (!irrSceneNode)
+            irrSceneNode = this->createIrrSceneNode(sceneElement);
+
+        // Set Name and Visibility
+        irrSceneNode->setName(sceneElement->Name.c_str());
+        if (sceneElement.get() == this->Owner->SceneManager->ActiveCamera) // hide active camera
+            irrSceneNode->setVisible(false);
+        else if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
+        {
+            if (irrSceneNode->isDebugObject() == true) // hide all debug objects
+                irrSceneNode->setVisible(false);
+            else
+                irrSceneNode->setVisible(sceneElement->Visible);
+        }
+        else
+            irrSceneNode->setVisible(true); // show all objects in Editor mode
+
+        // Set Transformation
+        const Vector3& pos = sceneElement->Position;
+        irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
+        const Vector3& rot = sceneElement->Rotation.toEulerAngle();
+        irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
+        const Vector3& scl = sceneElement->Scale;
+        irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+
+        // Set Material
+        irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
+        this->updateIrrMaterial(sceneElement, irrMaterial);
+
+        if (Engine::Mode == EngineMode::EEditor &&
             Selector::IsSelected(sceneElement->ID) &&
-			sceneElement->Type != SceneElementType::ELight) // if scene element is selected
-			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
-		else
-			irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
-		if (!sceneElement->Visible) // if scene element is invisible
-			irrMaterial.DiffuseColor.setAlpha(128);
-		if (irrSceneNode->isDebugObject())
-			irrMaterial.Lighting = false;
+            sceneElement->Type != SceneElementType::ELight) // if scene element is selected
+            irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
+        else
+            irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
+        if (!sceneElement->Visible) // if scene element is invisible
+            irrMaterial.DiffuseColor.setAlpha(128);
+        if (irrSceneNode->isDebugObject())
+            irrMaterial.Lighting = false;
 
-		// Set Content
-		irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
-		if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
-		{
-			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
-				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+        // Set Content
+        irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
+        if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
+        {
+            if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+                this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
 
-			irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-			if (this->updateIrrMesh(sceneElement, irrMesh))
-			{
-				irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
-				irrMeshSceneNode->setMesh(irrMesh);
-			}
-		}
-		else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
-		{
-			Light* light = (Light*)sceneElement.get();
+            irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
+            if (this->updateIrrMesh(sceneElement, irrMesh))
+            {
+                irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
+                irrMeshSceneNode->setMesh(irrMesh);
+            }
+        }
+        else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
+        {
+            // TODO: there is a shadow if the light is off
+            Light* light = (Light*)sceneElement.get();
 
-			irr::scene::ILightSceneNode* irrLightSceneNode = (irr::scene::ILightSceneNode*) irrSceneNode;
-			irr::video::SLight irrLight = irrLightSceneNode->getLightData();
-			irrLight.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
-			irrLight.DiffuseColor = light->Visible ? irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a) : irr::video::SColorf();
-			irrLight.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
-			irrLight.Falloff = light->SpotExponent;
-			irrLight.InnerCone = light->SpotCutoffInner;
-			irrLight.OuterCone = light->SpotCutoffOuter;
-			irrLight.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
-			irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
-			irrLightSceneNode->setLightData(irrLight);
-			
-			string lightTexture = light->Visible ? "LightOn" : "LightOff";
-			Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
+            irr::scene::ILightSceneNode* irrLightSceneNode = (irr::scene::ILightSceneNode*) irrSceneNode;
+            irr::video::SLight irrLight = irrLightSceneNode->getLightData();
+            irrLight.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
+            irrLight.DiffuseColor = light->Visible ? irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a) : irr::video::SColorf();
+            irrLight.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
+            irrLight.Falloff = light->SpotExponent;
+            irrLight.InnerCone = light->SpotCutoffInner;
+            irrLight.OuterCone = light->SpotCutoffOuter;
+            irrLight.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
+            irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
+            irrLightSceneNode->setLightData(irrLight);
+
+            string lightTexture = light->Visible ? "LightOn" : "LightOff";
+            Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
 
             if (texture != NULL)
             {
@@ -269,247 +276,250 @@ namespace MyEngine {
                 else
                     irrBillboardSceneNode->setVisible(true);
             }
-		}
-	}
+        }
+    }
 
 
-	irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
-	{
-		irr::scene::ISceneNode* irrSceneNode = NULL;
-		irr::scene::ITriangleSelector* irrTriangleSelector = NULL;
+    irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
+    {
+        irr::scene::ISceneNode* irrSceneNode = NULL;
+        irr::scene::ITriangleSelector* irrTriangleSelector = NULL;
 
-		if (sceneElement->Type == SceneElementType::ELight)
-		{
-			// TODO: set Light to be able to have a content(mesh)
-			irrSceneNode = this->irrSmgr->addLightSceneNode();
+        if (sceneElement->Type == SceneElementType::ELight)
+        {
+            // TODO: set Light to be able to have a content(mesh)
+            irrSceneNode = this->irrSmgr->addLightSceneNode();
 
-			irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(5.0f, 5.0f));
+            irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(5.0f, 5.0f));
 
-			irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
-		}
-		else
-		{
-			if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
-				this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+            irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
+        }
+        else
+        {
+            if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+                this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
 
-			irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-			irrSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh);
-			if (sceneElement->Type == SceneElementType::ECamera ||
-				sceneElement->Type == SceneElementType::ESystemObject)
-				irrSceneNode->setIsDebugObject(true);
+            irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
+            irrSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh);
+            if (sceneElement->Type == SceneElementType::ECamera ||
+                sceneElement->Type == SceneElementType::ESystemObject)
+                irrSceneNode->setIsDebugObject(true);
 
-			// shadow
-			irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
-			irrMeshSceneNode->addShadowVolumeSceneNode();
+            // shadow
+            irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
+            irrMeshSceneNode->addShadowVolumeSceneNode();
 
-			// irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
-			irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
-		}
+            // irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
+            irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
+        }
 
-		// add triangle selector to be able to select it
-		if (irrTriangleSelector)
-		{
-			irrSceneNode->setTriangleSelector(irrTriangleSelector);
-			irrTriangleSelector->drop();
-		}
+        // add triangle selector to be able to select it
+        if (irrTriangleSelector)
+        {
+            irrSceneNode->setTriangleSelector(irrTriangleSelector);
+            irrTriangleSelector->drop();
+        }
 
-		irrSceneNode->setID(sceneElement->ID);
-		return irrSceneNode;
-	}
+        irrSceneNode->setID(sceneElement->ID);
+        return irrSceneNode;
+    }
 
-	bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
-	{
-		ContentElementPtr contentElement = NULL;
-		if (this->Owner->ContentManager->ContainElement(sceneElement->ContentID))
-			contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
-		if (!contentElement || contentElement->Type != ContentElementType::EMesh)
-		{
-			if (irrMesh->getMeshBufferCount() > 0 && irrMesh->getMeshBuffer(0)->getIndexCount() == 36)
-				return false;
+    bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
+    {
+        ContentElementPtr contentElement = NULL;
+        if (this->Owner->ContentManager->ContainElement(sceneElement->ContentID))
+            contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
+        if (!contentElement || contentElement->Type != ContentElementType::EMesh)
+        {
+            if (irrMesh->getMeshBufferCount() > 0 && irrMesh->getMeshBuffer(0)->getIndexCount() == 36)
+                return false;
 
-			Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
-				to_string(sceneElement->ContentID) + ")");
+            Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
+                to_string(sceneElement->ContentID) + ")");
 
-			auto irrCubeSceneNode = this->irrSmgr->addCubeSceneNode();
-			irrMesh->clear();
-			irrMesh->addMeshBuffer(irrCubeSceneNode->getMesh()->getMeshBuffer(0));
-			irrMesh->setDirty();
-			irrCubeSceneNode->remove();
-			return true;
-		}
-		Mesh* mesh = (Mesh*)contentElement.get();
+            auto irrCubeSceneNode = this->irrSmgr->addCubeSceneNode();
+            irrMesh->clear();
+            irrMesh->addMeshBuffer(irrCubeSceneNode->getMesh()->getMeshBuffer(0));
+            irrMesh->setDirty();
+            irrCubeSceneNode->remove();
+            return true;
+        }
+        Mesh* mesh = (Mesh*)contentElement.get();
 
-		// Create irrMeshBuffer
-		irr::scene::SMeshBuffer* irrMeshBuffer = NULL;
-		if (irrMesh->getMeshBufferCount() != 0)
-			irrMeshBuffer = (irr::scene::SMeshBuffer*)irrMesh->getMeshBuffer(0);
-		else
-		{
-			irrMeshBuffer = new irr::scene::SMeshBuffer();
-			irrMesh->addMeshBuffer(irrMeshBuffer);
-			irrMeshBuffer->drop();
-		}
+        // Create irrMeshBuffer
+        irr::scene::SMeshBuffer* irrMeshBuffer = NULL;
+        if (irrMesh->getMeshBufferCount() != 0)
+            irrMeshBuffer = (irr::scene::SMeshBuffer*)irrMesh->getMeshBuffer(0);
+        else
+        {
+            irrMeshBuffer = new irr::scene::SMeshBuffer();
+            irrMesh->addMeshBuffer(irrMeshBuffer);
+            irrMeshBuffer->drop();
+        }
 
-		// Update irrMeshBuffer
-		if ((unsigned int)mesh->Triangles.size() * 3 != irrMeshBuffer->Vertices.size())
-		{
-			irrMeshBuffer->Vertices.set_used((int)mesh->Triangles.size() * 3);
-			irrMeshBuffer->Indices.set_used((int)mesh->Triangles.size() * 3);
-			int i = 0;
-			for (const auto& triangle : mesh->Triangles)
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					irr::video::S3DVertex& v = irrMeshBuffer->Vertices[i];
-					const Vector3& pos = mesh->Vertices[triangle.vertices[j]];
-					v.Pos = irr::core::vector3df(pos.x, pos.y, pos.z);
-					const Vector3& norm = mesh->Normals[triangle.normals[j]];
-					v.Normal = irr::core::vector3df(norm.x, norm.y, norm.z);
-					const Vector3& tCoord = mesh->TexCoords[triangle.texCoords[j]];
-					v.TCoords = irr::core::vector2df(tCoord.x, tCoord.y);
+        // Update irrMeshBuffer
+        if ((unsigned int)mesh->Triangles.size() * 3 != irrMeshBuffer->Vertices.size())
+        {
+            irrMeshBuffer->Vertices.set_used((int)mesh->Triangles.size() * 3);
+            irrMeshBuffer->Indices.set_used((int)mesh->Triangles.size() * 3);
+            int i = 0;
+            for (const auto& triangle : mesh->Triangles)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    irr::video::S3DVertex& v = irrMeshBuffer->Vertices[i];
+                    const Vector3& pos = mesh->Vertices[triangle.vertices[j]];
+                    v.Pos = irr::core::vector3df(pos.x, pos.y, pos.z);
+                    const Vector3& norm = mesh->Normals[triangle.normals[j]];
+                    v.Normal = irr::core::vector3df(norm.x, norm.y, norm.z);
+                    const Vector3& tCoord = mesh->TexCoords[triangle.texCoords[j]];
+                    v.TCoords = irr::core::vector2df(tCoord.x, tCoord.y);
 
-					irrMeshBuffer->Indices[i] = (unsigned short)i;
-					i++;
-				}
-			}
-			irrMeshBuffer->recalculateBoundingBox();
-			irrMesh->setDirty();
-			irrMesh->recalculateBoundingBox();
-			return true;
-		}
-		return false;
-	}
+                    irrMeshBuffer->Indices[i] = (unsigned short)i;
+                    i++;
+                }
+            }
+            irrMeshBuffer->recalculateBoundingBox();
+            irrMeshBuffer->setHardwareMappingHint(irr::scene::E_HARDWARE_MAPPING::EHM_STATIC, irr::scene::E_BUFFER_TYPE::EBT_VERTEX_AND_INDEX);
+            irrMesh->setDirty();
+            irrMesh->recalculateBoundingBox();
+            return true;
+        }
+        return false;
+    }
 
-	bool IrrRenderer::updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial)
-	{
-		ContentElementPtr contentElement = NULL;
-		if (this->Owner->ContentManager->ContainElement(sceneElement->MaterialID))
-			contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
-		if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
-		{
-			if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
-				return true;
+    bool IrrRenderer::updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial)
+    {
+        ContentElementPtr contentElement = NULL;
+        if (this->Owner->ContentManager->ContainElement(sceneElement->MaterialID))
+            contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+        if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
+        {
+            if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
+                return true;
 
-			Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
-				to_string(sceneElement->MaterialID) + ")");
+            Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
+                to_string(sceneElement->MaterialID) + ")");
 
-			irrMaterial = irr::video::SMaterial();
-			irrMaterial.DiffuseColor = IrrRenderer::irrInvalidColor;
-			irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
-			return true;
-		}
-		Material* material = (Material*)contentElement.get();
+            irrMaterial = irr::video::SMaterial();
+            irrMaterial.DiffuseColor = IrrRenderer::irrInvalidColor;
+            irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
+            return true;
+        }
+        Material* material = (Material*)contentElement.get();
 
-		irrMaterial.AmbientColor = irr::video::SColorf(material->AmbientColor.r, material->AmbientColor.g, material->AmbientColor.b, material->AmbientColor.a).toSColor();
-		irrMaterial.DiffuseColor = irr::video::SColorf(material->DiffuseColor.r, material->DiffuseColor.g, material->DiffuseColor.b, material->DiffuseColor.a).toSColor();
-		irrMaterial.SpecularColor = irr::video::SColorf(material->SpecularColor.r, material->SpecularColor.g, material->SpecularColor.b, material->SpecularColor.a).toSColor();
-		irrMaterial.Shininess = material->Shininess;
+        irrMaterial.AmbientColor = irr::video::SColorf(material->AmbientColor.r, material->AmbientColor.g, material->AmbientColor.b, material->AmbientColor.a).toSColor();
+        irrMaterial.DiffuseColor = irr::video::SColorf(material->DiffuseColor.r, material->DiffuseColor.g, material->DiffuseColor.b, material->DiffuseColor.a).toSColor();
+        irrMaterial.SpecularColor = irr::video::SColorf(material->SpecularColor.r, material->SpecularColor.g, material->SpecularColor.b, material->SpecularColor.a).toSColor();
+        irrMaterial.Shininess = material->Shininess;
 
-		irrMaterial.FogEnable = true;
-		//irrMaterial.BackfaceCulling = false; // broke transparency
-		irrMaterial.NormalizeNormals = true;
-		irrMaterial.Lighting = true;
-		irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
-		irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it;
+        irrMaterial.FogEnable = true;
+        irrMaterial.BackfaceCulling = false;
+        irrMaterial.NormalizeNormals = true;
+        irrMaterial.Lighting = true;
+        irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
+        irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it; it doesn't allow shadows?
 
-		if (material->TextureID != INVALID_ID)
-		{
-			irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->TextureID).c_str()));
-			if (this->updateIrrTexture(material, irrTexture) ||
-				irrMaterial.getTexture(0) != irrTexture)
-				irrMaterial.setTexture(0, irrTexture);
-		}
+        if (material->TextureID != INVALID_ID)
+        {
+            irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->TextureID).c_str()));
+            if (this->updateIrrTexture(material, irrTexture) ||
+                irrMaterial.getTexture(0) != irrTexture)
+                irrMaterial.setTexture(0, irrTexture);
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	bool IrrRenderer::updateIrrTexture(const Material* material, irr::video::ITexture*& irrTexture)
-	{
-		ContentElementPtr contentElement = NULL;
-		if (this->Owner->ContentManager->ContainElement(material->TextureID))
-			contentElement = this->Owner->ContentManager->GetElement(material->TextureID, true, true);
-		if (!contentElement || contentElement->Type != ContentElementType::ETexture)
-		{
-			if (irrTexture != NULL)
-				return true;
+    bool IrrRenderer::updateIrrTexture(const Material* material, irr::video::ITexture*& irrTexture)
+    {
+        ContentElementPtr contentElement = NULL;
+        if (this->Owner->ContentManager->ContainElement(material->TextureID))
+            contentElement = this->Owner->ContentManager->GetElement(material->TextureID, true, true);
+        if (!contentElement || contentElement->Type != ContentElementType::ETexture)
+        {
+            if (irrTexture != NULL)
+                return true;
 
-			Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid texture (" +
-				to_string(material->TextureID) + ")");
+            Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid texture (" +
+                to_string(material->TextureID) + ")");
 
-			irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(material->TextureID).c_str()));
-			return true;
-		}
-		Texture* texture = (Texture*)contentElement.get();
+            irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(material->TextureID).c_str()));
+            return true;
+        }
+        Texture* texture = (Texture*)contentElement.get();
 
-		return this->updateIrrTexture(texture, irrTexture);
-	}
+        return this->updateIrrTexture(texture, irrTexture);
+    }
 
-	bool IrrRenderer::updateIrrTexture(Texture* texture, irr::video::ITexture*& irrTexture)
-	{
-		if (irrTexture == NULL)
-			irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(texture->Width, texture->Height), irr::core::stringw(to_string(texture->ID).c_str()));
+    bool IrrRenderer::updateIrrTexture(Texture* texture, irr::video::ITexture*& irrTexture)
+    {
+        if (irrTexture == NULL)
+            irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(texture->Width, texture->Height), irr::core::stringw(to_string(texture->ID).c_str()));
 
-		if (irrTexture != NULL && texture->Changed)
-		{
-			byte* data = (byte*)irrTexture->lock(irr::video::E_TEXTURE_LOCK_MODE::ETLM_READ_WRITE);
-			for (uint i = 0; i < texture->Width * texture->Height; i++)
-			{
-				// from RGBA to BGRA
-				data[i * 4 + 2] = texture->Pixels[i * 4 + 0]; // R;
-				data[i * 4 + 1] = texture->Pixels[i * 4 + 1]; // G;
-				data[i * 4 + 0] = texture->Pixels[i * 4 + 2]; // B;
-				data[i * 4 + 3] = texture->Pixels[i * 4 + 3]; // A;
-			}
-			irrTexture->unlock();
-			irrTexture->regenerateMipMapLevels();
-			texture->Changed = false;
-			return true;
-		}
+        if (irrTexture != NULL && texture->Changed)
+        {
+            byte* data = (byte*)irrTexture->lock(irr::video::E_TEXTURE_LOCK_MODE::ETLM_READ_WRITE);
+            for (uint i = 0; i < texture->Width * texture->Height; i++)
+            {
+                // from RGBA to BGRA
+                data[i * 4 + 2] = texture->Pixels[i * 4 + 0]; // R;
+                data[i * 4 + 1] = texture->Pixels[i * 4 + 1]; // G;
+                data[i * 4 + 0] = texture->Pixels[i * 4 + 2]; // B;
+                data[i * 4 + 3] = texture->Pixels[i * 4 + 3]; // A;
+            }
+            irrTexture->unlock();
+            irrTexture->regenerateMipMapLevels();
+            texture->Changed = false;
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
 
-	void IrrRenderer::render()
-	{
-		if (!this->init())
-			return;
+    void IrrRenderer::render()
+    {
+        if (!this->init())
+            return;
 
-		while (!this->thread->interrupted())
-		{
-			if (!this->irrDevice->run())
-			{
-				this_thread::sleep_for(chrono::milliseconds(10));
-				continue;
-			}
+        while (!this->thread->interrupted())
+        {
+            if (!this->irrDevice->run())
+            {
+                this_thread::sleep_for(chrono::milliseconds(10));
+                continue;
+            }
 
-			if (this->Resized)
-			{
-				this->irrDriver->OnResize(irr::core::dimension2du(this->Width, this->Height));
-				this->Resized = false;
-			}
+            if (this->Resized)
+            {
+                this->irrDriver->OnResize(irr::core::dimension2du(this->Width, this->Height));
+                this->Resized = false;
+            }
 
-			this->updateScene();
-			
-			this->irrDriver->beginScene();
+            this->updateScene();
 
-			this->irrSmgr->drawAll();
-			this->irrGuienv->drawAll();
+            this->irrDriver->beginScene();
 
-			if (Engine::Mode != EngineMode::EEngine)
-			{
-				irr::video::SColor white(255, 255, 255, 255);
-				this->irrGuienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->irrDriver->getFPS()), irr::core::recti(10, 10, 0, 0), white);
-				this->irrGuienv->getBuiltInFont()->draw(irr::core::stringw("Primitives: ") + irr::core::stringw(this->irrDriver->getPrimitiveCountDrawn()), irr::core::recti(10, 20, 0, 0), white);
-			}
+            this->irrSmgr->drawAll();
+            this->irrGuienv->drawAll();
 
-			this->irrDriver->endScene();
+            if (Engine::Mode != EngineMode::EEngine)
+            {
+                irr::video::SColor white(255, 255, 255, 255);
+                this->irrGuienv->getBuiltInFont()->draw(irr::core::stringw("FPS: ") + irr::core::stringw(this->irrDriver->getFPS()), irr::core::recti(10, 10, 0, 0), white);
+                this->irrGuienv->getBuiltInFont()->draw(irr::core::stringw("Primitives: ") + irr::core::stringw(this->irrDriver->getPrimitiveCountDrawn()), irr::core::recti(10, 20, 0, 0), white);
+            }
 
-			this_thread::sleep_for(chrono::milliseconds(1));
-		}
+            this->irrDriver->endScene();
 
-		this->irrDevice->closeDevice();
-		this->irrDevice->drop();
-	}
+            this_thread::sleep_for(chrono::milliseconds(1));
+        }
+
+        this->irrDriver->removeAllTextures();
+        this->irrDriver->removeAllHardwareBuffers();
+        this->irrDevice->closeDevice();
+        this->irrDevice->drop();
+    }
 
 }

@@ -29,7 +29,12 @@ namespace MCS.MainWindows
 
         public ObservableCollection<FindGridRow> Rows { get; private set; }
 
-        public string FindText { get; set; }
+        private string findText;
+        public string FindText
+        { 
+            get { return findText; }
+            set { findText = value; this.updateRows(); }
+        }
 
 
         public FindWindow(MSceneManager sceneManager)
@@ -39,10 +44,10 @@ namespace MCS.MainWindows
             if (sceneManager == null)
                 throw new ArgumentNullException("sceneManager");
 
-            this.Rows = new ObservableCollection<FindGridRow>();
-            this.FindText = string.Empty;
             this.DataContext = this;
             this.sceneManager = sceneManager;
+            this.Rows = new ObservableCollection<FindGridRow>();
+            this.FindText = string.Empty;
 
             this.sceneManager.Changed += sceneManager_Changed;
             MSelector.SelectionChanged += MSelector_SelectionChanged;

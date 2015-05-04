@@ -30,6 +30,7 @@ namespace MyEngine {
 			y = s1 * c2 * c3 + c1 * s2 * s3;
 			z = c1 * s2 * c3 - s1 * c2 * s3;
 			
+            if (w < 0.0001f) w = 0.0f;
 			this->normalize();
 		}
 

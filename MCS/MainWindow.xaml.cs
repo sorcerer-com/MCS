@@ -235,6 +235,7 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
+                    // TODO: import/export light settings
                     OpenFileDialog ofd = new OpenFileDialog();
                     ofd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                     ofd.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
@@ -271,6 +272,11 @@ namespace MCS
                             mse.Position = MPoint.Parse(xmlElement.GetAttribute("Position"));
                             mse.Rotation = MPoint.Parse(xmlElement.GetAttribute("Rotation"));
                             mse.Scale = MPoint.Parse(xmlElement.GetAttribute("Scale"));
+
+                            if (mse.Content == null)
+                                mse.Content = this.engine.ContentManager.GetElement(@"MPackage#Meshes\Primitives\Cube");
+                            if (mse.Material == null)
+                                mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
                         }
 
                         this.engine.SceneManager.AmbientLight = MColor.Parse(xmlRoot.GetAttribute("AmbientLight"));
@@ -560,22 +566,22 @@ namespace MCS
 
             // TODO: remove:
             MSceneElement mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
-            mse.Position = new MPoint(0, 0, 100);
-            mse.Rotation = new MPoint(20, 20, 0);
+            mse.Position = new MPoint(0, 0, -100);
+            mse.Rotation = new MPoint(-20, -20, 0);
             mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             for (int i = 0; i < 10; i++)
             {
                 mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");
-                mse.Position = new MPoint(50 + i * 50, 0, 100 + i * 10);
+                mse.Position = new MPoint(50 + i * 50, 0, -100 + i * 10);
                 mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             }
-            this.engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, 20, 0);
+            this.engine.SceneManager.ActiveCamera.Rotation = new MPoint(0, -20, 0);
             MLight light = this.engine.SceneManager.AddElement(ESceneElementType.Light, "light", 0) as MLight;
-            light.Position = new MPoint(15, 30, 100);
+            light.Position = new MPoint(15, 30, -100);
             light.Color = new MColor(1.0f, 0.1f, 0.1f);
             light.Intensity = 5000;
             light = this.engine.SceneManager.AddElement(ESceneElementType.Light, "light1", 0) as MLight;
-            light.Position = new MPoint(15, 30, 50);
+            light.Position = new MPoint(15, 30, -50);
             light.Color = new MColor(0.1f, 1.0f, 0.1f);
             light.Intensity = 500;
             this.engine.SceneManager.FogColor = new MColor(0.5, 0.5, 0.5);
@@ -621,9 +627,9 @@ namespace MCS
             // camera movement
             MCamera camera = this.engine.SceneManager.ActiveCamera;
             if (e.KeyCode == System.Windows.Forms.Keys.W && camera != null)
-                camera.Move(0, 0, 1);
-            else if (e.KeyCode == System.Windows.Forms.Keys.S && camera != null)
                 camera.Move(0, 0, -1);
+            else if (e.KeyCode == System.Windows.Forms.Keys.S && camera != null)
+                camera.Move(0, 0, 1);
             else if (e.KeyCode == System.Windows.Forms.Keys.A && camera != null)
                 camera.Move(-1, 0, 0);
             else if (e.KeyCode == System.Windows.Forms.Keys.D && camera != null)
@@ -683,8 +689,8 @@ namespace MCS
                 if (camera != null)
                 {
                     MPoint angle = camera.Rotation;
-                    angle.X -= dy / 2;
-                    angle.Y -= dx / 2;
+                    angle.X += dy / 2;
+                    angle.Y += dx / 2;
                     camera.Rotation = angle;
                 }
             }
@@ -696,7 +702,7 @@ namespace MCS
                     if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                         camera.Move(-dx / 2, dy / 2, 0);
                     else
-                        camera.Move(dx / 2, 0, -dy / 2);
+                        camera.Move(dx / 2, 0, dy / 2);
                 }
             }
             // transform object
@@ -730,7 +736,7 @@ namespace MCS
                         if (this.selectedCursor == ECursorType.Move)
                             mse.Position += delta;
                         else if (this.selectedCursor == ECursorType.Rotate)
-                            mse.Rotation += delta;
+                            mse.Rotation -= delta;
                         else if (this.selectedCursor == ECursorType.Scale)
                             mse.Scale += delta * 0.01;
                     }
@@ -779,7 +785,7 @@ namespace MCS
             }
             else if (this.engine.SceneManager.ActiveCamera != null) // move camera
             {
-                this.engine.SceneManager.ActiveCamera.Move(0, 0, e.Delta / 10);
+                this.engine.SceneManager.ActiveCamera.Move(0, 0, -e.Delta / 10);
                 this.OnPropertyChanged("SelectedElement");
             }
         }

@@ -509,13 +509,13 @@ namespace MyEngine {
 			this_thread::sleep_for(chrono::milliseconds(100));
 
 			// unload all unused content elements
-			if (Engine::Mode != EngineMode::EEditor)
+			if (Engine::Mode != EngineMode::EEditor && false)
 			{
 				lock lck(this->thread->mutex("content"));
 				vector<uint> forUnload;
 				for (const auto& pair : this->content)
 				{
-					if (pair.second.unique() && pair.second->IsLoaded)
+					if (pair.second.unique() && pair.second->IsLoaded) // TODO: it's always unique because there isn't refs in SceneElements
 					{
 						// check if element is in request
 						bool inRequest = false;
