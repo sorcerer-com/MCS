@@ -127,16 +127,16 @@ namespace MCS.Controls
                 NumberBox nb = new NumberBox();
                 if (type == typeof(uint))
                 {
-                    nb.Value = (uint)this.Object;
+                    nb.SetValueWithoutRaiseChanged((uint)this.Object);
                     nb.IsInteger = true;
                 }
                 else if (type == typeof(int))
                 {
-                    nb.Value = (int)this.Object;
+                    nb.SetValueWithoutRaiseChanged((int)this.Object);
                     nb.IsInteger = true;
                 }
                 else
-                    nb.Value = (double)this.Object;
+                    nb.SetValueWithoutRaiseChanged((double)this.Object);
                 nb.ToolTip = nb.Text;
                 nb.Changed += new RoutedEventHandler(value_Changed);
                 this.Children.Add(nb);
@@ -174,7 +174,7 @@ namespace MCS.Controls
                 Color c = Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 
                 NumberBox nb = new NumberBox();
-                nb.Value = color.R;
+                nb.SetValueWithoutRaiseChanged(color.R);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Background = new SolidColorBrush(c);
@@ -183,7 +183,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 0);
 
                 nb = new NumberBox();
-                nb.Value = color.G;
+                nb.SetValueWithoutRaiseChanged(color.G);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Background = new SolidColorBrush(c);
@@ -192,7 +192,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 1);
 
                 nb = new NumberBox();
-                nb.Value = color.B;
+                nb.SetValueWithoutRaiseChanged(color.B);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Background = new SolidColorBrush(c);
@@ -201,7 +201,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 2);
 
                 nb = new NumberBox();
-                nb.Value = color.A;
+                nb.SetValueWithoutRaiseChanged(color.A);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Background = new SolidColorBrush(c);
@@ -218,7 +218,7 @@ namespace MCS.Controls
                 MyEngine.MPoint point = (MyEngine.MPoint)this.Object;
 
                 NumberBox nb = new NumberBox();
-                nb.Value = point.X;
+                nb.SetValueWithoutRaiseChanged(point.X);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Changed += new RoutedEventHandler(value_Changed);
@@ -226,7 +226,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 0);
 
                 nb = new NumberBox();
-                nb.Value = point.Y;
+                nb.SetValueWithoutRaiseChanged(point.Y);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Changed += new RoutedEventHandler(value_Changed);
@@ -234,7 +234,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 1);
 
                 nb = new NumberBox();
-                nb.Value = point.Z;
+                nb.SetValueWithoutRaiseChanged(point.Z);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
                 nb.Changed += new RoutedEventHandler(value_Changed);
@@ -287,16 +287,9 @@ namespace MCS.Controls
             }
             else if (type.IsSubclassOf(typeof(System.Drawing.Image)))
             {
-                System.Drawing.Image img = this.Object as System.Drawing.Image;
-                System.IO.MemoryStream renderStream = new System.IO.MemoryStream();
-                img.Save(renderStream, System.Drawing.Imaging.ImageFormat.Bmp);
-                System.Windows.Media.Imaging.BitmapImage bitmapImage = new System.Windows.Media.Imaging.BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = renderStream;
-                bitmapImage.EndInit();
-
+                System.Drawing.Bitmap img = this.Object as System.Drawing.Bitmap;
                 Image image = new Image();
-                image.Source = bitmapImage;
+                image.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
                 image.ToolTip = this.Name;
                 this.Children.Add(image);
             }
@@ -330,11 +323,11 @@ namespace MCS.Controls
             {
                 NumberBox nb = this.Children[0] as NumberBox;
                 if (type == typeof(uint))
-                    nb.Value = (uint)this.Object;
+                    nb.SetValueWithoutRaiseChanged((uint)this.Object);
                 else if (type == typeof(int))
-                    nb.Value = (int)this.Object;
+                    nb.SetValueWithoutRaiseChanged((int)this.Object);
                 else
-                    nb.Value = (double)this.Object;
+                    nb.SetValueWithoutRaiseChanged((double)this.Object);
                 nb.ToolTip = nb.Text;
             }
             else if (type == typeof(bool))
@@ -357,19 +350,19 @@ namespace MCS.Controls
                 Color c = Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 
                 NumberBox nb = this.Children[0] as NumberBox;
-                nb.Value = color.R;
+                nb.SetValueWithoutRaiseChanged(color.R);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[1] as NumberBox;
-                nb.Value = color.G;
+                nb.SetValueWithoutRaiseChanged(color.G);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[2] as NumberBox;
-                nb.Value = color.B;
+                nb.SetValueWithoutRaiseChanged(color.B);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[3] as NumberBox;
-                nb.Value = color.A;
+                nb.SetValueWithoutRaiseChanged(color.A);
                 nb.ToolTip = nb.Text;
             }
             else if (type == typeof(MyEngine.MPoint))
@@ -377,15 +370,15 @@ namespace MCS.Controls
                 MyEngine.MPoint point = (MyEngine.MPoint)this.Object;
 
                 NumberBox nb = this.Children[0] as NumberBox;
-                nb.Value = point.X;
+                nb.SetValueWithoutRaiseChanged(point.X);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[1] as NumberBox;
-                nb.Value = point.Y;
+                nb.SetValueWithoutRaiseChanged(point.Y);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[2] as NumberBox;
-                nb.Value = point.Z;
+                nb.SetValueWithoutRaiseChanged(point.Z);
                 nb.ToolTip = nb.Text;
             }
             else if (type.GetInterface("IList") != null)

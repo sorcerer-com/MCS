@@ -46,10 +46,16 @@ namespace MyEngine {
 		{
 		}
 
+
 		void Move(double x, double y, double z)
 		{
 			this->camera->Move(Vector3(x, y, z));
-		}
+        }
+
+        void Rotate(double x, double y, double z)
+        {
+            this->camera->Rotate(Quaternion(Vector3(x, y, z)));
+        }
 
 		MPoint GetDirection()
 		{

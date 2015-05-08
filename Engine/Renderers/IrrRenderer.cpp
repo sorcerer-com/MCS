@@ -128,7 +128,7 @@ namespace MyEngine {
         if (camera)
         {
             irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->getActiveCamera();
-            irrCamera->setFOV(camera->FOV * (3.14159265f / 180.0f)); // from deg to rad
+            irrCamera->setFOV(camera->FOV * (3.14159265359f / 180.0f)); // from deg to rad
 
             // Change camera's coordinate system from left-hand to right-hand
             irr::core::matrix4 projMatrix;
@@ -214,7 +214,7 @@ namespace MyEngine {
         if (Engine::Mode == EngineMode::EEditor &&
             Selector::IsSelected(sceneElement->ID) &&
             sceneElement->Type != SceneElementType::ELight) // if scene element is selected
-            irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
+            irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX);
         else
             irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
         if (!sceneElement->Visible) // if scene element is invisible
@@ -234,7 +234,14 @@ namespace MyEngine {
             {
                 irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
                 irrMeshSceneNode->setMesh(irrMesh);
+
+                irr::scene::ITriangleSelector* irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrSceneNode);
+                irrSceneNode->setTriangleSelector(irrTriangleSelector);
+                irrTriangleSelector->drop();
             }
+
+            irr::scene::IShadowVolumeSceneNode* irrShadowSceneNode = (irr::scene::IShadowVolumeSceneNode*)*irrSceneNode->getChildren().begin();
+            irrShadowSceneNode->updateShadowVolumes();
         }
         else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
         {
@@ -252,6 +259,7 @@ namespace MyEngine {
             irrLight.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
             irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
             irrLightSceneNode->setLightData(irrLight);
+            irrLightSceneNode->setVisible(light->Visible);
 
             string lightTexture = light->Visible ? "LightOn" : "LightOff";
             Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
@@ -268,7 +276,7 @@ namespace MyEngine {
                     irrMaterial.setTexture(0, irrTexture);
 
                 if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
-                    irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX_ALL);
+                    irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX);
                 else
                     irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
                 if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
@@ -309,8 +317,8 @@ namespace MyEngine {
             irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
             irrMeshSceneNode->addShadowVolumeSceneNode();
 
-            // irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(mesh, irrSceneNode); // skip for some reason first object
-            irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
+            irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrSceneNode); // skip for some reason first object
+            //irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
         }
 
         // add triangle selector to be able to select it

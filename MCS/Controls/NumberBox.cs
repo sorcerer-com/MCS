@@ -64,6 +64,14 @@ namespace MCS.Controls
         }
 
 
+        private bool raiseChangedEvent;
+        public void SetValueWithoutRaiseChanged(double value)
+        {
+            this.raiseChangedEvent = false;
+            this.Value = value;
+            this.raiseChangedEvent = true;
+        }
+
         public event RoutedEventHandler Changed
         {
             add { AddHandler(ChangedEvent, value); }
@@ -75,6 +83,9 @@ namespace MCS.Controls
             double value = 0.0;
             if (double.TryParse(this.Text, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out value))
                 this.Value = value;
+
+            if (!raiseChangedEvent)
+                return;
 
             RoutedEventArgs args = new RoutedEventArgs(ChangedEvent, this);
             RaiseEvent(args);

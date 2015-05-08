@@ -13,24 +13,30 @@ namespace MyEngine {
 		Quaternion(double _x, double _y, double _z, double _w) { set(_x, _y, _z, _w); }
 		Quaternion(Vector3 eulerAngle)
 		{
-			eulerAngle *= 3.14159265f / 180.0f; // from deg to rad
+            eulerAngle *= 3.14159265359f / 180.0f; // from deg to rad
 
-			eulerAngle *= 0.5f;
-			float c1 = cosf(eulerAngle.y);
-			float s1 = sinf(eulerAngle.y);
-			float c2 = cosf(eulerAngle.z);
-			float s2 = sinf(eulerAngle.z);
-			float c3 = cosf(eulerAngle.x);
-			float s3 = sinf(eulerAngle.x);
-			float c1c2 = c1 * c2;
-			float s1s2 = s1 * s2;
+            float angle = eulerAngle.x * 0.5f;
+            const float sr = sinf(angle);
+            const float cr = cosf(angle);
 
-			w = c1c2 * c3 - s1s2 * s3;
-			x = c1c2 * s3 + s1s2 * c3;
-			y = s1 * c2 * c3 + c1 * s2 * s3;
-			z = c1 * s2 * c3 - s1 * c2 * s3;
-			
-            if (w < 0.0001f) w = 0.0f;
+            angle = eulerAngle.y * 0.5f;
+            const float sp = sinf(angle);
+            const float cp = cosf(angle);
+
+            angle = eulerAngle.z * 0.5f;
+            const float sy = sinf(angle);
+            const float cy = cosf(angle);
+
+            const float cpcy = cp * cy;
+            const float spcy = sp * cy;
+            const float cpsy = cp * sy;
+            const float spsy = sp * sy;
+
+            x = sr * cpcy - cr * spsy;
+            y = cr * spcy + sr * cpsy;
+            z = cr * cpsy - sr * spcy;
+            w = cr * cpcy + sr * spsy;
+
 			this->normalize();
 		}
 
@@ -88,30 +94,29 @@ namespace MyEngine {
 			float sqx = x * x;
 			float sqy = y * y;
 			float sqz = z * z;
-			float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
-			float test = x * y + z * w;
+            float test = 2.0f * (y * w - x * z);
 
-			Vector3 result;
-			if (test > 0.499f * unit) // singularity at north pole
-			{
-				result.y = 2.0f * atan2f(x, w);
-				result.z = 3.14159265f * 0.5f;
-				result.x = 0;
-			}
-			else if (test < -0.499f * unit) // singularity at south pole
-			{
-				result.y = -2.0f * atan2f(x, w);
-				result.z = -3.14159265f * 0.5f;
-				result.x = 0;
-			}
-			else
-			{
-				result.y = atan2f(2.0f * y * w - 2.0f * x * z, sqx - sqy - sqz + sqw);
-				result.z = asinf(2.0f * test / unit);
-				result.x = atan2f(2.0f * x * w - 2.0f * y * z, -sqx + sqy - sqz + sqw);
-			}
+            Vector3 result;
+            if (fabs(test - 1.0f) < 0.000001f) // equal to 1.0 with epsilon
+            {
+                result.z = -2.0f * atan2f(x, w);
+                result.x = 0.0f;
+                result.y = 3.14159265359f / 2.0f;
+            }
+            else if (fabs(test + 1.0f) < 0.000001f) // equal to -1.0 with epsilon
+            {
+                result.z = 2.0f * atan2f(x, w);
+                result.x = 0.0f;
+                result.y = 3.14159265359f / -2.0f;
+            }
+            else
+            {
+                result.z = atan2f(2.0f * (x * y + z * w), (sqx - sqy - sqz + sqw));
+                result.x = atan2f(2.0f * (y * z + x * w), (-sqx - sqy + sqz + sqw));
+                result.y = asinf(std::min(std::max(test, -1.0f), 1.0f));
+            }
 
-			result *= 180 / 3.14159265f; // from rad to deg
+            result *= 180.0f / 3.14159265359f; // from rad to deg
 			return result;
 		}
 
@@ -138,10 +143,10 @@ namespace MyEngine {
 	inline Quaternion operator *(const Quaternion& a, const Quaternion& b)
 	{
 		Quaternion q;
-		q.x = a.x * b.x - a.y * b.y - a.z * b.z - a.w * b.w;
-		q.y = a.x * b.y + a.y * b.x + a.z * b.w - a.w * b.z;
-		q.z = a.x * b.z - a.y * b.w + a.z * b.x + a.w * b.y;
-		q.w = a.x * b.w + a.y * b.z - a.z * b.y + a.w * b.x;
+        q.w = (b.w * a.w) - (b.x * a.x) - (b.y * a.y) - (b.z * a.z);
+        q.x = (b.w * a.x) + (b.x * a.w) + (b.y * a.z) - (b.z * a.y);
+        q.y = (b.w * a.y) + (b.y * a.w) + (b.z * a.x) - (b.x * a.z);
+        q.z = (b.w * a.z) + (b.z * a.w) + (b.x * a.y) - (b.y * a.x);
 		return q;
 	}
 

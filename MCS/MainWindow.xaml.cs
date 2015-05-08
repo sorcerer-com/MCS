@@ -182,6 +182,7 @@ namespace MCS
                         this.sceneSaved = true;
                         this.sceneFilePath = ofd.FileName;
                         this.updateTitle();
+                        this.OnPropertyChanged("SelectedElement");
                     }
                 });
             }
@@ -235,7 +236,6 @@ namespace MCS
             {
                 return new DelegateCommand((o) =>
                 {
-                    // TODO: import/export light settings
                     OpenFileDialog ofd = new OpenFileDialog();
                     ofd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                     ofd.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*";
@@ -265,7 +265,7 @@ namespace MCS
                             string content = string.Empty;
                             if (xmlElement.HasAttribute("Content"))
                                 content = xmlElement.GetAttribute("Content");
-                            MSceneElement mse = this.engine.SceneManager.AddElement(type, name, content);
+                            MSceneElement mse = this.engine.SceneManager.AddElement(type, name, content) ?? this.engine.SceneManager.GetElement(name);
                             if (xmlElement.HasAttribute("Material"))
                                 mse.Material = this.engine.ContentManager.GetElement(xmlElement.GetAttribute("Material"));
                             mse.Visible = bool.Parse(xmlElement.GetAttribute("Visible"));
@@ -277,6 +277,20 @@ namespace MCS
                                 mse.Content = this.engine.ContentManager.GetElement(@"MPackage#Meshes\Primitives\Cube");
                             if (mse.Material == null)
                                 mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
+
+                            if (xmlElement.Name == "Light")
+                            {
+                                MLight light = mse as MLight;
+                                ELightType ltype;
+                                if (Enum.TryParse(xmlElement.GetAttribute("LType"), out ltype))
+                                    light.LType = ltype;
+                                light.Radius = double.Parse(xmlElement.GetAttribute("Radius"));
+                                light.Color = MColor.Parse(xmlElement.GetAttribute("Color"));
+                                light.SpotExponent = double.Parse(xmlElement.GetAttribute("SpotExponent"));
+                                light.SpotCutoffInner = double.Parse(xmlElement.GetAttribute("SpotCutoffInner"));
+                                light.SpotCutoffOuter = double.Parse(xmlElement.GetAttribute("SpotCutoffOuter"));
+                                light.Intensity = double.Parse(xmlElement.GetAttribute("Intensity"));
+                            }
                         }
 
                         this.engine.SceneManager.AmbientLight = MColor.Parse(xmlRoot.GetAttribute("AmbientLight"));
@@ -324,7 +338,8 @@ namespace MCS
                             if (mse.Type == ESceneElementType.SystemObject)
                                 continue;
 
-                            System.Xml.XmlElement xmlElement = xmlDoc.CreateElement("SceneElement");
+                            string type = mse.Type == ESceneElementType.Light ? "Light" : "SceneElement";
+                            System.Xml.XmlElement xmlElement = xmlDoc.CreateElement(type);
                             xmlElement.SetAttribute("Name", mse.Name);
                             xmlElement.SetAttribute("Type", mse.Type.ToString());
                             if (mse.Content != null)
@@ -335,6 +350,19 @@ namespace MCS
                             xmlElement.SetAttribute("Position", mse.Position.ToString());
                             xmlElement.SetAttribute("Rotation", mse.Rotation.ToString());
                             xmlElement.SetAttribute("Scale", mse.Scale.ToString());
+
+                            if (mse.Type == ESceneElementType.Light)
+                            {
+                                MLight light = mse as MLight;
+                                xmlElement.SetAttribute("LType", light.LType.ToString());
+                                xmlElement.SetAttribute("Radius", light.Radius.ToString());
+                                xmlElement.SetAttribute("Color", light.Color.ToString());
+                                xmlElement.SetAttribute("SpotExponent", light.SpotExponent.ToString());
+                                xmlElement.SetAttribute("SpotCutoffInner", light.SpotCutoffInner.ToString());
+                                xmlElement.SetAttribute("SpotCutoffOuter", light.SpotCutoffOuter.ToString());
+                                xmlElement.SetAttribute("Intensity", light.Intensity.ToString());
+                            }
+
                             xmlRoot.AppendChild(xmlElement);
                         }
 
@@ -687,12 +715,7 @@ namespace MCS
             {
                 MCamera camera =  this.engine.SceneManager.ActiveCamera;
                 if (camera != null)
-                {
-                    MPoint angle = camera.Rotation;
-                    angle.X += dy / 2;
-                    angle.Y += dx / 2;
-                    camera.Rotation = angle;
-                }
+                    camera.Rotate(dy / 2, dx / 2, 0);
             }
             else if (e.Button == System.Windows.Forms.MouseButtons.Left) // move camera
             {
@@ -721,7 +744,7 @@ namespace MCS
 
                 MPoint delta = new MPoint((int)-dx / 2, (int)dy / 2, 0);
                 if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
-                    delta = new MPoint((int)-dx / 2, 0, (int)dy / 2);
+                    delta = new MPoint((int)-dx / 2, 0, (int)-dy / 2);
                 if (this.selectedCursor == ECursorType.Rotate) 
                     delta.RotateBy(new MPoint(0.0, 0.0, -90.0));
                 delta.RotateBy(rot);
@@ -749,7 +772,8 @@ namespace MCS
 
         void render_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (this.engine.SceneManager.ActiveCamera != null && this.SelectedElement.Equals(this.engine.SceneManager.ActiveCamera))
+            if (this.engine.SceneManager.ActiveCamera != null && this.SelectedElement != null &&
+                this.SelectedElement.Equals(this.engine.SceneManager.ActiveCamera))
             {
                 this.OnPropertyChanged("SelectedElement");
             }

@@ -39,7 +39,13 @@ namespace MyEngine {
 	{
 		Vector3 vv = this->Rotation * v;
 		this->Position += vv;
-	}
+    }
+
+    void Camera::Rotate(const Quaternion& q)
+    {
+        this->Rotation = q * this->Rotation;
+        this->Rotation.normalize();
+    }
 
 	Vector3 Camera::GetDirection()
 	{
