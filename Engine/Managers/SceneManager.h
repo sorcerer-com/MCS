@@ -7,7 +7,8 @@
 
 namespace MyEngine {
 
-	class Engine;
+    class Engine;
+    struct Thread;
 	enum SceneElementType;
 	class SceneElement;
 	class Camera;
@@ -27,7 +28,9 @@ namespace MyEngine {
 
 		Engine* Owner;
 
-	private:
+    private:
+        shared_ptr<Thread> thread;
+
 		SceneMapType sceneElements;
 		LayerVectorType layers;
 

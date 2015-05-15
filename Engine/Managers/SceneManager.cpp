@@ -6,6 +6,7 @@
 #include "..\Engine.h"
 #include "..\Utils\Config.h"
 #include "..\Utils\Utils.h"
+#include "..\Utils\Thread.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Scene Elements\SceneElement.h"
 #include "..\Scene Elements\Camera.h"
@@ -23,14 +24,19 @@ namespace MyEngine {
 		if (!owner)
 			throw "ArgumentNullException: owner";
 
-		this->Owner = owner;
+        this->Owner = owner;
+
+        this->thread = make_shared<Thread>();
+        this->thread->defMutex("content", true);
 
 		this->New();
 	}
 
 
 	void SceneManager::New()
-	{
+    {
+        lock lck(this->thread->mutex("content"));
+
 		Engine::Log(LogType::ELog, "Scene", "New scene");
 		this->sceneElements.clear();
 		this->layers.clear();
@@ -42,7 +48,9 @@ namespace MyEngine {
 	}
 
 	bool SceneManager::Save(const string& filePath)
-	{
+    {
+        lock lck(this->thread->mutex("content"));
+
 		// Backup
 		if (Engine::Mode != EngineMode::EEngine)
 		{
@@ -102,7 +110,8 @@ namespace MyEngine {
 
 	bool SceneManager::Load(const string& filePath)
 	{
-		this->New();
+        this->New();
+        lock lck(this->thread->mutex("content"));
 
 		ifstream ifile(filePath, ios_base::in | ios_base::binary);
 		if (!ifile || !ifile.is_open())
@@ -231,6 +240,7 @@ namespace MyEngine {
 			return false;
 		}
 
+        lock lck(this->thread->mutex("content"));
 		this->sceneElements[element->ID] = SceneElementPtr(element);
 		Engine::Log(LogType::ELog, "Scene", "Add scene element '" + element->Name + "'#" + to_string(element->Version) + " (" + to_string(element->ID) + ")");
 
@@ -261,6 +271,7 @@ namespace MyEngine {
 			return false;
 		}
 
+        lock lck(this->thread->mutex("content"));
 		//this->ContentManager.ClearInstances(id); // delete all used instaces for this scene element
 		this->sceneElements.erase(id);
 
@@ -292,7 +303,7 @@ namespace MyEngine {
 	}
 
 	vector<SceneElementPtr> SceneManager::GetElements() const
-	{
+    {
 		vector<SceneElementPtr> result;
 		for (const auto& pair : this->sceneElements)
 			result.push_back(pair.second);
@@ -310,6 +321,7 @@ namespace MyEngine {
 			return false;
 		}
 
+        lock lck(this->thread->mutex("content"));
 		this->layers.push_back(layer);
 		Engine::Log(LogType::ELog, "Scene", "Create layer '" + layer + "'");
 		return true;
@@ -334,6 +346,7 @@ namespace MyEngine {
 			return false;
 		}
 
+        lock lck(this->thread->mutex("content"));
 		for (const auto& pair : this->sceneElements)
 			if (pair.second->Layer == oldLayer)
 				pair.second->Layer = newLayer;
@@ -363,6 +376,7 @@ namespace MyEngine {
 			return false;
 		}
 
+        lock lck(this->thread->mutex("content"));
 		for (const auto& pair : this->sceneElements)
 			if (pair.second->Layer == layer)
 				pair.second->Layer = DEFAULT_LAYER_NAME;
@@ -375,7 +389,7 @@ namespace MyEngine {
 	}
 
 	vector<string> SceneManager::GetLayers() const
-	{
+    {
 		vector<string> result;
 		for (const auto& pair : this->layers)
 			result.push_back(pair);

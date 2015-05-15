@@ -206,132 +206,151 @@ namespace MyEngine {
         irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
         const Vector3& scl = sceneElement->Scale;
         irrSceneNode->setScale(irr::core::vector3df(scl.x, scl.y, scl.z));
+        irrSceneNode->updateAbsolutePosition();
 
-        // Set Material
-        irr::video::SMaterial& irrMaterial = irrSceneNode->getMaterial(0);
-        this->updateIrrMaterial(sceneElement, irrMaterial);
-
-        if (Engine::Mode == EngineMode::EEditor &&
-            Selector::IsSelected(sceneElement->ID) &&
-            sceneElement->Type != SceneElementType::ELight) // if scene element is selected
-            irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX);
-        else
-            irrSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
-        if (!sceneElement->Visible) // if scene element is invisible
-            irrMaterial.DiffuseColor.setAlpha(128);
-        if (irrSceneNode->isDebugObject())
-            irrMaterial.Lighting = false;
-
-        // Set Content
-        irr::scene::ESCENE_NODE_TYPE type = irrSceneNode->getType();
-        if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
+        const auto irrChildrenSceneNode = irrSceneNode->getChildren();
+        for (const auto& irrChildSceneNode : irrChildrenSceneNode)
         {
-            if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
-                this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+            irr::scene::ESCENE_NODE_TYPE type = irrChildSceneNode->getType();
 
-            irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-            if (this->updateIrrMesh(sceneElement, irrMesh))
+            // Selection
+            if (Engine::Mode == EngineMode::EEditor &&
+                Selector::IsSelected(sceneElement->ID) &&
+                type != irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT) // if scene element is selected
+                irrChildSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX);
+            else
+                irrChildSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
+
+            if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_MESH || type == irr::scene::ESCENE_NODE_TYPE::ESNT_OCTREE)
             {
-                irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
-                irrMeshSceneNode->setMesh(irrMesh);
+                if (sceneElement->ContentID == INVALID_ID &&
+                    sceneElement->Type == SceneElementType::ELight) // light elements is possible to haven't content
+                {
+                    irrChildSceneNode->setVisible(false);
+                    continue;
+                }
+                else
+                    irrChildSceneNode->setVisible(true);
 
-                irr::scene::ITriangleSelector* irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrSceneNode);
-                irrSceneNode->setTriangleSelector(irrTriangleSelector);
-                irrTriangleSelector->drop();
+                // Set Material
+                irr::video::SMaterial& irrMaterial = irrChildSceneNode->getMaterial(0);
+                this->updateIrrMaterial(sceneElement, irrMaterial);
+
+                if (!sceneElement->Visible) // if scene element is invisible
+                    irrMaterial.DiffuseColor.setAlpha(128);
+                if (irrChildSceneNode->isDebugObject() || sceneElement->Type == SceneElementType::ELight)
+                    irrMaterial.Lighting = false;
+
+                // Set Content
+                if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+                    this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+
+                irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
+                if (this->updateIrrMesh(sceneElement, irrMesh) || sceneElement->Type == SceneElementType::ELight)
+                {
+                    irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrChildSceneNode;
+                    irrMeshSceneNode->setMesh(irrMesh);
+                    
+                    irr::scene::ITriangleSelector* irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrChildSceneNode);
+                    irrChildSceneNode->setTriangleSelector(irrTriangleSelector);
+                    irrTriangleSelector->drop();
+                }
+
+                if (irrChildSceneNode->getChildren().size() > 0) // update shadow
+                {
+                    irr::scene::IShadowVolumeSceneNode* irrShadowSceneNode = (irr::scene::IShadowVolumeSceneNode*)(*irrChildSceneNode->getChildren().begin());
+                    if (irrShadowSceneNode)
+                        irrShadowSceneNode->updateShadowVolumes();
+                }
             }
-
-            irr::scene::IShadowVolumeSceneNode* irrShadowSceneNode = (irr::scene::IShadowVolumeSceneNode*)*irrSceneNode->getChildren().begin();
-            irrShadowSceneNode->updateShadowVolumes();
-        }
-        else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
-        {
-            // TODO: there is a shadow if the light is off
-            Light* light = (Light*)sceneElement.get();
-
-            irr::scene::ILightSceneNode* irrLightSceneNode = (irr::scene::ILightSceneNode*) irrSceneNode;
-            irr::video::SLight irrLight = irrLightSceneNode->getLightData();
-            irrLight.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
-            irrLight.DiffuseColor = light->Visible ? irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a) : irr::video::SColorf();
-            irrLight.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
-            irrLight.Falloff = light->SpotExponent;
-            irrLight.InnerCone = light->SpotCutoffInner;
-            irrLight.OuterCone = light->SpotCutoffOuter;
-            irrLight.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
-            irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
-            irrLightSceneNode->setLightData(irrLight);
-            irrLightSceneNode->setVisible(light->Visible);
-
-            string lightTexture = light->Visible ? "LightOn" : "LightOff";
-            Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
-
-            if (texture != NULL)
+            else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT && sceneElement->Type == SceneElementType::ELight)
             {
-                irr::scene::IBillboardSceneNode* irrBillboardSceneNode = (irr::scene::IBillboardSceneNode*)(*irrLightSceneNode->getChildren().begin());
-                irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(texture->ID).c_str()));
-                irr::video::SMaterial& irrMaterial = irrBillboardSceneNode->getMaterial(0);
-                irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
-                irrMaterial.Lighting = false;
-                if (this->updateIrrTexture(texture, irrTexture) ||
-                    irrMaterial.getTexture(0) != irrTexture)
-                    irrMaterial.setTexture(0, irrTexture);
+                Light* light = (Light*)sceneElement.get();
 
-                if (Selector::IsSelected(sceneElement->ID)) // if scene element is selected
-                    irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_BBOX);
-                else
-                    irrBillboardSceneNode->setDebugDataVisible(irr::scene::E_DEBUG_SCENE_TYPE::EDS_OFF);
-                if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
-                    irrBillboardSceneNode->setVisible(false);
-                else
-                    irrBillboardSceneNode->setVisible(true);
+                irr::scene::ILightSceneNode* irrLightSceneNode = (irr::scene::ILightSceneNode*) irrChildSceneNode;
+                irrLightSceneNode->setRotation(irr::core::vector3df(90, 0, 0));
+                irr::video::SLight irrLightData = irrLightSceneNode->getLightData();
+                irrLightData.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
+                irrLightData.DiffuseColor = light->Visible ? irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a) : irr::video::SColorf();
+                irrLightData.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
+                irrLightData.Falloff = light->SpotExponent;
+                irrLightData.InnerCone = light->SpotCutoffInner;
+                irrLightData.OuterCone = light->SpotCutoffOuter;
+                irrLightData.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
+                irrLightSceneNode->setLightData(irrLightData);
+                irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
+                irrLightSceneNode->setVisible(light->Visible);
             }
+            else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_BILLBOARD && sceneElement->Type == SceneElementType::ELight)
+            {
+                Light* light = (Light*)sceneElement.get();
+                string lightTexture = light->Visible ? "LightOn" : "LightOff";
+                Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
+
+                if (texture != NULL)
+                {
+                    irr::scene::IBillboardSceneNode* irrBillboardSceneNode = (irr::scene::IBillboardSceneNode*) irrChildSceneNode;
+                    irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(texture->ID).c_str()));
+                    irr::video::SMaterial& irrMaterial = irrBillboardSceneNode->getMaterial(0);
+                    irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
+                    irrMaterial.Lighting = false;
+                    if (this->updateIrrTexture(texture, irrTexture) ||
+                        irrMaterial.getTexture(0) != irrTexture)
+                        irrMaterial.setTexture(0, irrTexture);
+
+                    irrBillboardSceneNode->setScale(irr::core::vector3df(1.0f / scl.x, 1.0f / scl.y, 1.0f / scl.z)); // reset scale of the billbaord
+                    if (Engine::Mode != EngineMode::EEditor) // in Non-Editor mode
+                        irrBillboardSceneNode->setVisible(false);
+                    else
+                        irrBillboardSceneNode->setVisible(true);
+                }
+            }
+            irrChildSceneNode->updateAbsolutePosition();
         }
     }
 
 
     irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
     {
-        irr::scene::ISceneNode* irrSceneNode = NULL;
-        irr::scene::ITriangleSelector* irrTriangleSelector = NULL;
+        irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->addEmptySceneNode(NULL, sceneElement->ID);
+
+        if (sceneElement->Type == SceneElementType::ECamera ||
+            sceneElement->Type == SceneElementType::ESystemObject)
+            irrSceneNode->setIsDebugObject(true);
+
+        if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
+            this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
+
+        irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
+        //irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh); // some objects disappears
+        irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addMeshSceneNode(irrMesh, irrSceneNode, sceneElement->ID);
+        irr::scene::IShadowVolumeSceneNode* irrShadowVolumeSceneNode = irrMeshSceneNode->addShadowVolumeSceneNode(); // shadow
+
+        auto irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrMeshSceneNode); // skip for some reason first object
+        irrMeshSceneNode->setTriangleSelector(irrTriangleSelector);
+        irrTriangleSelector->drop();
+
 
         if (sceneElement->Type == SceneElementType::ELight)
         {
-            // TODO: set Light to be able to have a content(mesh)
-            irrSceneNode = this->irrSmgr->addLightSceneNode();
+            irr::scene::ILightSceneNode* irrLightSceneNode = this->irrSmgr->addLightSceneNode(irrSceneNode);
+            irrLightSceneNode->setID(sceneElement->ID);
 
-            irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(5.0f, 5.0f));
+            irr::scene::IBillboardSceneNode* irrBillboardSceneNode = this->irrSmgr->addBillboardSceneNode(irrSceneNode, irr::core::dimension2df(3.0f, 3.0f));
+            irrBillboardSceneNode->setID(sceneElement->ID);
+            irrBillboardSceneNode->setIsDebugObject(true);
 
-            irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
-        }
-        else
-        {
-            if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
-                this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
-
-            irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-            irrSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh);
-            if (sceneElement->Type == SceneElementType::ECamera ||
-                sceneElement->Type == SceneElementType::ESystemObject)
-                irrSceneNode->setIsDebugObject(true);
-
-            // shadow
-            irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrSceneNode;
-            irrMeshSceneNode->addShadowVolumeSceneNode();
-
-            irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrSceneNode); // skip for some reason first object
-            //irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrSceneNode);
-        }
-
-        // add triangle selector to be able to select it
-        if (irrTriangleSelector)
-        {
-            irrSceneNode->setTriangleSelector(irrTriangleSelector);
+            auto irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
+            irrBillboardSceneNode->setTriangleSelector(irrTriangleSelector);
             irrTriangleSelector->drop();
+
+            // remove shadow
+            irrShadowVolumeSceneNode->remove();
         }
 
-        irrSceneNode->setID(sceneElement->ID);
         return irrSceneNode;
     }
-
+        
     bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
     {
         ContentElementPtr contentElement = NULL;
@@ -404,7 +423,7 @@ namespace MyEngine {
         if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
         {
             if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
-                return true;
+                return false;
 
             Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
                 to_string(sceneElement->MaterialID) + ")");
@@ -426,7 +445,7 @@ namespace MyEngine {
         irrMaterial.NormalizeNormals = true;
         irrMaterial.Lighting = true;
         irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
-        irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it; it doesn't allow shadows?
+        irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it; it doesn't allow shadows?; set to parallax to enable per-pixel lighting
 
         if (material->TextureID != INVALID_ID)
         {
@@ -447,7 +466,7 @@ namespace MyEngine {
         if (!contentElement || contentElement->Type != ContentElementType::ETexture)
         {
             if (irrTexture != NULL)
-                return true;
+                return false;
 
             Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid texture (" +
                 to_string(material->TextureID) + ")");

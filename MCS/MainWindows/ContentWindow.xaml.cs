@@ -484,6 +484,8 @@ namespace MCS.MainWindows
 
             this.filter = string.Empty;
             this.selectedTreeItem = null;
+
+            MSelector.Clear(MSelector.ESelectionType.ContentElement);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
