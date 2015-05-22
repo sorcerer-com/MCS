@@ -41,12 +41,15 @@ namespace MyEngine {
 	
 	class IrrRenderer : public Renderer
 	{
+        friend class IrrShaderCallBack;
+
 	private:
 		void* windowHandle;
 		irr::IrrlichtDevice* irrDevice;
 		irr::video::IVideoDriver* irrDriver;
 		irr::scene::ISceneManager* irrSmgr;
 		irr::gui::IGUIEnvironment* irrGuienv;
+        int irrMaterialType;
 
 		map<uint, irr::scene::SMesh*> meshesCache;
 
@@ -69,7 +72,7 @@ namespace MyEngine {
 		irr::scene::ISceneNode* createIrrSceneNode(const SceneElementPtr sceneElement);
 		bool updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh);
 		bool updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial);
-		bool updateIrrTexture(const Material* material, irr::video::ITexture*& irrTexture);
+		bool updateIrrTexture(const Material* material, uint textureID, irr::video::ITexture*& irrTexture);
 		bool updateIrrTexture(Texture* texture, irr::video::ITexture*& irrTexture);
 
 		void render();

@@ -25,13 +25,75 @@ namespace MyEngine {
 
     irr::video::SColor IrrRenderer::irrInvalidColor = irr::video::SColor(255, 255, 0, 255);
 
+    class IrrShaderCallBack : public irr::video::IShaderConstantSetCallBack
+    {
+    private:
+        IrrRenderer* irrRenderer;
+        int lightsCount;
+        int textureSet;
+        const int textureID = 0;
+        const int bumpmapID = 1;
+
+    public:
+        IrrShaderCallBack(IrrRenderer* irrRenderer)
+        {
+            this->irrRenderer = irrRenderer;
+            this->lightsCount = 0;
+            this->textureSet = 0;
+        }
+
+        IrrShaderCallBack& operator=(const IrrShaderCallBack&) { return *this; }
+
+        virtual void OnSetMaterial(const irr::video::SMaterial& material)
+        {
+            if (material.Lighting)
+            {
+                irr::core::array<irr::scene::ISceneNode*> lights;
+                this->irrRenderer->irrSmgr->getSceneNodesFromType(irr::scene::ESCENE_NODE_TYPE::ESNT_LIGHT, lights);
+                for (int i = 0; i < (int)lights.size(); i++)
+                {
+                    if (!lights[i]->isVisible())
+                    {
+                        lights.erase(i);
+                        i--;
+                    }
+                }
+                this->lightsCount = lights.size();
+            }
+            else
+                this->lightsCount = -1;
+
+            this->textureSet = 0;
+            for (int i = 0; i < irr::video::MATERIAL_MAX_TEXTURES; i++)
+            {
+                if (material.getTexture(i) != NULL)
+                    this->textureSet |= 1 << i; // 2 pow i
+            }
+        }
+
+        virtual void OnSetConstants(irr::video::IMaterialRendererServices* services, irr::s32)
+        {
+            services->setPixelShaderConstant("lightsCount", &this->lightsCount, 1);
+
+            services->setPixelShaderConstant("textureSet", &this->textureSet, 1);
+            
+            services->setPixelShaderConstant("texture", &this->textureID, 1);
+            services->setPixelShaderConstant("bumpmap", &this->bumpmapID, 1);
+        }
+    };
+    
 
     IrrRenderer::IrrRenderer(Engine* owner) :
         Renderer(owner, EIrrRenderer)
     {
+        this->windowHandle = NULL;
+
         this->irrDevice = NULL;
         this->irrDriver = NULL;
         this->irrSmgr = NULL;
+        this->irrGuienv = NULL;
+
+        this->irrMaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
     }
 
     IrrRenderer::~IrrRenderer()
@@ -86,6 +148,7 @@ namespace MyEngine {
 
     bool IrrRenderer::init()
     {
+        // Setup Irrlicht environment
         irr::SIrrlichtCreationParameters irrParam;
         irrParam.AntiAlias = true;
         irrParam.DriverType = irr::video::E_DRIVER_TYPE::EDT_OPENGL;
@@ -101,16 +164,38 @@ namespace MyEngine {
             return false;
         }
 
+        // Get managers
         this->irrDriver = this->irrDevice->getVideoDriver();
         this->irrSmgr = this->irrDevice->getSceneManager();
         this->irrGuienv = this->irrDevice->getGUIEnvironment();
 
+        // Set options
         this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_OPTIMIZED_FOR_QUALITY, true);
         this->irrDriver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_CREATE_MIP_MAPS, true);
 
         this->irrSmgr->setShadowColor(irr::video::SColor(150, 0, 0, 0));
         this->irrSmgr->getParameters()->setAttribute(irr::scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
 
+        // Set Shaders
+        if (this->irrDriver->queryFeature(irr::video::E_VIDEO_DRIVER_FEATURE::EVDF_VERTEX_SHADER_1_1) &&
+            this->irrDriver->queryFeature(irr::video::E_VIDEO_DRIVER_FEATURE::EVDF_ARB_VERTEX_PROGRAM_1) &&
+            this->irrDriver->queryFeature(irr::video::E_VIDEO_DRIVER_FEATURE::EVDF_PIXEL_SHADER_1_1) &&
+            this->irrDriver->queryFeature(irr::video::E_VIDEO_DRIVER_FEATURE::EVDF_ARB_FRAGMENT_PROGRAM_1))
+        {
+            irr::video::IGPUProgrammingServices* irrGPU = this->irrDriver->getGPUProgrammingServices();
+            if (irrGPU)
+            {
+                IrrShaderCallBack* irrShaderCallback = new IrrShaderCallBack(this);
+                this->irrMaterialType = irrGPU->addHighLevelShaderMaterialFromFiles(
+                    "shader.vert", "main", irr::video::E_VERTEX_SHADER_TYPE::EVST_VS_1_1,
+                    "shader.frag", "main", irr::video::E_PIXEL_SHADER_TYPE::EPST_PS_1_1,
+                    irrShaderCallback, irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL);
+                // TODO: may be geometry shader
+                irrShaderCallback->drop();
+            }
+        }
+
+        // Setup irrCamera scene node
         irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->addCameraSceneNode();
         irrCamera->bindTargetAndRotation(true);
         irrCamera->setNearValue(0.1f);
@@ -324,7 +409,7 @@ namespace MyEngine {
         irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
         //irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh); // some objects disappears
         irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addMeshSceneNode(irrMesh, irrSceneNode, sceneElement->ID);
-        irr::scene::IShadowVolumeSceneNode* irrShadowVolumeSceneNode = irrMeshSceneNode->addShadowVolumeSceneNode(); // shadow
+        irr::scene::IShadowVolumeSceneNode* irrShadowVolumeSceneNode = NULL;// TODO: doesn't work with transparency irrMeshSceneNode->addShadowVolumeSceneNode(); // shadow 
 
         auto irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrMeshSceneNode); // skip for some reason first object
         irrMeshSceneNode->setTriangleSelector(irrTriangleSelector);
@@ -345,7 +430,8 @@ namespace MyEngine {
             irrTriangleSelector->drop();
 
             // remove shadow
-            irrShadowVolumeSceneNode->remove();
+            if (irrShadowVolumeSceneNode)
+                irrShadowVolumeSceneNode->remove();
         }
 
         return irrSceneNode;
@@ -445,33 +531,43 @@ namespace MyEngine {
         irrMaterial.NormalizeNormals = true;
         irrMaterial.Lighting = true;
         irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
-        irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL; // TODO: if has normal map change it; it doesn't allow shadows?; set to parallax to enable per-pixel lighting
+        irrMaterial.MaterialType = (irr::video::E_MATERIAL_TYPE)irrMaterialType; // custom (shader) material
 
         if (material->TextureID != INVALID_ID)
         {
             irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->TextureID).c_str()));
-            if (this->updateIrrTexture(material, irrTexture) ||
+            if (this->updateIrrTexture(material, material->TextureID, irrTexture) ||
                 irrMaterial.getTexture(0) != irrTexture)
                 irrMaterial.setTexture(0, irrTexture);
+        }
+        if (material->BumpmapID != INVALID_ID)
+        {
+            irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->BumpmapID).c_str()));
+            if (this->updateIrrTexture(material, material->BumpmapID, irrTexture) ||
+                irrMaterial.getTexture(1) != irrTexture)
+                irrMaterial.setTexture(1, irrTexture);
         }
 
         return true;
     }
 
-    bool IrrRenderer::updateIrrTexture(const Material* material, irr::video::ITexture*& irrTexture)
+    bool IrrRenderer::updateIrrTexture(const Material* material, uint textureID, irr::video::ITexture*& irrTexture)
     {
         ContentElementPtr contentElement = NULL;
-        if (this->Owner->ContentManager->ContainElement(material->TextureID))
-            contentElement = this->Owner->ContentManager->GetElement(material->TextureID, true, true);
+        if (this->Owner->ContentManager->ContainElement(textureID))
+            contentElement = this->Owner->ContentManager->GetElement(textureID, true, true);
         if (!contentElement || contentElement->Type != ContentElementType::ETexture)
         {
             if (irrTexture != NULL)
                 return false;
 
-            Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid texture (" +
-                to_string(material->TextureID) + ")");
+            string type = "";
+            if (material->TextureID == textureID) type = "texture";
+            else if (material->BumpmapID == textureID) type = "bumpmap";
+            Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid " + type + " (" +
+                to_string(textureID) + ")");
 
-            irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(material->TextureID).c_str()));
+            irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(textureID).c_str()));
             return true;
         }
         Texture* texture = (Texture*)contentElement.get();

@@ -13,7 +13,7 @@ namespace MyEngine {
 		float FOV;
 		float FocalPlaneDist;
 		float FNumber;
-		// TODO: exposure?
+		// TODO: exposure, near plane?
 
 	public:
 		Camera(SceneManager* owner, const string& name, uint contentID);
