@@ -52,7 +52,13 @@ namespace MyEngine {
 		{
 			double get();
 			void set(double value);
-		}
+        }
+
+        property double TimeOfDay
+        {
+            double get();
+            void set(double value);
+        }
 
 
 		delegate void ChangedEventHandler(MSceneManager^ sender, MSceneElement^ element);

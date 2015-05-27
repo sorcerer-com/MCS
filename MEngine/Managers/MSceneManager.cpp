@@ -86,7 +86,18 @@ namespace MyEngine {
 	{
 		this->sceneManager->FogDensity = (float)value;
 		OnChanged(nullptr);
-	}
+    }
+
+    double MSceneManager::TimeOfDay::get()
+    {
+        return this->sceneManager->TimeOfDay;
+    }
+
+    void MSceneManager::TimeOfDay::set(double value)
+    {
+        this->sceneManager->SetTimeOfDay((float)value);
+        OnChanged(nullptr);
+    }
 
 
 	MSceneManager::MSceneManager(SceneManager* sceneManager)

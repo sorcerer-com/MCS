@@ -24,7 +24,8 @@ namespace MyEngine {
 		Camera* ActiveCamera;
 		Color4 AmbientLight;
 		Color4 FogColor;
-		float FogDensity;
+        float FogDensity;
+        float TimeOfDay;
 
 		Engine* Owner;
 
@@ -33,7 +34,7 @@ namespace MyEngine {
 
 		SceneMapType sceneElements;
 		LayerVectorType layers;
-
+        
 	public:
 		SceneManager(Engine* owner);
 
@@ -50,6 +51,8 @@ namespace MyEngine {
 		SceneElementPtr GetElement(uint id);
 		SceneElementPtr GetElement(const string& name);
 		vector<SceneElementPtr> GetElements() const;
+
+        bool SetTimeOfDay(float hour);
 
 		bool CreateLayer(const string& layer);
 		bool RenameLayer(const string& oldLayer, const string& newLayer);

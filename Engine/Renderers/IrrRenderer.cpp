@@ -213,8 +213,8 @@ namespace MyEngine {
         if (camera)
         {
             irr::scene::ICameraSceneNode* irrCamera = this->irrSmgr->getActiveCamera();
-            irrCamera->setFOV(camera->FOV * (3.14159265359f / 180.0f)); // from deg to rad
-
+            irrCamera->setFOV(camera->FOV * (irr::core::PI / 180.0f)); // from deg to rad
+            
             // Change camera's coordinate system from left-hand to right-hand
             irr::core::matrix4 projMatrix;
             projMatrix.buildProjectionMatrixPerspectiveFovRH(irrCamera->getFOV(), irrCamera->getAspectRatio(), irrCamera->getNearValue(), irrCamera->getFarValue());
@@ -331,7 +331,7 @@ namespace MyEngine {
                     this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
 
                 irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-                if (this->updateIrrMesh(sceneElement, irrMesh) || sceneElement->Type == SceneElementType::ELight)
+                if (this->updateIrrMesh(sceneElement, irrMesh))
                 {
                     irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrChildSceneNode;
                     irrMeshSceneNode->setMesh(irrMesh);
@@ -356,7 +356,7 @@ namespace MyEngine {
                 irrLightSceneNode->setRotation(irr::core::vector3df(90, 0, 0));
                 irr::video::SLight irrLightData = irrLightSceneNode->getLightData();
                 irrLightData.AmbientColor = irr::video::SColorf(light->Color.r * 0.1f, light->Color.g * 0.1f, light->Color.b * 0.1f, light->Color.a * 0.1f);
-                irrLightData.DiffuseColor = light->Visible ? irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a) : irr::video::SColorf();
+                irrLightData.DiffuseColor = irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a);
                 irrLightData.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
                 irrLightData.Falloff = light->SpotExponent;
                 irrLightData.InnerCone = light->SpotCutoffInner;
@@ -364,12 +364,12 @@ namespace MyEngine {
                 irrLightData.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
                 irrLightSceneNode->setLightData(irrLightData);
                 irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
-                irrLightSceneNode->setVisible(light->Visible);
+                irrLightSceneNode->setVisible(light->Intensity != 0.0f); // if intensity is 0 light isn't visible
             }
             else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_BILLBOARD && sceneElement->Type == SceneElementType::ELight)
             {
                 Light* light = (Light*)sceneElement.get();
-                string lightTexture = light->Visible ? "LightOn" : "LightOff";
+                string lightTexture = light->Intensity != 0.0f ? "LightOn" : "LightOff";
                 Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
 
                 if (texture != NULL)
@@ -409,7 +409,7 @@ namespace MyEngine {
         irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
         //irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh); // some objects disappears
         irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addMeshSceneNode(irrMesh, irrSceneNode, sceneElement->ID);
-        irr::scene::IShadowVolumeSceneNode* irrShadowVolumeSceneNode = NULL;// TODO: doesn't work with transparency irrMeshSceneNode->addShadowVolumeSceneNode(); // shadow 
+        irr::scene::IShadowVolumeSceneNode* irrShadowVolumeSceneNode = NULL;// TODO: doesn't work with transparency; irrMeshSceneNode->addShadowVolumeSceneNode(); // shadow 
 
         auto irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrMeshSceneNode); // skip for some reason first object
         irrMeshSceneNode->setTriangleSelector(irrTriangleSelector);
@@ -447,7 +447,7 @@ namespace MyEngine {
             if (irrMesh->getMeshBufferCount() > 0 && irrMesh->getMeshBuffer(0)->getIndexCount() == 36)
                 return false;
 
-            Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
+            Engine::Log(LogType::EWarning, "IrrRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
                 to_string(sceneElement->ContentID) + ")");
 
             auto irrCubeSceneNode = this->irrSmgr->addCubeSceneNode();
@@ -511,7 +511,7 @@ namespace MyEngine {
             if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
                 return false;
 
-            Engine::Log(LogType::EWarning, "GLRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
+            Engine::Log(LogType::EWarning, "IrrRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
                 to_string(sceneElement->MaterialID) + ")");
 
             irrMaterial = irr::video::SMaterial();
@@ -564,7 +564,7 @@ namespace MyEngine {
             string type = "";
             if (material->TextureID == textureID) type = "texture";
             else if (material->BumpmapID == textureID) type = "bumpmap";
-            Engine::Log(LogType::EWarning, "GLRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid " + type + " (" +
+            Engine::Log(LogType::EWarning, "IrrRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid " + type + " (" +
                 to_string(textureID) + ")");
 
             irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(textureID).c_str()));

@@ -23,7 +23,7 @@ namespace MyEngine {
 
 		uint TextureID;
 		uint BumpmapID;
-		// TODO: reflection/refraction (map), IOR, Absorption	* update save/load to/from file
+		// TODO: reflection/refraction (map, may be unite all maps in struct), IOR, Absorption	* update save/load to/from file
 
 	public:
 		Material(ContentManager* owner, const string& name, const string& package, const string& path);

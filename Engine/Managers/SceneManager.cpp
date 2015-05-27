@@ -45,6 +45,7 @@ namespace MyEngine {
 		this->AmbientLight = Color4(0.2, 0.2, 0.2, 1.0);
 		this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
 		this->FogDensity = 0.0f;
+        this->TimeOfDay = 0.0f;
 	}
 
 	bool SceneManager::Save(const string& filePath)
@@ -101,6 +102,9 @@ namespace MyEngine {
 		// fog
 		Write(ofile, this->FogColor);
 		Write(ofile, this->FogDensity);
+
+        // time of day
+        Write(ofile, this->TimeOfDay);
 
 		ofile.close();
 
@@ -180,7 +184,10 @@ namespace MyEngine {
 
 			// fog
 			Read(ifile, this->FogColor);
-			Read(ifile, this->FogDensity);
+            Read(ifile, this->FogDensity);
+
+            // time of day
+            Read(ifile, this->TimeOfDay);
 		}
 
 		ifile.close();
@@ -310,6 +317,71 @@ namespace MyEngine {
 
 		return result;
 	}
+
+
+    /* E N V I R O N M E N T */
+    bool SceneManager::SetTimeOfDay(float hour)
+    {
+        if (hour < 0 || hour > 24)
+        {
+            Engine::Log(LogType::EWarning, "Scene", "Try to set invalid time of day");
+            return false;
+        }
+
+        Light* sun = NULL;
+        if (this->ContainElement("Sun"))
+            sun = (Light*)this->GetElement("Sun").get();
+        else if ((hour >= 7 && hour <= 21) || (hour > 0 && hour <= 6))
+        {
+            sun = (Light*)this->AddElement(ELight, "Sun", "MPackage#Meshes\\Primitives\\Sphere").get();
+            sun->MaterialID = this->Owner->ContentManager->GetElement("MPackage#Materials\\FlatWhite", false)->ID;
+        }
+        if (sun == NULL && ((hour >= 7 && hour <= 21) || (hour > 0 && hour <= 6)))
+        {
+            Engine::Log(LogType::EError, "Scene", "Time of day cannot be set");
+            return false;
+        }
+
+        if (sun != NULL)
+        {
+            sun->LType = ESun;
+            sun->Scale = Vector3(20.0f, 20.0f, 20.0f);
+            sun->Intensity = 158700000;
+            sun->Radius = 100000;
+
+            if (hour >= 7 && hour <= 21) // sun
+            {
+                float angle = ((hour - 7) / 13) * PI;
+                if (hour < 8)
+                    sun->Color = Color4(0.9f, 0.2f, 0.0f, 1.0f);
+                else if (hour < 10)
+                    sun->Color = Color4(0.9f, 0.2f, 0.0f, 1.0f) * ((10 - hour) / 2) + Color4(0.9f, 0.5f, 0.0f, 1.0f) * ((hour - 8) / 2);
+                else if (hour < 14)
+                    sun->Color = Color4(0.9f, 0.5f, 0.0f, 1.0f) * ((14 - hour) / 4) + Color4(0.9f, 0.9f, 0.7f, 1.0f) * ((hour - 10) / 4);
+                else if (hour < 18)
+                    sun->Color = Color4(0.9f, 0.9f, 0.7f, 1.0f);
+                else if (hour < 20)
+                    sun->Color = Color4(0.9f, 0.9f, 0.7f, 1.0f) * ((20 - hour) / 2) + Color4(0.9f, 0.5f, 0.0f, 1.0f) * ((hour - 18) / 2);
+                else if (hour < 21)
+                    sun->Color = Color4(0.9f, 0.5f, 0.0f, 1.0f) * (21 - hour) + Color4(0.4f, 0.2f, 0.0f, 1.0f) * (hour - 20);
+                sun->Color = sun->Color * (0.5f + sin(angle) * 0.2f);
+                sun->Position = Vector3(4000, 4000.0f * sin(angle), -4000.0f * cos(angle));
+            }
+            else if (hour > 0 && hour <= 6) // moon
+            {
+                float angle = (hour / 6) * PI;
+                sun->Position = Vector3(4000, 4000.0f * sin(angle), -4000.0f * cos(angle));
+                sun->Color = Color4(0.4f, 0.4f, 0.4f, 1.0f);
+                sun->Color = sun->Color * (sin(angle));
+            }
+            else
+                this->DeleteElement(sun->ID);
+        }
+
+        this->TimeOfDay = hour;
+        Engine::Log(LogType::ELog, "Scene", "Set time of day to " + to_string(hour));
+        return true;
+    }
 
 
 	/* L A Y E R S */

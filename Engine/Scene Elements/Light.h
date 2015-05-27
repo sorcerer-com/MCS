@@ -23,8 +23,7 @@ namespace MyEngine {
 		float SpotExponent;
 		float SpotCutoffInner;
 		float SpotCutoffOuter;
-		float Intensity;
-		// TODO: light on/off
+		float Intensity; // 0 - light is off, else on
 
 	public:
 		Light(SceneManager* owner, const string& name, uint contentID, LightType lightType);

@@ -22,3 +22,5 @@ using uint = unsigned int;
 using byte = unsigned char;
 
 #define Now chrono::system_clock::now().time_since_epoch().count()
+
+#define PI 3.14159265359f
