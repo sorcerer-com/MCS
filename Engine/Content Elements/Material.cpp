@@ -31,8 +31,7 @@ namespace MyEngine {
 			Read(file, this->SpecularColor);
 			Read(file, this->Shininess);
 			Read(file, this->Glossiness);
-			Read(file, this->TextureID);
-			Read(file, this->BumpmapID);
+			Read(file, this->Textures);
 		}
 		this->IsLoaded = true;
 	}
@@ -44,22 +43,22 @@ namespace MyEngine {
 		this->SpecularColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
 		this->Shininess = 10.0f;
 		this->Glossiness = 1.0f;
-		this->TextureID = INVALID_ID;
-		this->BumpmapID = INVALID_ID;
+		this->Textures.DiffuseMapID = INVALID_ID;
+        this->Textures.NormalMapID = INVALID_ID;
 	}
 
 
-	ContentElementPtr Material::GetTexture() const
+	ContentElementPtr Material::GetDiffuseMap() const
 	{
-		if (this->Owner->ContainElement(this->TextureID))
-			return this->Owner->GetElement(this->TextureID, true, true);
+        if (this->Owner->ContainElement(this->Textures.DiffuseMapID))
+            return this->Owner->GetElement(this->Textures.DiffuseMapID, true, true);
 		return ContentElementPtr();
 	}
 
-	ContentElementPtr Material::GetBumpmap() const
+	ContentElementPtr Material::GetNormalMap() const
 	{
-		if (this->Owner->ContainElement(this->BumpmapID))
-			return this->Owner->GetElement(this->BumpmapID, true, true);
+        if (this->Owner->ContainElement(this->Textures.NormalMapID))
+            return this->Owner->GetElement(this->Textures.NormalMapID, true, true);
 		return ContentElementPtr();
 	}
 
@@ -72,8 +71,7 @@ namespace MyEngine {
 		size += SizeOf(this->SpecularColor);
 		size += SizeOf(this->Shininess);
 		size += SizeOf(this->Glossiness);
-		size += SizeOf(this->TextureID);
-		size += SizeOf(this->BumpmapID);
+		size += SizeOf(this->Textures);
 		return size;
 	}
 
@@ -86,8 +84,7 @@ namespace MyEngine {
 		Write(file, this->SpecularColor);
 		Write(file, this->Shininess);
 		Write(file, this->Glossiness);
-		Write(file, this->TextureID);
-		Write(file, this->BumpmapID);
+        Write(file, this->Textures);
 		file.flush();
 	}
 

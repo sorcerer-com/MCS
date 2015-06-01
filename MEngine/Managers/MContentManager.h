@@ -9,15 +9,23 @@
 
 namespace MyEngine {
 
+    ref class MEngine;
 	enum class EContentElementType;
 	ref class MContentElement;
 
 	public ref class MContentManager
 	{
 	private:
-		ContentManager* contentManager;
+        ContentManager* contentManager;
+        MEngine^ owner;
 
-	public:
+    public:
+        // TODO: implement base Manager class
+        property MEngine^ Owner
+        {
+            MEngine^ get();
+        }
+
 		property List<String^>^ Paths
 		{
 			List<String^>^ get();
@@ -33,7 +41,7 @@ namespace MyEngine {
 		event ChangedEventHandler^ Changed;
 
 	public:
-		MContentManager(ContentManager* contentManager);
+        MContentManager(MEngine^ owner, ContentManager* contentManager);
 
 		bool ImportPackage(String^ filePath);
 		bool ExportToPackage(String^ filePath, uint id);

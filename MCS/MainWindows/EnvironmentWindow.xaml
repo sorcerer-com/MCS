@@ -23,6 +23,10 @@
             <Slider Value="{Binding Path=TimeOfDay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="3"
                     Margin="5" Maximum="23.9" TickFrequency="3" TickPlacement="TopLeft" SmallChange="0.1" LargeChange="1.0"/>
         </GroupBox>
+
+        <GroupBox Header="SkyBox">
+            <mc:PropertyGridItem Object="{Binding Path=SkyBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" GetList="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=GetSelectedContentElementsList}"/>
+        </GroupBox>
         
     </StackPanel>
 </Window>

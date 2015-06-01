@@ -11,6 +11,12 @@ namespace MyEngine {
 	class ContentElement;
 	using ContentElementPtr = shared_ptr < ContentElement >;
 
+    struct TextureSet
+    {
+        uint DiffuseMapID;
+        uint NormalMapID;
+    };
+
 	class Material : public ContentElement
 	{
 	public:
@@ -21,16 +27,15 @@ namespace MyEngine {
 		float Shininess;
 		float Glossiness;
 
-		uint TextureID;
-		uint BumpmapID;
+        TextureSet Textures;
 		// TODO: reflection/refraction (map, may be unite all maps in struct), IOR, Absorption	* update save/load to/from file
 
 	public:
 		Material(ContentManager* owner, const string& name, const string& package, const string& path);
 		Material(ContentManager* owner, istream& file);
 
-		ContentElementPtr GetTexture() const;
-		ContentElementPtr GetBumpmap() const;
+        ContentElementPtr GetDiffuseMap() const;
+        ContentElementPtr GetNormalMap() const;
 
 		virtual long long Size() const override;
 		virtual void WriteToFile(ostream& file) override;

@@ -4,6 +4,7 @@
 #include "..\Utils\Header.h"
 #include "..\Utils\Types\Vector3.h"
 #include "..\Utils\Types\Quaternion.h"
+#include "..\Content Elements\Material.h"
 
 namespace MyEngine {
 
@@ -15,7 +16,8 @@ namespace MyEngine {
 	enum SceneElementType
 	{
 		ECamera,
-		ELight,
+        ELight,
+        ESkyBox,
 		ESystemObject,
 		EStaticObject,
 	};
@@ -30,7 +32,8 @@ namespace MyEngine {
 		string Layer;
 		uint ContentID;
 		uint MaterialID;
-		// TODO: textures, attach?
+        TextureSet Textures;
+		// TODO: attach?
 		bool Visible;
 		Vector3 Position;
 		Quaternion Rotation;
@@ -43,7 +46,9 @@ namespace MyEngine {
 		SceneElement(SceneManager* owner, istream& file);
 
 		ContentElementPtr GetContent() const;
-		ContentElementPtr GetMaterial() const;
+        ContentElementPtr GetMaterial() const;
+        ContentElementPtr GetDiffuseMap() const;
+        ContentElementPtr GetNormalMap() const;
 
 		virtual void WriteToFile(ostream& file) const;
 		virtual SceneElement* Clone() const;

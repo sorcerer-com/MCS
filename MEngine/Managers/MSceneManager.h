@@ -9,17 +9,26 @@
 
 namespace MyEngine {
 
+    ref class MEngine;
 	enum class ESceneElementType;
 	ref class MSceneElement;
 	ref class MCamera;
 	value struct MColor;
+    ref class MContentElement;
 
 	public ref class MSceneManager
 	{
 	private:
 		SceneManager* sceneManager;
+        MEngine^ owner;
 
 	public:
+        // TODO: implement base Manager class
+        property MEngine^ Owner
+        {
+            MEngine^ get();
+        }
+
 		property List<MSceneElement^>^ Elements
 		{
 			List<MSceneElement^>^ get();
@@ -60,12 +69,18 @@ namespace MyEngine {
             void set(double value);
         }
 
+        property MContentElement^ SkyBox
+        {
+            MContentElement^ get();
+            void set(MContentElement^ value);
+        }
+
 
 		delegate void ChangedEventHandler(MSceneManager^ sender, MSceneElement^ element);
 		event ChangedEventHandler^ Changed;
 
 	public:
-		MSceneManager(SceneManager* sceneManager);
+		MSceneManager(MEngine^ owner, SceneManager* sceneManager);
 
 		void New();
 		bool Load(String^ filePath);
@@ -81,7 +96,7 @@ namespace MyEngine {
 		bool DeleteElement(uint id);
 		MSceneElement^ GetElement(uint id);
 		MSceneElement^ GetElement(String^ name);
-
+        
 		bool CreateLayer(String^ layer);
 		bool RenameLayer(String^ oldLayer, String^ newLayer);
 		bool ContainLayer(String^ layer);

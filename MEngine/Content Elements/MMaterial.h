@@ -58,17 +58,17 @@ namespace MyEngine {
 		}
 
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
-		property MContentElement^ Texture
+		property MContentElement^ DiffuseMap
 		{
-			MContentElement^ get() { return MContentManager::GetMContentElement(material->GetTexture()); }
-			void set(MContentElement^ value) { if (value != nullptr) material->TextureID = value->ID; else material->TextureID = 0; OnChanged(); }
+            MContentElement^ get() { return MContentManager::GetMContentElement(material->GetDiffuseMap()); }
+            void set(MContentElement^ value) { if (value != nullptr) material->Textures.DiffuseMapID = value->ID; else material->Textures.DiffuseMapID = 0; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
-		property MContentElement^ Bumpmap
+		property MContentElement^ NormalMap
 		{
-			MContentElement^ get() { return MContentManager::GetMContentElement(material->GetBumpmap()); }
-			void set(MContentElement^ value) { if (value != nullptr) material->BumpmapID = value->ID; else material->BumpmapID = 0; OnChanged(); }
+            MContentElement^ get() { return MContentManager::GetMContentElement(material->GetNormalMap()); }
+            void set(MContentElement^ value) { if (value != nullptr) material->Textures.NormalMapID = value->ID; else material->Textures.NormalMapID = 0; OnChanged(); }
 		}
 
 	public:
@@ -121,15 +121,15 @@ namespace MyEngine {
 						Double::TryParse(docElem->GetAttribute("Value"), value);
 						this->Glossiness = value;
 					}
-					else if (docElem->Name == "Texture")
+					else if (docElem->Name == "DiffuseMap")
                     {
                         String^ value = docElem->GetAttribute("Value");
-						this->Texture = MContentManager::GetMContentElement(this->owner->GetElement(to_string(value), true));
+						this->DiffuseMap = MContentManager::GetMContentElement(this->owner->GetElement(to_string(value), true));
 					}
-					else if (docElem->Name == "BumpMap")
+					else if (docElem->Name == "NormalMap")
                     {
                         String^ value = docElem->GetAttribute("Value");
-                        this->Bumpmap = MContentManager::GetMContentElement(this->owner->GetElement(to_string(value), true));
+                        this->NormalMap = MContentManager::GetMContentElement(this->owner->GetElement(to_string(value), true));
 					}
 				}
 			}
@@ -184,17 +184,17 @@ namespace MyEngine {
 				docElem->SetAttribute("Value", this->Glossiness.ToString("0.000000"));
 				docRoot->AppendChild(docElem);
 
-				if (this->Texture != nullptr)
+				if (this->DiffuseMap != nullptr)
 				{
-					docElem = doc->CreateElement("Texture");
-					docElem->SetAttribute("Value", this->Texture->FullName);
+					docElem = doc->CreateElement("DiffuseMap");
+                    docElem->SetAttribute("Value", this->DiffuseMap->FullName);
 					docRoot->AppendChild(docElem);
 				}
 
-				if (this->Bumpmap != nullptr)
+				if (this->NormalMap != nullptr)
 				{
-					docElem = doc->CreateElement("BumpMap");
-					docElem->SetAttribute("Value", this->Bumpmap->FullName);
+					docElem = doc->CreateElement("NormalMap");
+                    docElem->SetAttribute("Value", this->NormalMap->FullName);
 					docRoot->AppendChild(docElem);
 				}
 

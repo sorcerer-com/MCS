@@ -31,8 +31,8 @@ namespace MyEngine {
         IrrRenderer* irrRenderer;
         int lightsCount;
         int textureSet;
-        const int textureID = 0;
-        const int bumpmapID = 1;
+        const int diffuseMapIdx = 0;
+        const int normalMapIdx = 1;
 
     public:
         IrrShaderCallBack(IrrRenderer* irrRenderer)
@@ -77,8 +77,8 @@ namespace MyEngine {
 
             services->setPixelShaderConstant("textureSet", &this->textureSet, 1);
             
-            services->setPixelShaderConstant("texture", &this->textureID, 1);
-            services->setPixelShaderConstant("bumpmap", &this->bumpmapID, 1);
+            services->setPixelShaderConstant("diffuseMap", &this->diffuseMapIdx, 1);
+            services->setPixelShaderConstant("normalMap", &this->normalMapIdx, 1);
         }
     };
     
@@ -287,6 +287,7 @@ namespace MyEngine {
         // Set Transformation
         const Vector3& pos = sceneElement->Position;
         irrSceneNode->setPosition(irr::core::vector3df(pos.x, pos.y, pos.z));
+        if (sceneElement->Type == SceneElementType::ESkyBox) irrSceneNode->setPosition(this->irrSmgr->getActiveCamera()->getPosition());
         const Vector3& rot = sceneElement->Rotation.toEulerAngle();
         irrSceneNode->setRotation(irr::core::vector3df(rot.x, rot.y, rot.z));
         const Vector3& scl = sceneElement->Scale;
@@ -321,11 +322,35 @@ namespace MyEngine {
                 irr::video::SMaterial& irrMaterial = irrChildSceneNode->getMaterial(0);
                 this->updateIrrMaterial(sceneElement, irrMaterial);
 
+                // Set Textures
+                if (sceneElement->Textures.DiffuseMapID != INVALID_ID)
+                {
+                    ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->Textures.DiffuseMapID, true, true);
+                    if (contentElement && contentElement->Type == ContentElementType::ETexture)
+                    {
+                        irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(sceneElement->Textures.DiffuseMapID).c_str()));
+                        if (this->updateIrrTexture((Texture*)contentElement.get(), irrTexture) ||
+                            irrMaterial.getTexture(0) != irrTexture)
+                            irrMaterial.setTexture(0, irrTexture);
+                    }
+                }
+                if (sceneElement->Textures.NormalMapID != INVALID_ID)
+                {
+                    ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->Textures.NormalMapID, true, true);
+                    if (contentElement && contentElement->Type == ContentElementType::ETexture)
+                    {
+                        irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(sceneElement->Textures.NormalMapID).c_str()));
+                        if (this->updateIrrTexture((Texture*)contentElement.get(), irrTexture) ||
+                            irrMaterial.getTexture(1) != irrTexture)
+                            irrMaterial.setTexture(1, irrTexture);
+                    }
+                }
+                
                 if (!sceneElement->Visible) // if scene element is invisible
                     irrMaterial.DiffuseColor.setAlpha(128);
-                if (irrChildSceneNode->isDebugObject() || sceneElement->Type == SceneElementType::ELight)
+                if (irrChildSceneNode->isDebugObject() || sceneElement->Type == SceneElementType::ELight || sceneElement->Type == SceneElementType::ESkyBox)
                     irrMaterial.Lighting = false;
-
+                
                 // Set Content
                 if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())
                     this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
@@ -369,17 +394,17 @@ namespace MyEngine {
             else if (type == irr::scene::ESCENE_NODE_TYPE::ESNT_BILLBOARD && sceneElement->Type == SceneElementType::ELight)
             {
                 Light* light = (Light*)sceneElement.get();
-                string lightTexture = light->Intensity != 0.0f ? "LightOn" : "LightOff";
-                Texture* texture = (Texture*)this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true).get();
 
-                if (texture != NULL)
+                string lightTexture = light->Intensity != 0.0f ? "LightOn" : "LightOff";
+                ContentElementPtr contentElement = this->Owner->ContentManager->GetElement("MPackage#Textures\\System\\" + lightTexture, true, true);
+                if (contentElement && contentElement->Type == ContentElementType::ETexture)
                 {
                     irr::scene::IBillboardSceneNode* irrBillboardSceneNode = (irr::scene::IBillboardSceneNode*) irrChildSceneNode;
-                    irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(texture->ID).c_str()));
+                    irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(contentElement->ID).c_str()));
                     irr::video::SMaterial& irrMaterial = irrBillboardSceneNode->getMaterial(0);
                     irrMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
                     irrMaterial.Lighting = false;
-                    if (this->updateIrrTexture(texture, irrTexture) ||
+                    if (this->updateIrrTexture((Texture*)contentElement.get(), irrTexture) ||
                         irrMaterial.getTexture(0) != irrTexture)
                         irrMaterial.setTexture(0, irrTexture);
 
@@ -409,9 +434,15 @@ namespace MyEngine {
         irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
         //irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addOctreeSceneNode(irrMesh); // some objects disappears
         irr::scene::IMeshSceneNode* irrMeshSceneNode = this->irrSmgr->addMeshSceneNode(irrMesh, irrSceneNode, sceneElement->ID);
-        irr::scene::IShadowVolumeSceneNode* irrShadowVolumeSceneNode = NULL;// TODO: doesn't work with transparency; irrMeshSceneNode->addShadowVolumeSceneNode(); // shadow 
 
-        auto irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrMeshSceneNode); // skip for some reason first object
+        // TODO: doesn't work with transparency
+        // shadow
+        //if (sceneElement->Type != SceneElementType::ELight &&
+        //    sceneElement->Type != SceneElementType::ESkyBox)
+        //    irrMeshSceneNode->addShadowVolumeSceneNode();
+
+        // selector
+        auto irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrMeshSceneNode);
         irrMeshSceneNode->setTriangleSelector(irrTriangleSelector);
         irrTriangleSelector->drop();
 
@@ -428,10 +459,6 @@ namespace MyEngine {
             auto irrTriangleSelector = this->irrSmgr->createTriangleSelectorFromBoundingBox(irrBillboardSceneNode);
             irrBillboardSceneNode->setTriangleSelector(irrTriangleSelector);
             irrTriangleSelector->drop();
-
-            // remove shadow
-            if (irrShadowVolumeSceneNode)
-                irrShadowVolumeSceneNode->remove();
         }
 
         return irrSceneNode;
@@ -503,28 +530,46 @@ namespace MyEngine {
 
     bool IrrRenderer::updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial)
     {
-        ContentElementPtr contentElement = NULL;
-        if (this->Owner->ContentManager->ContainElement(sceneElement->MaterialID))
-            contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
-        if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
+        if (sceneElement->MaterialID != INVALID_ID)
         {
-            if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
-                return false;
+            ContentElementPtr contentElement = NULL;
+            if (this->Owner->ContentManager->ContainElement(sceneElement->MaterialID))
+                contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+            if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
+            {
+                if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
+                    return false;
 
-            Engine::Log(LogType::EWarning, "IrrRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
-                to_string(sceneElement->MaterialID) + ")");
+                Engine::Log(LogType::EWarning, "IrrRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid material (" +
+                    to_string(sceneElement->MaterialID) + ")");
 
-            irrMaterial = irr::video::SMaterial();
-            irrMaterial.DiffuseColor = IrrRenderer::irrInvalidColor;
-            irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
-            return true;
+                irrMaterial = irr::video::SMaterial();
+                irrMaterial.DiffuseColor = IrrRenderer::irrInvalidColor;
+                irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
+                return true;
+            }
+            Material* material = (Material*)contentElement.get();
+
+            irrMaterial.AmbientColor = irr::video::SColorf(material->AmbientColor.r, material->AmbientColor.g, material->AmbientColor.b, material->AmbientColor.a).toSColor();
+            irrMaterial.DiffuseColor = irr::video::SColorf(material->DiffuseColor.r, material->DiffuseColor.g, material->DiffuseColor.b, material->DiffuseColor.a).toSColor();
+            irrMaterial.SpecularColor = irr::video::SColorf(material->SpecularColor.r, material->SpecularColor.g, material->SpecularColor.b, material->SpecularColor.a).toSColor();
+            irrMaterial.Shininess = material->Shininess;
+
+            if (material->Textures.DiffuseMapID != INVALID_ID)
+            {
+                irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->Textures.DiffuseMapID).c_str()));
+                if (this->updateIrrTexture(material, material->Textures.DiffuseMapID, irrTexture) ||
+                    irrMaterial.getTexture(0) != irrTexture)
+                    irrMaterial.setTexture(0, irrTexture);
+            }
+            if (material->Textures.NormalMapID != INVALID_ID)
+            {
+                irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->Textures.NormalMapID).c_str()));
+                if (this->updateIrrTexture(material, material->Textures.NormalMapID, irrTexture) ||
+                    irrMaterial.getTexture(1) != irrTexture)
+                    irrMaterial.setTexture(1, irrTexture);
+            }
         }
-        Material* material = (Material*)contentElement.get();
-
-        irrMaterial.AmbientColor = irr::video::SColorf(material->AmbientColor.r, material->AmbientColor.g, material->AmbientColor.b, material->AmbientColor.a).toSColor();
-        irrMaterial.DiffuseColor = irr::video::SColorf(material->DiffuseColor.r, material->DiffuseColor.g, material->DiffuseColor.b, material->DiffuseColor.a).toSColor();
-        irrMaterial.SpecularColor = irr::video::SColorf(material->SpecularColor.r, material->SpecularColor.g, material->SpecularColor.b, material->SpecularColor.a).toSColor();
-        irrMaterial.Shininess = material->Shininess;
 
         irrMaterial.FogEnable = true;
         irrMaterial.BackfaceCulling = false;
@@ -532,22 +577,6 @@ namespace MyEngine {
         irrMaterial.Lighting = true;
         irrMaterial.ColorMaterial = irr::video::E_COLOR_MATERIAL::ECM_NONE;
         irrMaterial.MaterialType = (irr::video::E_MATERIAL_TYPE)irrMaterialType; // custom (shader) material
-
-        if (material->TextureID != INVALID_ID)
-        {
-            irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->TextureID).c_str()));
-            if (this->updateIrrTexture(material, material->TextureID, irrTexture) ||
-                irrMaterial.getTexture(0) != irrTexture)
-                irrMaterial.setTexture(0, irrTexture);
-        }
-        if (material->BumpmapID != INVALID_ID)
-        {
-            irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->BumpmapID).c_str()));
-            if (this->updateIrrTexture(material, material->BumpmapID, irrTexture) ||
-                irrMaterial.getTexture(1) != irrTexture)
-                irrMaterial.setTexture(1, irrTexture);
-        }
-
         return true;
     }
 
@@ -562,9 +591,9 @@ namespace MyEngine {
                 return false;
 
             string type = "";
-            if (material->TextureID == textureID) type = "texture";
-            else if (material->BumpmapID == textureID) type = "bumpmap";
-            Engine::Log(LogType::EWarning, "IrrRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid " + type + " (" +
+            if (material->Textures.DiffuseMapID == textureID) type = "diffuse";
+            else if (material->Textures.NormalMapID == textureID) type = "normal";
+            Engine::Log(LogType::EWarning, "IrrRenderer", "Material '" + material->Name + "' (" + to_string(material->ID) + ") is referred to invalid " + type + " map (" +
                 to_string(textureID) + ")");
 
             irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(textureID).c_str()));

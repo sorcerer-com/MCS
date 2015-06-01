@@ -14,7 +14,7 @@ namespace MyEngine {
 	class Camera;
 
 	using SceneElementPtr = shared_ptr < SceneElement >;
-
+    // TODO: implement base Manager class
 	class SceneManager
 	{
 	public:
@@ -26,6 +26,7 @@ namespace MyEngine {
 		Color4 FogColor;
         float FogDensity;
         float TimeOfDay;
+        uint SkyBox;
 
 		Engine* Owner;
 
@@ -52,6 +53,7 @@ namespace MyEngine {
 		SceneElementPtr GetElement(const string& name);
 		vector<SceneElementPtr> GetElements() const;
 
+        bool SetSkyBox(uint textureID);
         bool SetTimeOfDay(float hour);
 
 		bool CreateLayer(const string& layer);

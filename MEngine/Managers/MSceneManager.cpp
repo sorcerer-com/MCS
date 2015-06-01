@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "MSceneManager.h"
 
+#include "..\MEngine.h"
 #include "..\Utils\Types\MColor.h"
 #include "..\Scene Elements\MSceneElement.h"
 #include "..\Scene Elements\MCamera.h"
@@ -10,6 +11,11 @@
 
 
 namespace MyEngine {
+
+    MEngine^ MSceneManager::Owner::get()
+    {
+        return this->owner;
+    }
 
 	List<MSceneElement^>^ MSceneManager::Elements::get()
 	{
@@ -99,9 +105,21 @@ namespace MyEngine {
         OnChanged(nullptr);
     }
 
+    MContentElement^ MSceneManager::SkyBox::get()
+    {
+        return this->owner->ContentManager->GetElement(this->sceneManager->SkyBox);
+    }
 
-	MSceneManager::MSceneManager(SceneManager* sceneManager)
+    void MSceneManager::SkyBox::set(MContentElement^ value)
+    {
+        this->sceneManager->SetSkyBox(value->ID);
+        OnChanged(nullptr);
+    }
+
+
+    MSceneManager::MSceneManager(MEngine^ owner, SceneManager* sceneManager)
 	{
+        this->owner = owner;
 		this->sceneManager = sceneManager;
 	}
 
@@ -223,7 +241,7 @@ namespace MyEngine {
 
 		return this->getMSceneElement(elem);
 	}
-
+    
 
 	bool MSceneManager::CreateLayer(String^ layer)
 	{

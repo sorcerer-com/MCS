@@ -17,7 +17,8 @@ namespace MyEngine {
 	public enum class ESceneElementType
 	{
 		Camera,
-		Light,
+        Light,
+        SkyBox,
 		SystemObject,
 		StaticObject,
 	};
@@ -103,7 +104,21 @@ namespace MyEngine {
 		{
 			MPoint get() { return MPoint(element->Scale); }
 			void set(MPoint value) { element->Scale = value.ToVector3(); OnChanged(); }
-		}
+        }
+
+        [MPropertyAttribute(Group = "Textures", Choosable = true)]
+        property MContentElement^ DiffuseMap
+        {
+            MContentElement^ get() { return MContentManager::GetMContentElement(element->GetDiffuseMap()); }
+            void set(MContentElement^ value) { if (value != nullptr) element->Textures.DiffuseMapID = value->ID; else element->Textures.DiffuseMapID = 0; OnChanged(); }
+        }
+
+        [MPropertyAttribute(Group = "Textures", Choosable = true)]
+        property MContentElement^ NormalMap
+        {
+            MContentElement^ get() { return MContentManager::GetMContentElement(element->GetNormalMap()); }
+            void set(MContentElement^ value) { if (value != nullptr) element->Textures.NormalMapID = value->ID; else element->Textures.NormalMapID = 0; OnChanged(); }
+        }
 
 
 		delegate void ChangedEventHandler(MSceneElement^ sender);

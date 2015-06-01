@@ -268,6 +268,10 @@ namespace MCS
                             MSceneElement mse = this.engine.SceneManager.AddElement(type, name, content) ?? this.engine.SceneManager.GetElement(name);
                             if (xmlElement.HasAttribute("Material"))
                                 mse.Material = this.engine.ContentManager.GetElement(xmlElement.GetAttribute("Material"));
+                            if (xmlElement.HasAttribute("DiffuseMap"))
+                                mse.DiffuseMap = this.engine.ContentManager.GetElement(xmlElement.GetAttribute("DiffuseMap"));
+                            if (xmlElement.HasAttribute("NormalMap"))
+                                mse.NormalMap = this.engine.ContentManager.GetElement(xmlElement.GetAttribute("NormalMap"));
                             mse.Visible = bool.Parse(xmlElement.GetAttribute("Visible"));
                             mse.Position = MPoint.Parse(xmlElement.GetAttribute("Position"));
                             mse.Rotation = MPoint.Parse(xmlElement.GetAttribute("Rotation"));
@@ -346,6 +350,10 @@ namespace MCS
                                 xmlElement.SetAttribute("Content", mse.Content.FullName);
                             if (mse.Material != null)
                                 xmlElement.SetAttribute("Material", mse.Material.FullName);
+                            if (mse.DiffuseMap != null)
+                                xmlElement.SetAttribute("DiffuseMap", mse.DiffuseMap.FullName);
+                            if (mse.NormalMap != null)
+                                xmlElement.SetAttribute("NormalMap", mse.NormalMap.FullName);
                             xmlElement.SetAttribute("Visible", mse.Visible.ToString());
                             xmlElement.SetAttribute("Position", mse.Position.ToString());
                             xmlElement.SetAttribute("Rotation", mse.Rotation.ToString());
@@ -614,6 +622,8 @@ namespace MCS
             light.Intensity = 500;
             this.engine.SceneManager.FogColor = new MColor(0.5, 0.5, 0.5);
             this.engine.SceneManager.FogDensity = 0.01;
+            this.engine.SceneManager.TimeOfDay = 10;
+            this.engine.SceneManager.SkyBox = this.engine.ContentManager.GetElement(@"MPackage#Textures\SkyBoxes\ElyHills");
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

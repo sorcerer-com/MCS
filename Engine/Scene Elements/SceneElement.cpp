@@ -42,7 +42,8 @@ namespace MyEngine {
 			Read(file, this->Name);
 			Read(file, this->Layer);
 			Read(file, this->ContentID);
-			Read(file, this->MaterialID);
+            Read(file, this->MaterialID);
+            Read(file, this->Textures);
 			Read(file, this->Visible);
 			Read(file, this->Position);
 			Read(file, this->Rotation);
@@ -78,7 +79,21 @@ namespace MyEngine {
 		if (this->Owner->Owner->ContentManager->ContainElement(this->MaterialID))
 			return this->Owner->Owner->ContentManager->GetElement(this->MaterialID, true, true);
 		return ContentElementPtr();
-	}
+    }
+
+    ContentElementPtr SceneElement::GetDiffuseMap() const
+    {
+        if (this->Owner->Owner->ContentManager->ContainElement(this->Textures.DiffuseMapID))
+            return this->Owner->Owner->ContentManager->GetElement(this->Textures.DiffuseMapID, true, true);
+        return ContentElementPtr();
+    }
+
+    ContentElementPtr SceneElement::GetNormalMap() const
+    {
+        if (this->Owner->Owner->ContentManager->ContainElement(this->Textures.NormalMapID))
+            return this->Owner->Owner->ContentManager->GetElement(this->Textures.NormalMapID, true, true);
+        return ContentElementPtr();
+    }
 
 
 	void SceneElement::WriteToFile(ostream& file) const
@@ -89,7 +104,8 @@ namespace MyEngine {
 		Write(file, this->Name);
 		Write(file, this->Layer);
 		Write(file, this->ContentID);
-		Write(file, this->MaterialID);
+        Write(file, this->MaterialID);
+        Write(file, this->Textures);
 		Write(file, this->Visible);
 		Write(file, this->Position);
 		Write(file, this->Rotation);

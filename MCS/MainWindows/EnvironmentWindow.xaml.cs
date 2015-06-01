@@ -1,5 +1,6 @@
 ﻿using MyEngine;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace MCS.MainWindows
@@ -11,6 +12,22 @@ namespace MCS.MainWindows
     {
         private MSceneManager sceneManager;
 
+        public MCS.Controls.PropertyGridItem.GetListDelegate GetSelectedContentElementsList
+        {
+            get
+            {
+                return () =>
+                {
+                    List<object> res = new List<object>();
+                    var selectedElements = MSelector.Elements(MSelector.ESelectionType.ContentElement);
+                    foreach (var id in selectedElements)
+                        res.Add(this.sceneManager.Owner.ContentManager.GetElement(id));
+                    return res;
+                };
+            }
+        }
+
+
         public EnvironmentWindow(MSceneManager sceneManager)
         {
             InitializeComponent();
@@ -20,8 +37,6 @@ namespace MCS.MainWindows
 
             this.DataContext = sceneManager;
             this.sceneManager = sceneManager;
-
-            // TODO: add time of the day, skybox
         }
     }
 }

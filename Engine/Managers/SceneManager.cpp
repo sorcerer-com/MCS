@@ -106,6 +106,9 @@ namespace MyEngine {
         // time of day
         Write(ofile, this->TimeOfDay);
 
+        // skybox
+        Write(ofile, this->SkyBox);
+
 		ofile.close();
 
 		Engine::Log(LogType::ELog, "Scene", "Save scene to file: " + filePath);
@@ -188,6 +191,9 @@ namespace MyEngine {
 
             // time of day
             Read(ifile, this->TimeOfDay);
+
+            // skybox
+            Read(ifile, this->SkyBox);
 		}
 
 		ifile.close();
@@ -320,6 +326,37 @@ namespace MyEngine {
 
 
     /* E N V I R O N M E N T */
+    bool SceneManager::SetSkyBox(uint textureID)
+    {
+        SceneElementPtr skyBox = NULL;
+        if (textureID == INVALID_ID && this->ContainElement("SkyBox"))
+        {
+            skyBox = this->GetElement("SkyBox");
+            this->DeleteElement(skyBox->ID);
+            return true;
+        }
+
+        if (textureID != INVALID_ID)
+        {
+            if (this->ContainElement("SkyBox"))
+                skyBox = this->GetElement("SkyBox");
+            else
+                skyBox = this->AddElement(ESkyBox, "SkyBox", "MPackage#Meshes\\System\\SkyBox");
+
+            if (!skyBox || skyBox->Type != ESkyBox)
+            {
+                Engine::Log(LogType::EError, "Scene", "Skybox cannot be set");
+                return false;
+            }
+
+            skyBox->Scale = Vector3(500.0f, 500.0f, 500.0f); // make it enought scaled
+            skyBox->Textures.DiffuseMapID = textureID;
+            Engine::Log(LogType::ELog, "Scene", "Skybox is set (" + to_string(textureID) + ")");
+        }
+        this->SkyBox = textureID;
+        return true;
+    }
+
     bool SceneManager::SetTimeOfDay(float hour)
     {
         if (hour < 0 || hour > 24)
@@ -334,7 +371,6 @@ namespace MyEngine {
         else if ((hour >= 7 && hour <= 21) || (hour > 0 && hour <= 6))
         {
             sun = (Light*)this->AddElement(ELight, "Sun", "MPackage#Meshes\\Primitives\\Sphere").get();
-            sun->MaterialID = this->Owner->ContentManager->GetElement("MPackage#Materials\\FlatWhite", false)->ID;
         }
         if (sun == NULL && ((hour >= 7 && hour <= 21) || (hour > 0 && hour <= 6)))
         {
