@@ -10,11 +10,6 @@
 
 
 namespace MyEngine {
-
-    MEngine^ MContentManager::Owner::get()
-    {
-        return this->owner;
-    }
 	
 	List<String^>^ MContentManager::Paths::get()
 	{
@@ -39,9 +34,9 @@ namespace MyEngine {
 	}
 
 
-    MContentManager::MContentManager(MEngine^ owner, ContentManager* contentManager)
+    MContentManager::MContentManager(MEngine^ owner, ContentManager* contentManager) :
+        MBaseManager(owner)
 	{
-        this->owner = owner;
 		this->contentManager = contentManager;
 	}
 

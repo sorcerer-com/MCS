@@ -17,6 +17,7 @@
     <ClInclude Include="Content Elements\MMaterial.h" />
     <ClInclude Include="Utils\MSelector.h" />
     <ClInclude Include="Content Elements\MTexture.h" />
+    <ClInclude Include="Managers\MBaseManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

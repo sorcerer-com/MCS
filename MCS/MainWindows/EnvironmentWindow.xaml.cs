@@ -12,6 +12,7 @@ namespace MCS.MainWindows
     {
         private MSceneManager sceneManager;
 
+        // TODO: SkyBox property item didn't shows up when SkyBox is null
         public MCS.Controls.PropertyGridItem.GetListDelegate GetSelectedContentElementsList
         {
             get

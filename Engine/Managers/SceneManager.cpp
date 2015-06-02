@@ -19,18 +19,13 @@
 namespace MyEngine {
 
 	/* S C E N E   M A N A G E R */
-	SceneManager::SceneManager(Engine* owner)
+    SceneManager::SceneManager(Engine* owner) :
+        BaseManager(owner)
 	{
-		if (!owner)
-			throw "ArgumentNullException: owner";
-
-        this->Owner = owner;
-
-        this->thread = make_shared<Thread>();
         this->thread->defMutex("content", true);
 
 		this->New();
-	}
+    }
 
 
 	void SceneManager::New()
@@ -46,6 +41,7 @@ namespace MyEngine {
 		this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
 		this->FogDensity = 0.0f;
         this->TimeOfDay = 0.0f;
+        this->SkyBox = INVALID_ID;
 	}
 
 	bool SceneManager::Save(const string& filePath)

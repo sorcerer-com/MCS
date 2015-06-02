@@ -1,19 +1,18 @@
 // ContentManager.h
 #pragma once
 
+#include "BaseManager.h"
 #include "..\Utils\Header.h"
 
 
 namespace MyEngine {
 
-	class Engine;
-	struct Thread;
 	class ContentElement;
 	enum ContentElementType;
 
 	using ContentElementPtr = shared_ptr < ContentElement >;
 
-	class ContentManager
+	class ContentManager : public BaseManager
 	{
 	private:
 		struct PackageInfo
@@ -36,10 +35,7 @@ namespace MyEngine {
 		using PackageInfoMapType = map < string, PackageInfo > ; // package name / package info
 		using ContentMapType = map < uint, ContentElementPtr >; // id / content element
 
-		Engine* Owner;
-		
 	private:
-		shared_ptr<Thread> thread;
 		RequestQueueType requests;
 
 		PackageInfoMapType packageInfos;
@@ -48,7 +44,6 @@ namespace MyEngine {
 
 	public:
 		ContentManager(Engine* owner);
-		~ContentManager();
 
 		bool ImportPackage(const string& filePath);
 		bool ExportToPackage(const string& filePath, uint id);

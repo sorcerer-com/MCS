@@ -17,24 +17,14 @@
 namespace MyEngine {
 
 	/* C O N T E N T   M A N A G E R */
-	ContentManager::ContentManager(Engine* owner)
+    ContentManager::ContentManager(Engine* owner) : 
+        BaseManager(owner)
 	{
-		if (!owner)
-			throw "ArgumentNullException: owner";
-
-		this->Owner = owner;
-
-		this->thread = make_shared<Thread>();
 		this->thread->defWorker(&ContentManager::doSerilization, this);
 		this->thread->defMutex("requests");
 		this->thread->defMutex("content", true);
 
 		this->addRequest(ELoadDatabase, true);
-	}
-
-	ContentManager::~ContentManager()
-	{
-		this->thread->join();
 	}
 
 

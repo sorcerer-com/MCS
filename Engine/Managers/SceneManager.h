@@ -1,21 +1,19 @@
 // SceneManager.h
 #pragma once
 
+#include "BaseManager.h"
 #include "..\Utils\Header.h"
 #include "..\Utils\Types\Color4.h"
 
 
 namespace MyEngine {
 
-    class Engine;
-    struct Thread;
 	enum SceneElementType;
 	class SceneElement;
 	class Camera;
 
 	using SceneElementPtr = shared_ptr < SceneElement >;
-    // TODO: implement base Manager class
-	class SceneManager
+	class SceneManager : public BaseManager
 	{
 	public:
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
@@ -28,16 +26,12 @@ namespace MyEngine {
         float TimeOfDay;
         uint SkyBox;
 
-		Engine* Owner;
-
     private:
-        shared_ptr<Thread> thread;
-
 		SceneMapType sceneElements;
 		LayerVectorType layers;
         
 	public:
-		SceneManager(Engine* owner);
+        SceneManager(Engine* owner);
 
 		void New();
 		bool Save(const string& filePath);

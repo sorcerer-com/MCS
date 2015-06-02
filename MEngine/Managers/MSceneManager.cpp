@@ -12,11 +12,6 @@
 
 namespace MyEngine {
 
-    MEngine^ MSceneManager::Owner::get()
-    {
-        return this->owner;
-    }
-
 	List<MSceneElement^>^ MSceneManager::Elements::get()
 	{
 		List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
@@ -117,9 +112,9 @@ namespace MyEngine {
     }
 
 
-    MSceneManager::MSceneManager(MEngine^ owner, SceneManager* sceneManager)
+    MSceneManager::MSceneManager(MEngine^ owner, SceneManager* sceneManager) : 
+        MBaseManager(owner)
 	{
-        this->owner = owner;
 		this->sceneManager = sceneManager;
 	}
 

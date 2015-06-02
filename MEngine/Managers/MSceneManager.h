@@ -4,31 +4,24 @@
 #include "Engine\Managers\SceneManager.h"
 #pragma managed
 
+#include "MBaseManager.h"
 #include "..\Utils\MHeader.h"
 
 
 namespace MyEngine {
 
-    ref class MEngine;
 	enum class ESceneElementType;
 	ref class MSceneElement;
 	ref class MCamera;
 	value struct MColor;
     ref class MContentElement;
 
-	public ref class MSceneManager
+    public ref class MSceneManager : MBaseManager
 	{
 	private:
 		SceneManager* sceneManager;
-        MEngine^ owner;
 
 	public:
-        // TODO: implement base Manager class
-        property MEngine^ Owner
-        {
-            MEngine^ get();
-        }
-
 		property List<MSceneElement^>^ Elements
 		{
 			List<MSceneElement^>^ get();

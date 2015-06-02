@@ -171,6 +171,7 @@
     <ClCompile Include="Content Elements\Material.cpp" />
     <ClCompile Include="Content Elements\Mesh.cpp" />
     <ClCompile Include="Content Elements\Texture.cpp" />
+    <ClCompile Include="Managers\BaseManager.cpp" />
     <ClCompile Include="Managers\ContentManager.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Content Elements\Material.h" />
     <ClInclude Include="Content Elements\Mesh.h" />
     <ClInclude Include="Content Elements\Texture.h" />
+    <ClInclude Include="Managers\BaseManager.h" />
     <ClInclude Include="Managers\ContentManager.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Managers\SceneManager.h" />

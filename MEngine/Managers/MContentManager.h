@@ -4,28 +4,21 @@
 #include "Engine\Managers\ContentManager.h"
 #pragma managed
 
+#include "MBaseManager.h"
 #include "..\Utils\MHeader.h"
 
 
 namespace MyEngine {
 
-    ref class MEngine;
 	enum class EContentElementType;
 	ref class MContentElement;
 
-	public ref class MContentManager
+    public ref class MContentManager : MBaseManager
 	{
 	private:
         ContentManager* contentManager;
-        MEngine^ owner;
 
     public:
-        // TODO: implement base Manager class
-        property MEngine^ Owner
-        {
-            MEngine^ get();
-        }
-
 		property List<String^>^ Paths
 		{
 			List<String^>^ get();
