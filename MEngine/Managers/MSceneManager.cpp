@@ -107,7 +107,7 @@ namespace MyEngine {
 
     void MSceneManager::SkyBox::set(MContentElement^ value)
     {
-        this->sceneManager->SetSkyBox(value->ID);
+        this->sceneManager->SetSkyBox((value != nullptr ? value->ID : 0));
         OnChanged(nullptr);
     }
 

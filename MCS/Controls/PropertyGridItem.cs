@@ -86,14 +86,12 @@ namespace MCS.Controls
             this.ColumnDefinitions.Clear();
             this.RowDefinitions.Clear();
             this.Children.Clear();
-            if (this.Object == null)
-                return;
 
             this.Margin = new Thickness(3);
             this.IsEnabled = CanWrite;
 
-            Type type = this.Object.GetType();
-            if (type == typeof(object) || this.GetList != null)
+            Type type = this.Object != null ? this.Object.GetType() : null;
+            if (type == null || this.GetList != null)
             {
                 ColumnDefinition cd = new ColumnDefinition();
                 this.ColumnDefinitions.Add(cd);
@@ -103,8 +101,9 @@ namespace MCS.Controls
                 
                 TextBox tb = new TextBox();
                 tb.Background = new LinearGradientBrush(Colors.Gray, Colors.White, 90);
-                tb.Text = this.Object.ToString();
-                if (type == typeof(object))
+                if (this.Object != null)
+                    tb.Text = this.Object.ToString();
+                else
                     tb.Text = "None";
                 tb.ToolTip = tb.Text;
                 tb.IsReadOnly = true;
@@ -112,14 +111,17 @@ namespace MCS.Controls
                 this.Children.Add(tb);
                 Grid.SetColumn(tb, 0);
 
-                Button btn = new Button();
-                btn.Tag = tb;
-                btn.Content = "<";
-                btn.Width = 20;
-                btn.Margin = new Thickness(5, 0, 0, 0);
-                btn.Click += new RoutedEventHandler(button_Click);
-                this.Children.Add(btn);
-                Grid.SetColumn(btn, 1);
+                if (this.GetList != null)
+                {
+                    Button btn = new Button();
+                    btn.Tag = tb;
+                    btn.Content = "<";
+                    btn.Width = 20;
+                    btn.Margin = new Thickness(5, 0, 0, 0);
+                    btn.Click += new RoutedEventHandler(button_Click);
+                    this.Children.Add(btn);
+                    Grid.SetColumn(btn, 1);
+                }
             }
             else if (type == typeof(uint) || type == typeof(int) ||
                 type == typeof(float) || type == typeof(double))
@@ -305,11 +307,11 @@ namespace MCS.Controls
 
         public void Update()
         {
-            if (this.Object == null)
+            if (this.Children.Count == 0)
                 return;
 
-            Type type = this.Object.GetType();
-            if (type == typeof(object) || this.GetList != null)
+            Type type = this.Object != null ? this.Object.GetType() : null;
+            if (type == null || this.GetList != null)
             {
                 TextBox tb = this.Children[0] as TextBox;
                 if (type == typeof(object))
@@ -424,8 +426,8 @@ namespace MCS.Controls
 
         private void value_Changed(object sender, RoutedEventArgs e)
         {
-            Type type = this.Object.GetType();
-            if (type == typeof(object) || this.GetList != null)
+            Type type = this.Object != null ? this.Object.GetType() : null;
+            if (type == null || this.GetList != null)
             { }
             else if ((type == typeof(uint)) && (sender is NumberBox))
                 SetValue(ObjectProperty, (uint)System.Math.Abs((sender as NumberBox).Value));
@@ -538,7 +540,7 @@ namespace MCS.Controls
                         }
                         else
                         {
-                            this.Object = new object();
+                            this.Object = null;
                             tb.Text = "None";
                         }
                     }

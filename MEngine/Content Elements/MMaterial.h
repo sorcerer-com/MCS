@@ -61,14 +61,14 @@ namespace MyEngine {
 		property MContentElement^ DiffuseMap
 		{
             MContentElement^ get() { return MContentManager::GetMContentElement(material->GetDiffuseMap()); }
-            void set(MContentElement^ value) { if (value != nullptr) material->Textures.DiffuseMapID = value->ID; else material->Textures.DiffuseMapID = 0; OnChanged(); }
+            void set(MContentElement^ value) { material->Textures.DiffuseMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
 		property MContentElement^ NormalMap
 		{
             MContentElement^ get() { return MContentManager::GetMContentElement(material->GetNormalMap()); }
-            void set(MContentElement^ value) { if (value != nullptr) material->Textures.NormalMapID = value->ID; else material->Textures.NormalMapID = 0; OnChanged(); }
+            void set(MContentElement^ value) { material->Textures.NormalMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
 		}
 
 	public:

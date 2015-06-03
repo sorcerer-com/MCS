@@ -187,8 +187,6 @@ namespace MCS.Controls
                     continue;
 
                 object value = pi.GetValue(this.Object, null);
-                if (value == null)
-                    value = new object();
 
                 this.addPropery(pi.Name, value, pi.CanWrite, att.Description, att.Choosable);
             }
@@ -231,8 +229,6 @@ namespace MCS.Controls
                     continue;
 
                 object value = pi.GetValue(this.Object, null);
-                if (value == null)
-                    value = new object();
 
                 foreach(var child in this.propertiesGrid.Children)
                 {
@@ -315,10 +311,7 @@ namespace MCS.Controls
                 if (!pi.CanWrite)
                     return;
 
-                if (pgi.Object.GetType() == typeof(object))
-                    pi.SetValue(this.Object, null, null);
-                else
-                    pi.SetValue(this.Object, pgi.Object, null);
+                pi.SetValue(this.Object, pgi.Object, null);
                 this.OnChanged(pgi);
             }
         }

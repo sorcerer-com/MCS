@@ -68,14 +68,14 @@ namespace MyEngine {
 		property MContentElement^ Content
 		{
 			MContentElement^ get() { return MContentManager::GetMContentElement(this->element->GetContent()); }
-			void set(MContentElement^ value) { if (value != nullptr) element->ContentID = value->ID; else element->ContentID = 0; OnChanged(); }
+            void set(MContentElement^ value) { element->ContentID = (value != nullptr ? value->ID : 0); OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Content", Choosable = true)]
 		property MContentElement^ Material
 		{
 			MContentElement^ get() { return MContentManager::GetMContentElement(this->element->GetMaterial()); }
-			void set(MContentElement^ value) { if (value != nullptr) element->MaterialID = value->ID; else element->MaterialID = 0; OnChanged(); }
+            void set(MContentElement^ value) { element->MaterialID = (value != nullptr ? value->ID : 0); OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Base")]
@@ -110,14 +110,14 @@ namespace MyEngine {
         property MContentElement^ DiffuseMap
         {
             MContentElement^ get() { return MContentManager::GetMContentElement(element->GetDiffuseMap()); }
-            void set(MContentElement^ value) { if (value != nullptr) element->Textures.DiffuseMapID = value->ID; else element->Textures.DiffuseMapID = 0; OnChanged(); }
+            void set(MContentElement^ value) { element->Textures.DiffuseMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
         }
 
         [MPropertyAttribute(Group = "Textures", Choosable = true)]
         property MContentElement^ NormalMap
         {
             MContentElement^ get() { return MContentManager::GetMContentElement(element->GetNormalMap()); }
-            void set(MContentElement^ value) { if (value != nullptr) element->Textures.NormalMapID = value->ID; else element->Textures.NormalMapID = 0; OnChanged(); }
+            void set(MContentElement^ value) { element->Textures.NormalMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
         }
 
 
