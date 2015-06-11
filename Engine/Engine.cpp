@@ -7,6 +7,7 @@
 #include "Managers\ContentManager.h"
 #include "Managers\SceneManager.h"
 #include "Renderers\IrrRenderer.h"
+#include "Renderers\CPURayRenderer.h"
 
 
 namespace MyEngine {
@@ -41,10 +42,17 @@ namespace MyEngine {
 		this->SceneManager = make_shared<MyEngine::SceneManager>(this);
 
 		this->ViewPortRenderer = make_shared<IrrRenderer>(this);
+        this->ProductionRenderer = NULL;
 	}
 
 	Engine::~Engine()
 	{
+        this->ProductionRenderer.reset();
+        this->ViewPortRenderer.reset();
+
+        this->SceneManager.reset();
+        this->ContentManager.reset();
+
 		Engine::Log(LogType::ELog, "Engine", "Destroy engine");
 	}
 

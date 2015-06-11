@@ -117,6 +117,13 @@
       <Command>echo Coping Irrlicht.dll ...
 xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Irrlicht.dll"
 :: xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Games\Irrlicht.dll"
+
+echo Coping Embree.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\Embree$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Embree.dll"
+
+echo Coping tbb.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbb$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbb.dll"
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbbmalloc.dll"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -142,6 +149,13 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
       <Command>echo Coping Irrlicht.dll ...
 xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Irrlicht.dll"
 :: xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Games\Irrlicht.dll"
+
+echo Coping Embree.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\Embree$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Embree.dll"
+
+echo Coping tbb.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbb$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbb.dll"
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbbmalloc.dll"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -172,6 +186,13 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
       <Command>echo Coping Irrlicht.dll ...
 xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Irrlicht.dll"
 :: xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Games\Irrlicht.dll"
+
+echo Coping Embree.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\Embree$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Embree.dll"
+
+echo Coping tbb.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbb$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbb.dll"
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbbmalloc.dll"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -202,6 +223,13 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
       <Command>echo Coping Irrlicht.dll ...
 xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Irrlicht.dll"
 :: xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Games\Irrlicht.dll"
+
+echo Coping Embree.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\Embree$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\Embree.dll"
+
+echo Coping tbb.dll
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbb$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbb.dll"
+xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(SolutionDir)MCS\bin\tbbmalloc.dll"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -213,7 +241,9 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\Irrlicht$(PlatformArchitecture).dll" "$(S
     <ClInclude Include="Managers\MBaseManager.h" />
     <ClInclude Include="Managers\MContentManager.h" />
     <ClInclude Include="Managers\MSceneManager.h" />
+    <ClInclude Include="Renderers\MProductionRenderer.h" />
     <ClInclude Include="Renderers\MRenderer.h" />
+    <ClInclude Include="Renderers\MViewPortRenderer.h" />
     <ClInclude Include="Scene Elements\MCamera.h" />
     <ClInclude Include="Scene Elements\MLight.h" />
     <ClInclude Include="Scene Elements\MSceneElement.h" />

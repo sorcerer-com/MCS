@@ -44,6 +44,7 @@ namespace MyEngine {
 	public:
 		SceneElement(SceneManager* owner, SceneElementType type, const string& name, uint contentID);
 		SceneElement(SceneManager* owner, istream& file);
+        virtual ~SceneElement();
 
 		ContentElementPtr GetContent() const;
         ContentElementPtr GetMaterial() const;

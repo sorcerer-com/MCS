@@ -19,7 +19,7 @@ namespace MyEngine {
 
     protected:
         BaseManager(Engine* owner);
-        ~BaseManager();
+        virtual ~BaseManager() = 0;
 
     };
 

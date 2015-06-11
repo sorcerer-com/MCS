@@ -84,7 +84,7 @@ namespace MyEngine {
     
 
     IrrRenderer::IrrRenderer(Engine* owner) :
-        Renderer(owner, EIrrRenderer)
+        ViewPortRenderer(owner, RendererType::EIrrRenderer)
     {
         this->windowHandle = NULL;
 
@@ -98,8 +98,6 @@ namespace MyEngine {
 
     IrrRenderer::~IrrRenderer()
     {
-        this->thread->join();
-
         Engine::Log(LogType::ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
     }
 
@@ -116,9 +114,7 @@ namespace MyEngine {
 
     void IrrRenderer::ReSize(int width, int height)
     {
-        this->Width = width;
-        this->Height = height;
-        this->Resized = true;
+        ViewPortRenderer::ReSize(width, height);
         Engine::Log(LogType::ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
     }
 
@@ -334,8 +330,6 @@ namespace MyEngine {
                             irrMaterial.setTexture(0, irrTexture);
                     }
                 }
-                else
-                    irrMaterial.setTexture(0, NULL);
                 if (sceneElement->Textures.NormalMapID != INVALID_ID)
                 {
                     ContentElementPtr contentElement = this->Owner->ContentManager->GetElement(sceneElement->Textures.NormalMapID, true, true);
@@ -347,8 +341,6 @@ namespace MyEngine {
                             irrMaterial.setTexture(1, irrTexture);
                     }
                 }
-                else
-                    irrMaterial.setTexture(1, NULL);
                 
                 if (!sceneElement->Visible) // if scene element is invisible
                     irrMaterial.DiffuseColor.setAlpha(128);
@@ -534,6 +526,8 @@ namespace MyEngine {
 
     bool IrrRenderer::updateIrrMaterial(const SceneElementPtr sceneElement, irr::video::SMaterial& irrMaterial)
     {
+        irrMaterial.setTexture(0, NULL);
+        irrMaterial.setTexture(1, NULL);
         if (sceneElement->MaterialID != INVALID_ID)
         {
             ContentElementPtr contentElement = NULL;
@@ -566,8 +560,6 @@ namespace MyEngine {
                     irrMaterial.getTexture(0) != irrTexture)
                     irrMaterial.setTexture(0, irrTexture);
             }
-            else
-                irrMaterial.setTexture(0, NULL);
             if (material->Textures.NormalMapID != INVALID_ID)
             {
                 irr::video::ITexture* irrTexture = this->irrDriver->getTexture(irr::core::stringw(to_string(material->Textures.NormalMapID).c_str()));
@@ -575,8 +567,6 @@ namespace MyEngine {
                     irrMaterial.getTexture(1) != irrTexture)
                     irrMaterial.setTexture(1, irrTexture);
             }
-            else
-                irrMaterial.setTexture(1, NULL);
         }
 
         irrMaterial.FogEnable = true;

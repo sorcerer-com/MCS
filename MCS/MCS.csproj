@@ -133,6 +133,9 @@
     <Compile Include="MainWindows\LayersWindow.xaml.cs">
       <DependentUpon>LayersWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindows\RenderWindow.xaml.cs">
+      <DependentUpon>RenderWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Managers\ConfigManager.cs" />
     <Compile Include="Managers\DelegateCommand.cs" />
     <Compile Include="Managers\WindowsManager.cs" />
@@ -157,6 +160,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindows\LogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindows\RenderWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

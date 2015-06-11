@@ -51,6 +51,10 @@ namespace MyEngine {
 		}
 	}
 
+    SceneElement::~SceneElement()
+    {
+    }
+
 	void SceneElement::init()
 	{
 		this->Version = CURRENT_VERSION;

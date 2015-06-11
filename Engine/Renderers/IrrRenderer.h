@@ -39,7 +39,7 @@ namespace MyEngine {
 	class SceneElement;
 	using SceneElementPtr = shared_ptr < SceneElement >;
 	
-	class IrrRenderer : public Renderer
+    class IrrRenderer : public ViewPortRenderer
 	{
         friend class IrrShaderCallBack;
 

@@ -9,41 +9,45 @@
 
 namespace MyEngine {
 
-	ContentElement::ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path)
-	{
-		if (!owner)
-			throw "ArgumentNullException: owner";
+    ContentElement::ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path)
+    {
+        if (!owner)
+            throw "ArgumentNullException: owner";
 
-		this->Owner = owner;
+        this->Owner = owner;
 
-		this->init();
-		this->Type = type;
-		this->Name = name;
-		this->Package = package;
-		this->Path = path;
-	}
+        this->init();
+        this->Type = type;
+        this->Name = name;
+        this->Package = package;
+        this->Path = path;
+    }
 
-	ContentElement::ContentElement(ContentManager* owner, istream& file)
-	{
-		if (!owner)
-			throw "ArgumentNullException: owner";
+    ContentElement::ContentElement(ContentManager* owner, istream& file)
+    {
+        if (!owner)
+            throw "ArgumentNullException: owner";
 
-		this->Owner = owner;
+        this->Owner = owner;
 
-		this->init();
-		Read(file, this->Version);
-		if (this->Version >= 1)
-		{
-			Read(file, this->Type);
-			Read(file, this->ID);
-			Read(file, this->Name);
-			Read(file, this->Package);
-			Read(file, this->Path);
-			Read(file, this->PackageOffset);
-			Read(file, this->SavedSize);
-		}
-		this->IsLoaded = false;
-	}
+        this->init();
+        Read(file, this->Version);
+        if (this->Version >= 1)
+        {
+            Read(file, this->Type);
+            Read(file, this->ID);
+            Read(file, this->Name);
+            Read(file, this->Package);
+            Read(file, this->Path);
+            Read(file, this->PackageOffset);
+            Read(file, this->SavedSize);
+        }
+        this->IsLoaded = false;
+    }
+
+    ContentElement::~ContentElement()
+    {
+    }
 
 	void ContentElement::init()
 	{

@@ -24,13 +24,20 @@ namespace MyEngine {
 		this->ContentManager = gcnew MContentManager(this, this->engine->ContentManager.get());
 		this->SceneManager = gcnew MSceneManager(this, this->engine->SceneManager.get());
 
-		this->ViewPortRenderer = gcnew MRenderer(this->engine->ViewPortRenderer.get());
+        this->ViewPortRenderer = gcnew MViewPortRenderer(this->engine->ViewPortRenderer.get());
+        this->ProductionRenderer = nullptr;
 	}
 
 	MEngine::~MEngine()
-	{
-		delete this->SceneManager;
-		this->SceneManager = nullptr;
+    {
+        delete this->ProductionRenderer;
+        this->ProductionRenderer = nullptr;
+
+        delete this->ViewPortRenderer;
+        this->ViewPortRenderer = nullptr;
+
+        delete this->SceneManager;
+        this->SceneManager = nullptr;
 
 		delete this->ContentManager;
 		this->ContentManager = nullptr;

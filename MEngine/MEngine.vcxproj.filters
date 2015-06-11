@@ -10,7 +10,6 @@
     <ClInclude Include="MEngine.h" />
     <ClInclude Include="Scene Elements\MSceneElement.h" />
     <ClInclude Include="Managers\MSceneManager.h" />
-    <ClInclude Include="Renderers\MRenderer.h" />
     <ClInclude Include="Scene Elements\MCamera.h" />
     <ClInclude Include="Utils\Types\MColor.h" />
     <ClInclude Include="Scene Elements\MLight.h" />
@@ -18,6 +17,9 @@
     <ClInclude Include="Utils\MSelector.h" />
     <ClInclude Include="Content Elements\MTexture.h" />
     <ClInclude Include="Managers\MBaseManager.h" />
+    <ClInclude Include="Renderers\MViewPortRenderer.h" />
+    <ClInclude Include="Renderers\MProductionRenderer.h" />
+    <ClInclude Include="Renderers\MRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

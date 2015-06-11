@@ -1,4 +1,4 @@
-// MRenderer.h
+// MViewPortRenderer.h
 #pragma once
 
 #include "Engine\Renderers\Renderer.h"
@@ -17,10 +17,10 @@ namespace MyEngine {
 		GPURayRenderer
 	};
 
-	public ref class MRenderer
+	public ref class MRenderer abstract
 	{
-	private:
-		Renderer* renderer;
+	protected:
+        Renderer* renderer;
 
 	public:
 		property ERendererType Type
@@ -38,47 +38,10 @@ namespace MyEngine {
 			int get() { return this->renderer->Height; }
 		}
 
-		property bool Resized
-		{
-			bool get() { return this->renderer->Resized; }
-		}
-
 	public:
-		MRenderer(Renderer* renderer)
+        MRenderer(Renderer* renderer)
 		{
 			this->renderer = renderer;
-		}
-
-
-		void Init(IntPtr handle)
-		{
-			this->renderer->Init((void*)handle);
-		}
-
-		void ReSize(int width, int height)
-		{
-			this->renderer->ReSize(width, height);
-		}
-
-
-		uint GetSceneElementID(double x, double y)
-		{
-			Vector3 dir, inter;
-			return this->renderer->GetIntesectionInfo((float)x, (float)y, dir, inter);
-		}
-
-		MPoint GetDirection(double x, double y)
-		{
-			Vector3 dir, inter;
-			this->renderer->GetIntesectionInfo((float)x, (float)y, dir, inter);
-			return MPoint(dir);
-		}
-
-		MPoint GetIntesectionPoint(double x, double y)
-		{
-			Vector3 dir, inter;
-			this->renderer->GetIntesectionInfo((float)x, (float)y, dir, inter);
-			return MPoint(inter);
 		}
 
 	};

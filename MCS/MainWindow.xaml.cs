@@ -448,6 +448,15 @@ namespace MCS
             get { return "Layers " + WindowsManager.GetHotkey(this.GetType(), "LayersWindowCommand", true); }
         }
 
+        public ICommand RenderWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(RenderWindow), this.engine); }); }
+        }
+        public string RenderWindowCommandTooltip
+        {
+            get { return "Render " + WindowsManager.GetHotkey(this.GetType(), "RenderWindowCommand", true); }
+        }
+
 
         // Scene Elements commands
         public ICommand CloneElementCommand

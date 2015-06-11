@@ -83,7 +83,7 @@
                 </Button>
             </ToolBar>
             <ToolBar Band="1" BandIndex="4" IsManipulationEnabled="True">
-                <Button ToolTip="Render (F9)">
+                <Button ToolTip="{Binding Path=RenderWindowCommandTooltip}" Command="{Binding Path=RenderWindowCommand}">
                     <Image Source="/Images/MainWindow/Render.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Build Light Maps (F6)">

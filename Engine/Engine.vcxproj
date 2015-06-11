@@ -95,8 +95,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;Embree$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -112,8 +113,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;Embree$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,8 +139,9 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;Embree$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -162,8 +165,9 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Irrlicht$(PlatformArchitecture).lib;Embree$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -175,6 +179,7 @@
     <ClCompile Include="Managers\ContentManager.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="Managers\SceneManager.cpp" />
+    <ClCompile Include="Renderers\CPURayRenderer.cpp" />
     <ClCompile Include="Renderers\IrrRenderer.cpp" />
     <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Scene Elements\Camera.cpp" />
@@ -197,6 +202,7 @@
     <ClInclude Include="Managers\ContentManager.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Managers\SceneManager.h" />
+    <ClInclude Include="Renderers\CPURayRenderer.h" />
     <ClInclude Include="Renderers\IrrRenderer.h" />
     <ClInclude Include="Renderers\Renderer.h" />
     <ClInclude Include="Scene Elements\Camera.h" />
@@ -209,6 +215,7 @@
     <ClInclude Include="Utils\IOUtils.h" />
     <ClInclude Include="Utils\Thread.h" />
     <ClInclude Include="Utils\Types\Color4.h" />
+    <ClInclude Include="Utils\Types\Buffer.h" />
     <ClInclude Include="Utils\Types\Quaternion.h" />
     <ClInclude Include="Utils\Types\Vector3.h" />
     <ClInclude Include="Utils\Utils.h" />
