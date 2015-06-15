@@ -11,13 +11,13 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Grid.Row="0">
-            <Button Name="createButton" ToolTip="Create Layer" Margin="3" Command="{Binding Path=CreateLayerCommand}">
+            <Button ToolTip="Create Layer" Margin="3" Command="{Binding Path=CreateLayerCommand}">
                 <Image Source="/Images/Common/Add.png" Width="18" Height="17" Stretch="Fill"/>
             </Button>
-            <Button Name="renameButton" ToolTip="Rename Layer" Margin="3" Command="{Binding Path=RenameLayerCommand}">
+            <Button ToolTip="Rename Layer" Margin="3" Command="{Binding Path=RenameLayerCommand}">
                 <Image Source="/Images/Common/Rename.png" Width="18" Height="17" Stretch="Fill"/>
             </Button>
-            <Button Name="deleteButton" ToolTip="Delete Layer" Margin="3" Command="{Binding Path=DeleteLayerCommand}">
+            <Button ToolTip="Delete Layer" Margin="3" Command="{Binding Path=DeleteLayerCommand}">
                 <Image Source="/Images/Common/Delete.png" Width="18" Height="17" Stretch="Fill"/>
             </Button>
         </StackPanel>

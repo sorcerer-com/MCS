@@ -17,32 +17,67 @@ namespace MyEngine {
 		GPURayRenderer
 	};
 
-	public ref class MRenderer abstract
-	{
-	protected:
+    public ref class MRenderer abstract
+    {
+    protected:
         Renderer* renderer;
 
-	public:
-		property ERendererType Type
-		{
-			ERendererType get() { return (ERendererType)this->renderer->Type; }
-		}
+    public:
+        property ERendererType Type
+        {
+            ERendererType get() { return (ERendererType)this->renderer->Type; }
+        }
 
-		property int Width
-		{
-			int get() { return this->renderer->Width; }
-		}
+        property uint Width
+        {
+            uint get() { return this->renderer->Width; }
+        }
 
-		property int Height
-		{
-			int get() { return this->renderer->Height; }
-		}
+        property uint Height
+        {
+            uint get() { return this->renderer->Height; }
+        }
 
-	public:
+
+        static property List<ERendererType>^ ViewPortRendererTypes
+        {
+            List<ERendererType>^ get()
+            {
+                List<ERendererType>^ collection = gcnew List<ERendererType>();
+                collection->Add(ERendererType::IrrRenderer);
+                return collection;
+            }
+        }
+
+        static property List<ERendererType>^ ProductionRendererTypes
+        {
+            List<ERendererType>^ get()
+            {
+                List<ERendererType>^ collection = gcnew List<ERendererType>();
+                collection->Add(ERendererType::CPURayRenderer);
+                collection->Add(ERendererType::GPURayRenderer);
+                return collection;
+            }
+        }
+
+        static property List<String^>^ BuffersNames
+        {
+            List<String^>^ get()
+            {
+                List<String^>^ collection = gcnew List<String^>();
+
+                for (uint i = 0; i < ProductionRenderer::BuffersNamesCount; i++)
+                    collection->Add(gcnew String(ProductionRenderer::BuffersNames[i].c_str()));
+
+                return collection;
+            }
+        }
+
+    public:
         MRenderer(Renderer* renderer)
-		{
-			this->renderer = renderer;
-		}
+        {
+            this->renderer = renderer;
+        }
 
 	};
 

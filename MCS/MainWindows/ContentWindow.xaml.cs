@@ -582,7 +582,7 @@ namespace MCS.MainWindows
                 if (relativePath != string.Empty) relativePath += "\\";
                 string fullPath = selectedTreeItem.FullPath + relativePath;
 
-                if (!this.contentManager.ContainPath(fullPath))
+                if (!this.contentManager.ContainsPath(fullPath))
                     this.contentManager.CreatePath(fullPath);
 
                 // if allready exists

@@ -71,9 +71,9 @@ namespace MyEngine {
 		return res;
 	}
 
-	bool MContentManager::ContainPath(String^ fullPath)
+	bool MContentManager::ContainsPath(String^ fullPath)
 	{
-		return this->contentManager->ContainPath(to_string(fullPath));
+		return this->contentManager->ContainsPath(to_string(fullPath));
 	}
 
 	bool MContentManager::DeletePath(String^ fullPath)
@@ -113,14 +113,14 @@ namespace MyEngine {
 		return nullptr;
 	}
 
-	bool MContentManager::ContainElement(uint id)
+	bool MContentManager::ContainsElement(uint id)
 	{
-		return this->contentManager->ContainElement(id);
+		return this->contentManager->ContainsElement(id);
 	}
 
-	bool MContentManager::ContainElement(String^ fullName)
+	bool MContentManager::ContainsElement(String^ fullName)
 	{
-		return this->contentManager->ContainElement(to_string(fullName));
+		return this->contentManager->ContainsElement(to_string(fullName));
 	}
 
 	bool MContentManager::RenameElement(uint id, String^ newName)
@@ -163,7 +163,7 @@ namespace MyEngine {
 
 	MContentElement^ MContentManager::GetElement(uint id, bool load)
 	{
-		if (!this->contentManager->ContainElement(id))
+		if (!this->contentManager->ContainsElement(id))
 			return nullptr;
 
 		ContentElementPtr elem = this->contentManager->GetElement(id, load, load);

@@ -35,7 +35,7 @@ namespace MyEngine {
             this->Renderer->Init((void*)handle);
 		}
 
-		void ReSize(int width, int height)
+        void ReSize(uint width, uint height)
 		{
             this->Renderer->ReSize(width, height);
 		}

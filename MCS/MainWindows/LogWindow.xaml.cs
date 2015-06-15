@@ -23,6 +23,7 @@ namespace MCS.MainWindows
 
         private DispatcherTimer timer;
 
+
         public LogWindow()
         {
             InitializeComponent();
@@ -36,6 +37,7 @@ namespace MCS.MainWindows
             this.timer.Start();
             this.timer_Tick(null, null);
         }
+
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

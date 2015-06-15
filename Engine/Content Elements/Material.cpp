@@ -50,14 +50,14 @@ namespace MyEngine {
 
 	ContentElementPtr Material::GetDiffuseMap() const
 	{
-        if (this->Owner->ContainElement(this->Textures.DiffuseMapID))
+        if (this->Owner->ContainsElement(this->Textures.DiffuseMapID))
             return this->Owner->GetElement(this->Textures.DiffuseMapID, true, true);
 		return ContentElementPtr();
 	}
 
 	ContentElementPtr Material::GetNormalMap() const
 	{
-        if (this->Owner->ContainElement(this->Textures.NormalMapID))
+        if (this->Owner->ContainsElement(this->Textures.NormalMapID))
             return this->Owner->GetElement(this->Textures.NormalMapID, true, true);
 		return ContentElementPtr();
 	}

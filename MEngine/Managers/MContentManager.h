@@ -41,13 +41,13 @@ namespace MyEngine {
 
 		bool CreatePath(String^ fullPath);
 		bool RenamePath(String^ oldFullPath, String^ newFullPath);
-		bool ContainPath(String^ fullPath);
+		bool ContainsPath(String^ fullPath);
 		bool DeletePath(String^ fullPath);
 
 		MContentElement^ AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id);
 		MContentElement^ CloneElement(uint id, String^ newName);
-		bool ContainElement(uint id);
-		bool ContainElement(String^ fullName);
+		bool ContainsElement(uint id);
+		bool ContainsElement(String^ fullName);
 		bool RenameElement(uint id, String^ newName);
 		bool MoveElement(uint id, String^ newFullPath);
 		bool DeleteElement(uint id);

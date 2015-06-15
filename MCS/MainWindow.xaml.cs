@@ -474,7 +474,7 @@ namespace MCS
                         string newName = mse.Name;
                         while (char.IsDigit(newName[newName.Length - 1])) newName = newName.Substring(0, newName.Length - 1);
                         int count = 1;
-                        while (this.engine.SceneManager.ContainElement(newName + count.ToString("000"))) count++;
+                        while (this.engine.SceneManager.ContainsElement(newName + count.ToString("000"))) count++;
                         newName = newName + count.ToString("000");
 
                         MSceneElement newMse = this.engine.SceneManager.CloneElement(id, newName);
@@ -538,7 +538,7 @@ namespace MCS
                     MContentElement element = o as MContentElement;
                     string name = element != null ? element.Name : o.ToString();
                     int count = 1;
-                    while (this.engine.SceneManager.ContainElement(name + count.ToString("000"))) count++;
+                    while (this.engine.SceneManager.ContainsElement(name + count.ToString("000"))) count++;
                     name = name + count.ToString("000");
 
                     MSceneElement mse = null;
@@ -589,7 +589,7 @@ namespace MCS
             this.render.Child = new System.Windows.Forms.UserControl();
             this.render.Child.Resize += (s, ee) =>
             {
-                this.engine.ViewPortRenderer.ReSize(this.render.Child.Width, this.render.Child.Height);
+                this.engine.ViewPortRenderer.ReSize((uint)this.render.Child.Width, (uint)this.render.Child.Height);
             };
             this.render.Child.MouseDown += (s, ee) =>
             {

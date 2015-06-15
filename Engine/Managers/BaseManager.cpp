@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "BaseManager.h"
 
-#include "..\Utils\Thread.h"
+#include "..\Utils\Types\Thread.h"
 
 
 namespace MyEngine {

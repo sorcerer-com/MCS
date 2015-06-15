@@ -6,8 +6,8 @@
 #include "..\Engine.h"
 #include "..\Utils\Config.h"
 #include "..\Utils\Utils.h"
-#include "..\Utils\Thread.h"
 #include "..\Utils\IOUtils.h"
+#include "..\Utils\Types\Thread.h"
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
 #include "..\Content Elements\Material.h"
@@ -74,7 +74,7 @@ namespace MyEngine {
 
 	bool ContentManager::ExportToPackage(const string& filePath, uint id)
 	{
-		if (!this->ContainElement(id))
+		if (!this->ContainsElement(id))
 		{
 			Engine::Log(LogType::EError, "ContentManager", "Cannot export non existent content element (" + to_string(id) + ")");
 			return false;
@@ -102,7 +102,7 @@ namespace MyEngine {
 	/* P A T H S */
 	bool ContentManager::CreatePath(const string& fullPath)
 	{
-		if (this->ContainPath(fullPath))
+		if (this->ContainsPath(fullPath))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to create already exists path '" + fullPath + "'");
 			return false;
@@ -122,7 +122,7 @@ namespace MyEngine {
 
 	bool ContentManager::RenamePath(const string& oldFullPath, const string& newFullPath)
 	{
-		if (this->ContainPath(newFullPath))
+		if (this->ContainsPath(newFullPath))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to rename non existent path '" + oldFullPath + "'");
 			return false;
@@ -184,7 +184,7 @@ namespace MyEngine {
 		return true;
 	}
 
-	bool ContentManager::ContainPath(const string& fullPath) const
+	bool ContentManager::ContainsPath(const string& fullPath) const
 	{
 		string package = ContentManager::GetPackage(fullPath);
 		string path = ContentManager::GetPath(fullPath);
@@ -199,7 +199,7 @@ namespace MyEngine {
 
 	bool ContentManager::DeletePath(const string& fullPath)
 	{
-		if (!this->ContainPath(fullPath))
+		if (!this->ContainsPath(fullPath))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to delete non existent path '" + fullPath + "'");
 			return false;
@@ -288,10 +288,10 @@ namespace MyEngine {
 		{
 			do {
 				element->ID = (uint)Now;
-			} while (this->ContainElement(element->ID));
+			} while (this->ContainsElement(element->ID));
 		}
 
-		if (this->ContainElement(element->ID) || this->ContainElement(element->GetFullName()))
+		if (this->ContainsElement(element->ID) || this->ContainsElement(element->GetFullName()))
 			Engine::Log(LogType::EWarning, "ContentManager", "Add content element '" + element->GetFullName() + "' (" + to_string(element->ID) + ") that already exists");
 
 		lock lck(this->thread->mutex("content"));
@@ -307,19 +307,19 @@ namespace MyEngine {
 
 	bool ContentManager::MoveElement(uint id, const string& newFullPath)
 	{
-		if (!this->ContainElement(id))
+		if (!this->ContainsElement(id))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to move non existent content element (" + to_string(id) + ")");
 			return false;
 		}
-		if (!this->ContainPath(newFullPath))
+		if (!this->ContainsPath(newFullPath))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to move element to non existent path '" + newFullPath + "'");
 			return false;
 		}
 
 		ContentElementPtr element = this->GetElement(id, true, true);
-		if (this->ContainElement(newFullPath + element->Name))
+		if (this->ContainsElement(newFullPath + element->Name))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to move content element '" + element->Name + "' (" + to_string(element->ID) +
 				") to path '" + newFullPath + "', but there is already element with the same name");
@@ -340,12 +340,12 @@ namespace MyEngine {
 		return true;
 	}
 
-	bool ContentManager::ContainElement(uint id) const
+	bool ContentManager::ContainsElement(uint id) const
 	{
 		return this->content.find(id) != this->content.end();
 	}
 
-	bool ContentManager::ContainElement(const string& fullname)
+	bool ContentManager::ContainsElement(const string& fullname)
 	{
 		string package = ContentManager::GetPackage(fullname);
 		string path = ContentManager::GetPath(fullname);
@@ -372,7 +372,7 @@ namespace MyEngine {
 
 	bool ContentManager::DeleteElement(uint id)
 	{
-		if (!this->ContainElement(id))
+		if (!this->ContainsElement(id))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to delete non existent content element (" + to_string(id) + ")");
 			return false;
@@ -393,7 +393,7 @@ namespace MyEngine {
 
 	ContentElementPtr ContentManager::GetElement(uint id, bool load, bool waitForLoad /* = false */)
 	{
-		if (!this->ContainElement(id))
+		if (!this->ContainsElement(id))
 		{
 			Engine::Log(LogType::EWarning, "ContentManager", "Try to get non existent content element (" + to_string(id) + ")");
 			return ContentElementPtr();

@@ -3,7 +3,10 @@
 
 #include "Utils\Header.h"
 
-
+namespace std
+{
+    class mutex;
+}
 namespace MyEngine {
 
 	class ContentManager;
@@ -35,6 +38,9 @@ namespace MyEngine {
 
 	class Engine
 	{
+    private:
+        static mutex logMutex;
+
 	public:
 		shared_ptr<ContentManager> ContentManager;
 		shared_ptr<SceneManager> SceneManager;

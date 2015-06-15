@@ -6,6 +6,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <future>
 
 
 namespace MyEngine {
@@ -19,6 +20,9 @@ namespace MyEngine {
 		vector<thread> workers;
 		map<string, mutex> mutices;
 		map<string, recursive_mutex> recursive_mutices;
+
+        queue<packaged_task<bool()>> tasks;
+        mutex tasksMutex;
 
 	public:
 		Thread()
@@ -59,6 +63,7 @@ namespace MyEngine {
 				for (auto& worker : this->workers)
 					if (worker.joinable())
 						worker.join();
+                this->workers.clear();
 			}
 		}
 
@@ -80,6 +85,48 @@ namespace MyEngine {
 
 			throw "Try to access invalid mutex";
 		}
+
+
+        inline void defThreadPool(int threadsCount = 0)
+        {
+            if (threadsCount == 0)
+                threadsCount = std::thread::hardware_concurrency();
+
+            for (int i = 0; i < threadsCount; i++)
+                this->defWorker(&Thread::doTask, this);
+        }
+
+        inline future<bool> addTask(function<bool()> func)
+        {
+            lock lck(this->tasksMutex);
+            this->tasks.push(packaged_task<bool()>(func));
+            return this->tasks.back().get_future();
+        }
+
+    private:
+        void doTask()
+        {
+            while (!this->interrupt)
+            {
+                while (!this->tasks.empty())
+                {
+                    packaged_task<bool()> task;
+                    {
+                        lock lck(this->tasksMutex);
+                        if (this->tasks.empty())
+                            continue;
+                        task = move(this->tasks.front());
+                        this->tasks.pop();
+                    }
+
+                    task();
+
+                    this_thread::sleep_for(chrono::milliseconds(1));
+                }
+
+                this_thread::sleep_for(chrono::milliseconds(100));
+            }
+        }
 
 	};
 

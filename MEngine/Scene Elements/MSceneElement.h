@@ -140,7 +140,7 @@ namespace MyEngine {
 
 		virtual String^ ToString() override
 		{
-			if (!this->owner->ContainElement(this->id) || !this->element)
+			if (!this->owner->ContainsElement(this->id) || !this->element)
 				return nullptr;
 
 			return this->Type.ToString() + ": " + this->Name + " (" + this->ID + ")";
@@ -148,12 +148,12 @@ namespace MyEngine {
 
 		virtual bool Equals(Object^ obj) override
 		{
-			if (!this->owner->ContainElement(this->id) || !this->element)
+			if (!this->owner->ContainsElement(this->id) || !this->element)
 				return false;
 
 			MSceneElement^ mse = dynamic_cast<MSceneElement^>(obj);
 			if (mse == nullptr ||
-				!this->owner->ContainElement(mse->id) || !mse->element)
+				!this->owner->ContainsElement(mse->id) || !mse->element)
 				return false;
 			return this->ID.Equals(mse->ID);
 		}

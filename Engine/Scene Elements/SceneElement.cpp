@@ -73,28 +73,28 @@ namespace MyEngine {
 
 	ContentElementPtr SceneElement::GetContent() const
 	{
-		if (this->Owner->Owner->ContentManager->ContainElement(this->ContentID))
+		if (this->Owner->Owner->ContentManager->ContainsElement(this->ContentID))
 			return this->Owner->Owner->ContentManager->GetElement(this->ContentID, true, true);
 		return ContentElementPtr();
 	}
 
 	ContentElementPtr SceneElement::GetMaterial() const
 	{
-		if (this->Owner->Owner->ContentManager->ContainElement(this->MaterialID))
+		if (this->Owner->Owner->ContentManager->ContainsElement(this->MaterialID))
 			return this->Owner->Owner->ContentManager->GetElement(this->MaterialID, true, true);
 		return ContentElementPtr();
     }
 
     ContentElementPtr SceneElement::GetDiffuseMap() const
     {
-        if (this->Owner->Owner->ContentManager->ContainElement(this->Textures.DiffuseMapID))
+        if (this->Owner->Owner->ContentManager->ContainsElement(this->Textures.DiffuseMapID))
             return this->Owner->Owner->ContentManager->GetElement(this->Textures.DiffuseMapID, true, true);
         return ContentElementPtr();
     }
 
     ContentElementPtr SceneElement::GetNormalMap() const
     {
-        if (this->Owner->Owner->ContentManager->ContainElement(this->Textures.NormalMapID))
+        if (this->Owner->Owner->ContentManager->ContainsElement(this->Textures.NormalMapID))
             return this->Owner->Owner->ContentManager->GetElement(this->Textures.NormalMapID, true, true);
         return ContentElementPtr();
     }

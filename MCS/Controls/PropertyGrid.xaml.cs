@@ -52,6 +52,8 @@ namespace MCS.Controls
 
         public bool IsLocked { get; set; }
 
+        public bool IsSorted { get; set; }
+
         public GetListDelegate GetList
         {
             get { return (GetListDelegate)GetValue(GetListProperty); }
@@ -67,6 +69,7 @@ namespace MCS.Controls
             this.Expanded = false;
             this.expandedGroups = new List<string>();
             this.IsLocked = false;
+            this.IsSorted = true;
         }
 
         public PropertyGrid(object obj)
@@ -158,7 +161,9 @@ namespace MCS.Controls
                 if (aGroup != bGroup)
                     return aGroup.CompareTo(bGroup);
 
-                return a.Name.CompareTo(b.Name);
+                string aSortName = aAtt != null && !string.IsNullOrEmpty(aAtt.SortName) ? aAtt.SortName : a.Name;
+                string bSortName = bAtt != null && !string.IsNullOrEmpty(bAtt.SortName) ? bAtt.SortName : b.Name;
+                return this.IsSorted ? aSortName.CompareTo(bSortName) : 0;
             });
 
             string group = string.Empty;
@@ -177,13 +182,13 @@ namespace MCS.Controls
 
                 bool expanded = this.Expanded ^ this.expandedGroups.Contains(att.Group); // xor
                 expanded |= !string.IsNullOrEmpty(this.filterTextBox.Text);
-                if (string.IsNullOrEmpty(group) || group != att.Group)
+                if (!string.IsNullOrEmpty(att.Group) && (string.IsNullOrEmpty(group) || group != att.Group))
                 {
                     group = att.Group;
                     this.addGroup(group, expanded);
                 }
 
-                if (!expanded)
+                if (!expanded && !string.IsNullOrEmpty(att.Group))
                     continue;
 
                 object value = pi.GetValue(this.Object, null);

@@ -172,14 +172,14 @@ namespace MyEngine {
 		return nullptr;
 	}
 
-	bool MSceneManager::ContainElement(uint id)
+	bool MSceneManager::ContainsElement(uint id)
 	{
-		return this->sceneManager->ContainElement(id);
+		return this->sceneManager->ContainsElement(id);
 	}
 
-	bool MSceneManager::ContainElement(String^ name)
+	bool MSceneManager::ContainsElement(String^ name)
 	{
-		return this->sceneManager->ContainElement(to_string(name));
+		return this->sceneManager->ContainsElement(to_string(name));
 	}
 
 	bool MSceneManager::RenameElement(String^ oldName, String^ newName)
@@ -203,7 +203,7 @@ namespace MyEngine {
 		if (!elem)
 			return false;
 
-		if (!this->sceneManager->ContainLayer(to_string(layer)))
+		if (!this->sceneManager->ContainsLayer(to_string(layer)))
 			return false;
 
 		elem->Layer = to_string(layer);
@@ -221,7 +221,7 @@ namespace MyEngine {
 
 	MSceneElement^ MSceneManager::GetElement(uint id)
 	{
-		if (!this->sceneManager->ContainElement(id))
+		if (!this->sceneManager->ContainsElement(id))
 			return nullptr;
 
 		SceneElementPtr elem = this->sceneManager->GetElement(id);
@@ -254,9 +254,9 @@ namespace MyEngine {
 		return res;
 	}
 
-	bool MSceneManager::ContainLayer(String^ layer)
+	bool MSceneManager::ContainsLayer(String^ layer)
 	{
-		return this->sceneManager->ContainLayer(to_string(layer));
+		return this->sceneManager->ContainsLayer(to_string(layer));
 	}
 
 	bool MSceneManager::DeleteLayer(String^ layer)

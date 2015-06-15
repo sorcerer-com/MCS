@@ -60,7 +60,7 @@ namespace MyEngine {
 		~IrrRenderer();
 
 		virtual bool Init(void* params) override;
-		virtual void ReSize(int width, int height) override;
+		virtual void ReSize(uint width, uint height) override;
 		virtual uint GetIntesectionInfo(float x, float y, Vector3& dir, Vector3& inter) override;
 
 	private:

@@ -6,8 +6,8 @@
 #include "..\Engine.h"
 #include "..\Utils\Config.h"
 #include "..\Utils\Utils.h"
-#include "..\Utils\Thread.h"
 #include "..\Utils\IOUtils.h"
+#include "..\Utils\Types\Thread.h"
 #include "..\Scene Elements\SceneElement.h"
 #include "..\Scene Elements\Camera.h"
 #include "..\Scene Elements\Light.h"
@@ -240,10 +240,10 @@ namespace MyEngine {
 		{
 			do {
 				element->ID = (uint)Now;
-			} while (this->ContainElement(element->ID));
+			} while (this->ContainsElement(element->ID));
 		}
 
-		if (this->ContainElement(element->ID) || this->ContainElement(element->Name))
+		if (this->ContainsElement(element->ID) || this->ContainsElement(element->Name))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to add scene element '" + element->Name + "' (" + to_string(element->ID) + ") that already exists");
 			return false;
@@ -256,12 +256,12 @@ namespace MyEngine {
 		return true;
 	}
 
-	bool SceneManager::ContainElement(uint id) const
+	bool SceneManager::ContainsElement(uint id) const
 	{
 		return this->sceneElements.find(id) != this->sceneElements.end();
 	}
 
-	bool SceneManager::ContainElement(const string& name) const
+	bool SceneManager::ContainsElement(const string& name) const
 	{
 		for (const auto& pair : this->sceneElements)
 		{
@@ -274,7 +274,7 @@ namespace MyEngine {
 
 	bool SceneManager::DeleteElement(uint id)
 	{
-		if (!this->ContainElement(id))
+		if (!this->ContainsElement(id))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to delete non existent scene element (" + to_string(id) + ")");
 			return false;
@@ -290,7 +290,7 @@ namespace MyEngine {
 	
 	SceneElementPtr SceneManager::GetElement(uint id)
 	{
-		if (!this->ContainElement(id))
+		if (!this->ContainsElement(id))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to get non existent scene element (" + to_string(id) + ")");
 			return SceneElementPtr();
@@ -325,7 +325,7 @@ namespace MyEngine {
     bool SceneManager::SetSkyBox(uint textureID)
     {
         SceneElementPtr skyBox = NULL;
-        if (textureID == INVALID_ID && this->ContainElement("SkyBox"))
+        if (textureID == INVALID_ID && this->ContainsElement("SkyBox"))
         {
             skyBox = this->GetElement("SkyBox");
             this->DeleteElement(skyBox->ID);
@@ -334,7 +334,7 @@ namespace MyEngine {
 
         if (textureID != INVALID_ID)
         {
-            if (this->ContainElement("SkyBox"))
+            if (this->ContainsElement("SkyBox"))
                 skyBox = this->GetElement("SkyBox");
             else
                 skyBox = this->AddElement(ESkyBox, "SkyBox", "MPackage#Meshes\\System\\SkyBox");
@@ -362,7 +362,7 @@ namespace MyEngine {
         }
 
         Light* sun = NULL;
-        if (this->ContainElement("Sun"))
+        if (this->ContainsElement("Sun"))
             sun = (Light*)this->GetElement("Sun").get();
         else if ((hour >= 7 && hour <= 21) || (hour > 0 && hour <= 6))
         {
@@ -419,7 +419,7 @@ namespace MyEngine {
 	/* L A Y E R S */
 	bool SceneManager::CreateLayer(const string& layer)
 	{
-		if (this->ContainLayer(layer))
+		if (this->ContainsLayer(layer))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to create already exists layer '" + layer + "'");
 			return false;
@@ -438,12 +438,12 @@ namespace MyEngine {
 			Engine::Log(LogType::EWarning, "Scene", "Try to rename 'Default' layer");
 			return false;
 		}
-		if (!this->ContainLayer(oldLayer))
+		if (!this->ContainsLayer(oldLayer))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to rename non existent layer '" + oldLayer + "'");
 			return false;
 		}
-		if (this->ContainLayer(newLayer))
+		if (this->ContainsLayer(newLayer))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to rename layer '" + oldLayer + "' to '" + newLayer +
 				"', but already exists one with that name");
@@ -462,7 +462,7 @@ namespace MyEngine {
 		return true;
 	}
 
-	bool SceneManager::ContainLayer(const string& layer) const
+	bool SceneManager::ContainsLayer(const string& layer) const
 	{
 		return find(this->layers.begin(), this->layers.end(), layer) != this->layers.end();
 	}
@@ -474,7 +474,7 @@ namespace MyEngine {
 			Engine::Log(LogType::EWarning, "Scene", "Try to delete 'Default' layer");
 			return false;
 		}
-		if (!this->ContainLayer(layer))
+		if (!this->ContainsLayer(layer))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to delete non existent layer '" + layer + "'");
 			return false;
@@ -504,7 +504,7 @@ namespace MyEngine {
 	vector<SceneElementPtr> SceneManager::GetLayerElements(const string& layer) const
 	{
 		vector<SceneElementPtr> result;
-		if (!this->ContainLayer(layer))
+		if (!this->ContainsLayer(layer))
 		{
 			Engine::Log(LogType::EWarning, "Scene", "Try to get elements in non existent layer '" + layer + "'");
 			return result;

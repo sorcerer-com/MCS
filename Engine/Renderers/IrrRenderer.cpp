@@ -8,8 +8,8 @@
 #pragma warning(pop)
 
 #include "..\Engine.h"
-#include "..\Utils\Thread.h"
 #include "..\Utils\Config.h"
+#include "..\Utils\Types\Thread.h"
 #include "..\Managers\SceneManager.h"
 #include "..\Managers\ContentManager.h"
 #include "..\Scene Elements\SceneElement.h"
@@ -98,6 +98,7 @@ namespace MyEngine {
 
     IrrRenderer::~IrrRenderer()
     {
+        this->thread->join();
         Engine::Log(LogType::ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
     }
 
@@ -112,7 +113,7 @@ namespace MyEngine {
         return true;
     }
 
-    void IrrRenderer::ReSize(int width, int height)
+    void IrrRenderer::ReSize(uint width, uint height)
     {
         ViewPortRenderer::ReSize(width, height);
         Engine::Log(LogType::ELog, "IrrRenderer", "IrrLicht renderer is resized to (" + to_string(width) + ", " + to_string(height) + ")");
@@ -245,7 +246,7 @@ namespace MyEngine {
         const auto irrChildrenSceneNode = irrRootSceneNode->getChildren();
         for (const auto& irrSceneNode : irrChildrenSceneNode)
         {
-            if (irrSceneNode && !this->Owner->SceneManager->ContainElement(irrSceneNode->getID()))
+            if (irrSceneNode && !this->Owner->SceneManager->ContainsElement(irrSceneNode->getID()))
                 irrSceneNode->remove();
         }
 
@@ -463,7 +464,7 @@ namespace MyEngine {
     bool IrrRenderer::updateIrrMesh(const SceneElementPtr sceneElement, irr::scene::SMesh* irrMesh)
     {
         ContentElementPtr contentElement = NULL;
-        if (this->Owner->ContentManager->ContainElement(sceneElement->ContentID))
+        if (this->Owner->ContentManager->ContainsElement(sceneElement->ContentID))
             contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
         if (!contentElement || contentElement->Type != ContentElementType::EMesh)
         {
@@ -531,7 +532,7 @@ namespace MyEngine {
         if (sceneElement->MaterialID != INVALID_ID)
         {
             ContentElementPtr contentElement = NULL;
-            if (this->Owner->ContentManager->ContainElement(sceneElement->MaterialID))
+            if (this->Owner->ContentManager->ContainsElement(sceneElement->MaterialID))
                 contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
             if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
             {
@@ -581,7 +582,7 @@ namespace MyEngine {
     bool IrrRenderer::updateIrrTexture(const Material* material, uint textureID, irr::video::ITexture*& irrTexture)
     {
         ContentElementPtr contentElement = NULL;
-        if (this->Owner->ContentManager->ContainElement(textureID))
+        if (this->Owner->ContentManager->ContainsElement(textureID))
             contentElement = this->Owner->ContentManager->GetElement(textureID, true, true);
         if (!contentElement || contentElement->Type != ContentElementType::ETexture)
         {

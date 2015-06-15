@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "Engine.h"
 
+#include <mutex>
+
 #include "Utils\Config.h"
 #include "Managers\ContentManager.h"
 #include "Managers\SceneManager.h"
@@ -29,6 +31,7 @@ namespace MyEngine {
 
 
 	/* E N G I N E */
+    mutex Engine::logMutex;
 	EngineMode Engine::Mode = EngineMode::EEditor;
 
 
@@ -42,7 +45,7 @@ namespace MyEngine {
 		this->SceneManager = make_shared<MyEngine::SceneManager>(this);
 
 		this->ViewPortRenderer = make_shared<IrrRenderer>(this);
-        this->ProductionRenderer = NULL;
+        this->ProductionRenderer = make_shared<CPURayRenderer>(this);;
 	}
 
 	Engine::~Engine()
@@ -59,6 +62,7 @@ namespace MyEngine {
 
 	void Engine::Log(LogType type, const string& category, const string& text)
 	{
+        lock_guard<mutex> lck(logMutex);
 		if (Engine::Mode == EngineMode::EEngine) // TODO: in other "Record"/"Movie" mode show only errors?
 			return;
 

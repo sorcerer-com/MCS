@@ -19,14 +19,16 @@ namespace MyEngine {
 	public ref class MPropertyAttribute : Attribute
 	{
 	public:
-		property String^ Group;
-		property String^ Description;
+        property String^ Group;
+        property String^ Description;
+		property String^ SortName;
 		property bool Choosable;
 
 		MPropertyAttribute()
 		{
-			this->Group = String::Empty;
-			this->Description = String::Empty;
+            this->Group = String::Empty;
+            this->Description = String::Empty;
+            this->SortName = String::Empty;
 			this->Choosable = false;
 		}
 	};

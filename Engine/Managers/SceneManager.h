@@ -40,8 +40,8 @@ namespace MyEngine {
 		SceneElementPtr AddElement(SceneElementType type, const string& name, uint contentID, uint id = 0);
 		SceneElementPtr AddElement(SceneElementType type, const string& name, const string& contentFullName, uint id = 0);
 		bool AddElement(SceneElement* element);
-		bool ContainElement(uint id) const;
-		bool ContainElement(const string& name) const;
+		bool ContainsElement(uint id) const;
+		bool ContainsElement(const string& name) const;
 		bool DeleteElement(uint id);
 		SceneElementPtr GetElement(uint id);
 		SceneElementPtr GetElement(const string& name);
@@ -52,7 +52,7 @@ namespace MyEngine {
 
 		bool CreateLayer(const string& layer);
 		bool RenameLayer(const string& oldLayer, const string& newLayer);
-		bool ContainLayer(const string& layer) const;
+		bool ContainsLayer(const string& layer) const;
 		bool DeleteLayer(const string& layer);
 		vector<string> GetLayers() const;
 		vector<SceneElementPtr> GetLayerElements(const string& layer) const;

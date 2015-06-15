@@ -82,8 +82,8 @@ namespace MyEngine {
 		MSceneElement^ AddElement(ESceneElementType type, String^ name, uint contentID);
 		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName);
 		MSceneElement^ CloneElement(uint id, String^ newName);
-		bool ContainElement(uint id);
-		bool ContainElement(String^ name);
+		bool ContainsElement(uint id);
+		bool ContainsElement(String^ name);
 		bool RenameElement(String^ oldName, String^ newName);
 		bool SetElementLayer(uint id, String^ layer);
 		bool DeleteElement(uint id);
@@ -92,7 +92,7 @@ namespace MyEngine {
         
 		bool CreateLayer(String^ layer);
 		bool RenameLayer(String^ oldLayer, String^ newLayer);
-		bool ContainLayer(String^ layer);
+		bool ContainsLayer(String^ layer);
 		bool DeleteLayer(String^ layer);
 		List<MSceneElement^>^ GetLayerElements(String^ layer);
 

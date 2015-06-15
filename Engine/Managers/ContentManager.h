@@ -50,14 +50,14 @@ namespace MyEngine {
 
 		bool CreatePath(const string& fullPath);
 		bool RenamePath(const string& oldFullPath, const string& newFullPath);
-		bool ContainPath(const string& fullPath) const;
+		bool ContainsPath(const string& fullPath) const;
 		bool DeletePath(const string& fullPath);
 		vector<string> GetPaths() const;
 
 		ContentElementPtr AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);
 		bool AddElement(ContentElement* element);
-		bool ContainElement(uint id) const;
-		bool ContainElement(const string& fullName);
+		bool ContainsElement(uint id) const;
+		bool ContainsElement(const string& fullName);
 		bool MoveElement(uint id, const string& newFullPath);
 		bool DeleteElement(uint id);
 		ContentElementPtr GetElement(uint id, bool load, bool waitForLoad = false);

@@ -25,7 +25,7 @@ namespace MyEngine {
 		this->SceneManager = gcnew MSceneManager(this, this->engine->SceneManager.get());
 
         this->ViewPortRenderer = gcnew MViewPortRenderer(this->engine->ViewPortRenderer.get());
-        this->ProductionRenderer = nullptr;
+        this->ProductionRenderer = gcnew MProductionRenderer(this->engine->ProductionRenderer.get());
 	}
 
 	MEngine::~MEngine()
