@@ -103,6 +103,12 @@ namespace MyEngine {
             return this->tasks.back().get_future();
         }
 
+        inline void addNTasks(function<bool()> func, int num)
+        {
+            for (int i = 0; i < num; i++)
+                this->addTask(func);
+        }
+
     private:
         void doTask()
         {

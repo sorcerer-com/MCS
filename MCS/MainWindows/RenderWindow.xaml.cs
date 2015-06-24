@@ -34,7 +34,7 @@ namespace MCS.MainWindows
         {
             get
             {
-                return new ObservableCollection<string>(MProductionRenderer.BuffersNames);
+                return new ObservableCollection<string>(this.engine.ProductionRenderer.BuffersNames);
             }
         }
 
@@ -58,7 +58,7 @@ namespace MCS.MainWindows
 
         #region Commands
 
-        public ICommand RenderWindowCommand
+        public ICommand RenderCommand
         {
             get
             {
@@ -90,7 +90,7 @@ namespace MCS.MainWindows
             this.engine = engine;
 
             this.SelectedRendererType = this.RendererTypes[0];
-            this.SelectedBufferName = "Final";
+            this.SelectedBufferName = this.BuffersNames[this.BuffersNames.Count - 1];
 
             this.RenderSettings = new MProductionRenderer.MRenderSettings();
             this.RenderSettings.Width = 640;
@@ -139,3 +139,5 @@ namespace MCS.MainWindows
 
     }
 }
+
+

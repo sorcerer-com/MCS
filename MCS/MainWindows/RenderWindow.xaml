@@ -42,7 +42,7 @@
                 <Label Content="Buffers:"/>
                 <ComboBox ItemsSource="{Binding Path=BuffersNames}" SelectedItem="{Binding Path=SelectedBufferName}"/>
                 <Separator/>
-                <Button ToolTip="Render" Command="{Binding Path=RenderWindowCommand}">
+                <Button ToolTip="Render" Command="{Binding Path=RenderCommand}">
                     <Image Source="/Images/MainWindow/Render.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
             </ToolBar>

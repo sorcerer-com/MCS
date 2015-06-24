@@ -214,6 +214,8 @@
     <ClInclude Include="Utils\Header.h" />
     <ClInclude Include="Utils\IOUtils.h" />
     <ClInclude Include="Utils\RayUtils.h" />
+    <ClInclude Include="Utils\Types\Profiler.h" />
+    <ClInclude Include="Utils\Types\Random.h" />
     <ClInclude Include="Utils\Types\Thread.h" />
     <ClInclude Include="Utils\Types\Color4.h" />
     <ClInclude Include="Utils\Types\Buffer.h" />

@@ -6,6 +6,7 @@
 #include <mutex>
 
 #include "Utils\Config.h"
+#include "Utils\Types\Profiler.h"
 #include "Managers\ContentManager.h"
 #include "Managers\SceneManager.h"
 #include "Renderers\IrrRenderer.h"
@@ -13,6 +14,9 @@
 
 
 namespace MyEngine {
+
+    // P R O F I L E R
+    map<string, Profiler::Data> Profiler::data;
 
 	/* S E L E C T O R */
 	set<uint> Selector::ContentElements;

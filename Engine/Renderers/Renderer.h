@@ -11,6 +11,7 @@ namespace MyEngine {
 	class Engine;
 	struct Thread;
 	struct Vector3;
+    struct Profiler;
 
 	enum RendererType
 	{
@@ -56,23 +57,21 @@ namespace MyEngine {
     {
     public:
         using BufferMapType = map<string, Buffer<Color4>>; // name / buffer
-
-        static const uint BuffersNamesCount;
-        static const vector<string> BuffersNames;
-
+        
         BufferMapType Buffers;
         bool IsStarted;
+
+    private:
+        shared_ptr<Profiler> profiler;
 
     public:
         ProductionRenderer(Engine* owner, RendererType type);
         virtual ~ProductionRenderer() = 0;
-        // TODO: add timer for rendering
 
+        virtual vector<string> GetBufferNames() = 0;
         virtual bool Init(uint width, uint height);
         virtual void Start();
         virtual void Stop();
-
-        bool ContainsBuffer(string name);
     };
 
 }

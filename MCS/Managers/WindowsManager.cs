@@ -147,6 +147,11 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.F9, false, false, false, "ListView", "ExportElementCommand"));
             hotkeys.Add(typeof(ContentWindow), keys);
 
+            // RenderWindow
+            keys = new List<HotKeyInfo>();
+            keys.Add(new HotKeyInfo(Key.F9, false, false, false, "", "RenderCommand"));
+            hotkeys.Add(typeof(RenderWindow), keys);
+
             saveHotkeys();
         }
 

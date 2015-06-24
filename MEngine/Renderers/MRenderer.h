@@ -60,19 +60,6 @@ namespace MyEngine {
             }
         }
 
-        static property List<String^>^ BuffersNames
-        {
-            List<String^>^ get()
-            {
-                List<String^>^ collection = gcnew List<String^>();
-
-                for (uint i = 0; i < ProductionRenderer::BuffersNamesCount; i++)
-                    collection->Add(gcnew String(ProductionRenderer::BuffersNames[i].c_str()));
-
-                return collection;
-            }
-        }
-
     public:
         MRenderer(Renderer* renderer)
         {

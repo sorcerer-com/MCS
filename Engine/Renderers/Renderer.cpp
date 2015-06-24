@@ -5,6 +5,7 @@
 
 #include "..\Utils\Config.h"
 #include "..\Utils\Types\Thread.h"
+#include "..\Utils\Types\Profiler.h"
 
 
 namespace MyEngine {
@@ -49,13 +50,11 @@ namespace MyEngine {
 
 
     /* P R O D U C T I O N   R E N D E R E R */
-    const uint ProductionRenderer::BuffersNamesCount = 9;
-    const vector<string> ProductionRenderer::BuffersNames = { "Diffuse", "Specular", "Reflection", "Refraction", "DirectLight", "IndirectLight", "TotalLight", "Depth", "Final" };
-
     ProductionRenderer::ProductionRenderer(Engine* owner, RendererType type) :
         Renderer(owner, type)
     {
         this->IsStarted = false;
+        this->profiler = make_shared<Profiler>();
     }
 
     ProductionRenderer::~ProductionRenderer()
@@ -74,16 +73,14 @@ namespace MyEngine {
     void ProductionRenderer::Start()
     {
         this->IsStarted = true;
+        this->profiler->start();
     }
 
     void ProductionRenderer::Stop()
     {
         this->IsStarted = false;
-    }
-
-    bool ProductionRenderer::ContainsBuffer(string name)
-    {
-        return this->Buffers.find(name) != this->Buffers.end();
+        chrono::system_clock::duration delta = this->profiler->stop();
+        Engine::Log(LogType::ELog, "ProductionRenderer", "Render time " + duration_to_string(delta));
     }
 
 }

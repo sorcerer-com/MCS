@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Engine\Renderers\Renderer.h"
+#include "Engine\Renderers\CPURayRenderer.h"
 #pragma managed
 
 #include "MRenderer.h"
@@ -37,6 +38,20 @@ namespace MyEngine {
             bool get() { return this->Renderer->IsStarted; }
         }
 
+        property List<String^>^ BuffersNames
+        {
+            List<String^>^ get()
+            {
+                List<String^>^ collection = gcnew List<String^>();
+
+                const auto& bufferNames = this->Renderer->GetBufferNames();
+                for (uint i = 0; i < bufferNames.size(); i++)
+                    collection->Add(gcnew String(bufferNames[i].c_str()));
+
+                return collection;
+            }
+        }
+
 	public:
         MProductionRenderer(ProductionRenderer* renderer) :
             MRenderer(renderer)
@@ -46,8 +61,12 @@ namespace MyEngine {
 
         void Init(MRenderSettings^ settings)
         {
+            if (this->Type == ERendererType::CPURayRenderer)
+            {
+                CPURayRenderer* renderer = (CPURayRenderer*)this->Renderer;
+                renderer->RegionSize = settings->RegionSize;
+            }
             this->Renderer->Init(settings->Width, settings->Height);
-            // TODO: set region size somehow...
 
             this->buffer = gcnew Bitmap(settings->Width, settings->Height, Imaging::PixelFormat::Format32bppRgb);
         }
@@ -64,7 +83,7 @@ namespace MyEngine {
 
         Bitmap^ GetBuffer(String^ name)
         {
-            if (!this->Renderer->ContainsBuffer(to_string(name)))
+            if (this->Renderer->Buffers.find(to_string(name)) == this->Renderer->Buffers.end()) // doesn't contin
                 return nullptr;
 
             Imaging::BitmapData^ data =
@@ -72,13 +91,13 @@ namespace MyEngine {
                 Imaging::ImageLockMode::WriteOnly, Imaging::PixelFormat::Format32bppRgb);
             const auto& buffer = this->Renderer->Buffers[to_string(name)];
             byte* dataByte = (byte*)data->Scan0.ToPointer();
-            for (uint i = 0; i < buffer.Width * buffer.Height; i++)
+            for (uint i = 0; i < buffer.width * buffer.height; i++)
             {
                 // from RGBA to BGRA
-                dataByte[i * 4 + 2] = (byte)(buffer.Data[i].r * 255);
-                dataByte[i * 4 + 1] = (byte)(buffer.Data[i].g * 255);
-                dataByte[i * 4 + 0] = (byte)(buffer.Data[i].b * 255);
-                dataByte[i * 4 + 3] = (byte)(buffer.Data[i].a * 255);
+                dataByte[i * 4 + 2] = (byte)(buffer.data[i].r * 255);
+                dataByte[i * 4 + 1] = (byte)(buffer.data[i].g * 255);
+                dataByte[i * 4 + 0] = (byte)(buffer.data[i].b * 255);
+                dataByte[i * 4 + 3] = (byte)(buffer.data[i].a * 255);
             }
             //scene->Renderer->ImageMutex.lock();
             //memcpy((void*)data->Scan0, this->Renderer->Image.Pixels, scene->Renderer->Image.Width * scene->Renderer->Image.Height * scene->Renderer->Image.Components);
