@@ -51,7 +51,7 @@ namespace MyEngine {
 		irr::gui::IGUIEnvironment* irrGuienv;
         int irrMaterialType;
 
-		map<uint, irr::scene::SMesh*> meshesCache;
+		map<uint, irr::scene::SMesh*> meshesCache; // mesh id / irrMesh
 
 		static irr::video::SColor irrInvalidColor;
 

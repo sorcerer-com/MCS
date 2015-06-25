@@ -79,6 +79,7 @@ namespace MCS.MainWindows
 
         #endregion
 
+
         public RenderWindow(MEngine engine)
         {
             InitializeComponent();
@@ -101,7 +102,6 @@ namespace MCS.MainWindows
             this.timer.Interval = new TimeSpan(0, 0, 0, 5);
             this.timer.Tick += new EventHandler(this.timer_Tick);
         }
-
 
         private void timer_Tick(object sender, EventArgs e)
         {

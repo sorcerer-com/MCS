@@ -6,11 +6,17 @@
 #include "..\Utils\RayUtils.h"
 #include "..\Utils\Types\Vector3.h"
 
+namespace embree {
+    enum RTCError;
+    struct RTCRay;
+    struct __RTCScene;
+}
 
 namespace MyEngine {
 
-    enum RTCError;
-    	
+    class SceneElement;
+    using SceneElementPtr = shared_ptr < SceneElement >;
+
     class CPURayRenderer : public ProductionRenderer
     {
         // TODO: 
@@ -25,6 +31,10 @@ namespace MyEngine {
         Vector3 upLeft, dx, dy;
         Vector3 up, right, front;
 
+        embree::__RTCScene* rtcScene;
+        map<uint, embree::__RTCScene*> rtcGeometries; // mesh id / rtcScene(Geometry) id
+        map<int, uint> rtcInstances; // rtcInstance id / scene element id
+
 	public:
         CPURayRenderer(Engine* owner);
         ~CPURayRenderer();
@@ -38,8 +48,12 @@ namespace MyEngine {
 	private:
         void generateRegions();
         void beginFrame();
+        embree::RTCRay getRTCScreenRay(float x, float y) const;
 
-        static void onErrorRTC(const RTCError code, const char* str);
+        void createRTCScene();
+        embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
+
+        static void onRTCError(const embree::RTCError code, const char* str);
 
 	};
 
