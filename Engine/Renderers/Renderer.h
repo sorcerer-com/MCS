@@ -10,8 +10,9 @@ namespace MyEngine {
 
 	class Engine;
 	struct Thread;
-	struct Vector3;
+    struct Vector3;
     struct Profiler;
+    struct Region;
 
 	enum RendererType
 	{
@@ -69,6 +70,7 @@ namespace MyEngine {
         virtual ~ProductionRenderer() = 0;
 
         virtual vector<string> GetBufferNames() = 0;
+        virtual vector<Region> GetActiveRegions() = 0;
         virtual bool Init(uint width, uint height);
         virtual void Start();
         virtual void Stop();

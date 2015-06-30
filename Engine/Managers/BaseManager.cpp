@@ -20,7 +20,7 @@ namespace MyEngine {
 
     BaseManager::~BaseManager()
     {
-        this->thread->join();
+        this->thread->joinWorkers();
     }
 
 }

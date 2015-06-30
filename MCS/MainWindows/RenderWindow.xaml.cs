@@ -1,7 +1,9 @@
 ﻿using MCS.Managers;
 using MyEngine;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -12,12 +14,13 @@ namespace MCS.MainWindows
     /// <summary>
     /// Interaction logic for RenderWindow.xaml
     /// </summary>
-    public partial class RenderWindow : Window
+    public partial class RenderWindow : Window, INotifyPropertyChanged
     {
         private MEngine engine;
 
         private Point mousePos;
         private DispatcherTimer timer;
+        private List<System.Drawing.Rectangle> lastActiveRegions;
 
 
         public ObservableCollection<ERendererType> RendererTypes
@@ -38,7 +41,19 @@ namespace MCS.MainWindows
             }
         }
 
-        public string SelectedBufferName { get; set; }
+        private string selectedBufferName;
+        public string SelectedBufferName
+        {
+            get { return this.selectedBufferName; }
+            set
+            {
+                if (!this.BuffersNames.Contains(value))
+                    return;
+
+                this.selectedBufferName = value;
+                this.OnPropertyChanged("Buffer");
+            }
+        }
 
         public ImageSource Buffer
         {
@@ -50,6 +65,28 @@ namespace MCS.MainWindows
                     bmp = new System.Drawing.Bitmap(1, 1);
                     bmp.SetPixel(0, 0, System.Drawing.Color.Black);
                 }
+                else
+                {
+                    // add active regions
+                    System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bmp);
+                    System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.White);
+                    var activeRegions = this.engine.ProductionRenderer.ActiveRegions;
+                    foreach (var region in activeRegions)
+                    {
+                        int dx = region.Width / 10;
+                        g.DrawLine(pen, region.X, region.Y, region.X + dx, region.Y);
+                        g.DrawLine(pen, region.X + region.Width - 1, region.Y, region.X + region.Width - 1 - dx, region.Y);
+                        g.DrawLine(pen, region.X, region.Y + region.Height - 1, region.X + dx, region.Y + region.Height - 1);
+                        g.DrawLine(pen, region.X + region.Width - 1, region.Y + region.Height - 1, region.X + region.Width - 1 - dx, region.Y + region.Height - 1);
+                        int dy = region.Height / 10;
+                        g.DrawLine(pen, region.X, region.Y, region.X, region.Y + dy);
+                        g.DrawLine(pen, region.X, region.Y + region.Height - 1, region.X, region.Y + region.Height - 1 - dy);
+                        g.DrawLine(pen, region.X + region.Width - 1, region.Y, region.X + region.Width - 1, region.Y + dy);
+                        g.DrawLine(pen, region.X + region.Width - 1, region.Y + region.Height - 1, region.X + region.Width - 1, region.Y + region.Height - 1 - dy);
+
+                    }
+                }
+
                 return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
             }
         }
@@ -69,7 +106,6 @@ namespace MCS.MainWindows
                         this.engine.ProductionRenderer.Init(this.RenderSettings);
                         this.engine.ProductionRenderer.Start();
                         this.timer.Start();
-                        timer_Tick(null, null);
                     }
                     else
                         this.engine.ProductionRenderer.Stop();
@@ -99,15 +135,36 @@ namespace MCS.MainWindows
             this.RenderSettings.RegionSize = 64;
 
             this.timer = new DispatcherTimer();
-            this.timer.Interval = new TimeSpan(0, 0, 0, 5);
+            this.timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
             this.timer.Tick += new EventHandler(this.timer_Tick);
+            // TODO: add save button for the image
+
+            lastActiveRegions = new List<System.Drawing.Rectangle>();
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
+            bool equals = true;
+            var activeRegions = this.engine.ProductionRenderer.ActiveRegions;
+            if (activeRegions.Count != this.lastActiveRegions.Count)
+                equals = false;
+            else
+            { 
+                foreach(var region in activeRegions)
+                {
+                    if (!this.lastActiveRegions.Contains(region))
+                    {
+                        equals = false;
+                        break;
+                    }
+                }
+            }
+            //if (equals)
+            //    return;
+            this.lastActiveRegions = activeRegions;
+
             // Update Image
-            // TODO: may be INotifyPropertyChanged
-            this.bufferImage.GetBindingExpression(System.Windows.Controls.Image.SourceProperty).UpdateTarget();
+            this.OnPropertyChanged("Buffer");
 
             if (!this.engine.ProductionRenderer.IsStarted)
                 this.timer.Stop();
@@ -137,6 +194,14 @@ namespace MCS.MainWindows
             if (st.ScaleY > 0.1) st.ScaleY *= zoom;
         }
 
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            if (this.PropertyChanged != null)
+                this.PropertyChanged(this, new PropertyChangedEventArgs(name));
+        }
     }
 }
 

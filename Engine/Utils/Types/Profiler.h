@@ -23,6 +23,11 @@ namespace MyEngine {
     public:
         Profiler()
         {
+            if (Engine::Mode == EngineMode::EEngine)
+                return;
+
+            this->name = "";
+            this->log = false;
         }
 
         Profiler(const string& name, bool log = false)

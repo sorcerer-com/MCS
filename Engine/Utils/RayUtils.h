@@ -10,6 +10,7 @@ namespace MyEngine {
     {
         int x, y, w, h;
         bool active;
+        float time;
 
         Region(int _x, int _y, int _w, int _h)
         {
@@ -18,6 +19,7 @@ namespace MyEngine {
             w = _w;
             h = _h;
             active = false;
+            time = 0;
         }
 
         Region(const Region& reg)
@@ -27,6 +29,7 @@ namespace MyEngine {
             w = reg.w;
             h = reg.h;
             active = reg.active;
+            time = reg.time;
         }
     };
 

@@ -45,8 +45,22 @@ namespace MyEngine {
                 List<String^>^ collection = gcnew List<String^>();
 
                 const auto& bufferNames = this->Renderer->GetBufferNames();
-                for (uint i = 0; i < bufferNames.size(); i++)
-                    collection->Add(gcnew String(bufferNames[i].c_str()));
+                for (const auto& bufferName : bufferNames)
+                    collection->Add(gcnew String(bufferName.c_str()));
+
+                return collection;
+            }
+        }
+
+        property List<Rectangle>^ ActiveRegions
+        {
+            List<Rectangle>^ get()
+            {
+                List<Rectangle>^ collection = gcnew List<Rectangle>();
+
+                const auto& activeRegions = this->Renderer->GetActiveRegions();
+                for (const auto& region : activeRegions)
+                    collection->Add(Rectangle(region.x, region.y, region.w, region.h));
 
                 return collection;
             }
@@ -103,7 +117,6 @@ namespace MyEngine {
             //memcpy((void*)data->Scan0, this->Renderer->Image.Pixels, scene->Renderer->Image.Width * scene->Renderer->Image.Height * scene->Renderer->Image.Components);
             //scene->Renderer->ImageMutex.unlock();
             this->buffer->UnlockBits(data);
-            this->buffer->RotateFlip(RotateFlipType::RotateNoneFlipY);
             return this->buffer;
         }
 

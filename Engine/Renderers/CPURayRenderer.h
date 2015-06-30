@@ -9,6 +9,7 @@
 namespace embree {
     enum RTCError;
     struct RTCRay;
+    struct RTCRay4;
     struct __RTCScene;
 }
 
@@ -30,16 +31,18 @@ namespace MyEngine {
     private:
         Vector3 upLeft, dx, dy;
         Vector3 up, right, front;
+        int nextRagion;
 
         embree::__RTCScene* rtcScene;
         map<uint, embree::__RTCScene*> rtcGeometries; // mesh id / rtcScene(Geometry) id
-        map<int, uint> rtcInstances; // rtcInstance id / scene element id
+        map<int, SceneElementPtr> rtcInstances; // rtcInstance id / scene element
 
 	public:
         CPURayRenderer(Engine* owner);
         ~CPURayRenderer();
 
         virtual vector<string> GetBufferNames() override;
+        virtual vector<Region> GetActiveRegions() override;
         virtual bool Init(uint width, uint height) override;
         virtual void Start() override;
         virtual void Stop() override;
@@ -53,7 +56,11 @@ namespace MyEngine {
         void createRTCScene();
         embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
 
+        bool render(bool preview);
+        bool sortRegions();
+
         static void onRTCError(const embree::RTCError code, const char* str);
+        static void setRTCRay4(embree::RTCRay4& ray_o, int i, const embree::RTCRay& ray_i);
 
 	};
 

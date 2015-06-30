@@ -98,7 +98,7 @@ namespace MyEngine {
 
     IrrRenderer::~IrrRenderer()
     {
-        this->thread->join();
+        this->thread->joinWorkers();
         Engine::Log(LogType::ELog, "IrrRenderer", "DeInit IrrLicht Renderer");
     }
 

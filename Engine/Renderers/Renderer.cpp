@@ -59,6 +59,8 @@ namespace MyEngine {
 
     ProductionRenderer::~ProductionRenderer()
     {
+        if (this->IsStarted)
+            this->Stop();
     }
 
     bool ProductionRenderer::Init(uint width, uint height)

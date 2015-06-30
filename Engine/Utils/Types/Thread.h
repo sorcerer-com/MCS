@@ -21,13 +21,15 @@ namespace MyEngine {
 		map<string, mutex> mutices;
 		map<string, recursive_mutex> recursive_mutices;
 
-        queue<packaged_task<bool()>> tasks;
+        queue<packaged_task<bool(int)>> tasks;
         mutex tasksMutex;
+        atomic_int waitCounter;
 
 	public:
 		Thread()
 		{
-			this->interrupt = false;
+            this->interrupt = false;
+            this->waitCounter = 0;
 		}
 
 		template <class Fn, class... Args>
@@ -49,22 +51,26 @@ namespace MyEngine {
 			return this->workers.size();
 		}
 
+        inline void iterruptWorkers(bool itr = true)
+        {
+            this->interrupt = itr;
+        }
+
 		inline bool interrupted()
 		{
 			return this->interrupt;
 		}
 
-		inline void join(bool itr = true)
+		inline void joinWorkers()
 		{
-			this->interrupt = itr;
+            this->iterruptWorkers();
 
-			if (itr)
-			{
-				for (auto& worker : this->workers)
-					if (worker.joinable())
-						worker.join();
-                this->workers.clear();
-			}
+            for (auto& worker : this->workers)
+				if (worker.joinable())
+					worker.join();
+            this->workers.clear();
+
+            this->iterruptWorkers(false);
 		}
 
 
@@ -90,33 +96,45 @@ namespace MyEngine {
         inline void defThreadPool(int threadsCount = 0)
         {
             if (threadsCount == 0)
+            {
                 threadsCount = std::thread::hardware_concurrency();
+                if (threadsCount > 1)
+                    threadsCount--;
+            }
 
             for (int i = 0; i < threadsCount; i++)
-                this->defWorker(&Thread::doTask, this);
+                this->defWorker(&Thread::doTask, this, i);
         }
 
-        inline future<bool> addTask(function<bool()> func)
+        inline future<bool> addTask(function<bool(int)> func)
         {
             lock lck(this->tasksMutex);
-            this->tasks.push(packaged_task<bool()>(func));
+            this->tasks.push(packaged_task<bool(int)>(func));
             return this->tasks.back().get_future();
         }
 
-        inline void addNTasks(function<bool()> func, int num)
+        inline void addNTasks(function<bool(int)> func, int num = 0)
         {
+            if (num == 0)
+                num = (int)this->workers.size();
+
             for (int i = 0; i < num; i++)
                 this->addTask(func);
         }
 
+        inline void addWaitTask()
+        {
+            this->addNTasks([&](int id) { return this->waitTask(id); });
+        }
+
     private:
-        void doTask()
+        void doTask(int id)
         {
             while (!this->interrupt)
             {
                 while (!this->tasks.empty())
                 {
-                    packaged_task<bool()> task;
+                    packaged_task<bool(int)> task;
                     {
                         lock lck(this->tasksMutex);
                         if (this->tasks.empty())
@@ -125,13 +143,26 @@ namespace MyEngine {
                         this->tasks.pop();
                     }
 
-                    task();
+                    task(id);
 
                     this_thread::sleep_for(chrono::milliseconds(1));
                 }
 
                 this_thread::sleep_for(chrono::milliseconds(100));
             }
+        }
+
+        bool waitTask(int id)
+        {
+            for (int i = 0; i < this->workers.size(); i++)
+                this->waitCounter |= (2 << i);
+
+            while (!this->interrupt && this->waitCounter != 0)
+            {
+                this_thread::sleep_for(chrono::milliseconds(100));
+                this->waitCounter &= ~(2 << id); // clear 2 pow id
+            }
+            return true;
         }
 
 	};
