@@ -237,13 +237,13 @@
     <Resource Include="Images\MainWindow\Find.PNG" />
     <Resource Include="Images\MainWindow\Layers.png" />
     <Resource Include="Images\MainWindow\Log.png" />
-    <Resource Include="Images\MainWindow\New.png" />
-    <Resource Include="Images\MainWindow\Open.PNG" />
+    <Resource Include="Images\Common\New.png" />
+    <Resource Include="Images\Common\Open.PNG" />
     <Resource Include="Images\MainWindow\Packaging.png" />
     <Resource Include="Images\Common\Play.png" />
     <Resource Include="Images\MainWindow\Profiling.png" />
     <Resource Include="Images\MainWindow\Rotate.PNG" />
-    <Resource Include="Images\MainWindow\Save.PNG" />
+    <Resource Include="Images\Common\Save.PNG" />
     <Resource Include="Images\MainWindow\Scale.PNG" />
     <Resource Include="Images\MainWindow\Scripts.png" />
     <Resource Include="Images\Common\Stop.png" />

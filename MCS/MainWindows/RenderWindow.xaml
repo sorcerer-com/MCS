@@ -42,8 +42,12 @@
                 <Label Content="Buffers:"/>
                 <ComboBox ItemsSource="{Binding Path=BuffersNames}" SelectedItem="{Binding Path=SelectedBufferName}"/>
                 <Separator/>
-                <Button ToolTip="Render" Command="{Binding Path=RenderCommand}">
+                <Button ToolTip="{Binding Path=RenderCommandTooltip}" Command="{Binding Path=RenderCommand}">
                     <Image Source="/Images/MainWindow/Render.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                </Button>
+                <Separator/>
+                <Button ToolTip="{Binding Path=SaveBufferCommandTooltip}"  Command="{Binding Path=SaveBufferCommand}">
+                    <Image Source="/Images/Common/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
             </ToolBar>
         </ToolBarTray>

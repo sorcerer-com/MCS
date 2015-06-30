@@ -28,13 +28,13 @@
         <ToolBarTray VerticalAlignment="Top" Grid.Row="0" Grid.ColumnSpan="3" IsManipulationEnabled="True">
             <ToolBar Band="1" BandIndex="1" IsManipulationEnabled="True">
                 <Button ToolTip="{Binding Path=NewSceneCommandTooltip}" Command="{Binding Path=NewSceneCommand}">
-                    <Image Source="/Images/MainWindow/New.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                    <Image Source="/Images/Common/New.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="{Binding Path=OpenSceneCommandTooltip}" Command="{Binding Path=OpenSceneCommand}">
-                    <Image Source="/Images/MainWindow/Open.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                    <Image Source="/Images/Common/Open.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="{Binding Path=SaveSceneCommandTooltip}" Command="{Binding Path=SaveSceneCommand}">
-                    <Image Source="/Images/MainWindow/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                    <Image Source="/Images/Common/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Separator/>
                 <Button ToolTip="{Binding Path=ImportSceneCommandTooltip}" Command="{Binding Path=ImportSceneCommand}">

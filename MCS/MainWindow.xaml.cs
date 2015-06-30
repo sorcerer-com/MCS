@@ -29,11 +29,12 @@ namespace MCS
 
         private MEngine engine;
 
-        private bool sceneSaved;
-        private string sceneFilePath;
         private Point lastMousePosition;
         private ECursorType selectedCursor;
 
+
+        public bool SceneSaved { get; private set; }
+        public string SceneFilePath { get; private set; }
 
         public MSceneElement SelectedElement
         {
@@ -73,7 +74,7 @@ namespace MCS
                     return string.Format("{0} objects selected", selectedElements.Count);
             }
         }
-
+        
         #region SnapDropDown
 
         public string SnapDropDownImage
@@ -145,8 +146,8 @@ namespace MCS
                         this.engine.SceneManager.ActiveCamera.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
                         this.OnPropertyChanged("SelectedElement");
 
-                        this.sceneSaved = true;
-                        this.sceneFilePath = string.Empty;
+                        this.SceneSaved = true;
+                        this.SceneFilePath = string.Empty;
                         this.updateTitle();
                     }
                 });
@@ -179,8 +180,8 @@ namespace MCS
                             return;
                         }
 
-                        this.sceneSaved = true;
-                        this.sceneFilePath = ofd.FileName;
+                        this.SceneSaved = true;
+                        this.SceneFilePath = ofd.FileName;
                         this.updateTitle();
                         this.OnPropertyChanged("SelectedElement");
                     }
@@ -199,7 +200,7 @@ namespace MCS
                 return new DelegateCommand((o) =>
                 {
                     // if there isn't path to the scene or Save As - ask
-                    if (string.IsNullOrEmpty(this.sceneFilePath) || Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                    if (string.IsNullOrEmpty(this.SceneFilePath) || Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                     {
                         SaveFileDialog sfd = new SaveFileDialog();
                         sfd.InitialDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Scenes";
@@ -208,19 +209,19 @@ namespace MCS
                         sfd.RestoreDirectory = true;
                         sfd.OverwritePrompt = true;
                         if (sfd.ShowDialog() == true)
-                            this.sceneFilePath = sfd.FileName;
+                            this.SceneFilePath = sfd.FileName;
                         else
                             return;
                     }
 
                     // save scene
-                    if (!this.engine.SceneManager.Save(this.sceneFilePath))
+                    if (!this.engine.SceneManager.Save(this.SceneFilePath))
                     {
-                        ExtendedMessageBox.Show("Cannot save scene to file: \n " + this.sceneFilePath + "!", "Save scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
+                        ExtendedMessageBox.Show("Cannot save scene to file: \n " + this.SceneFilePath + "!", "Save scene", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                         return;
                     }
 
-                    this.sceneSaved = true;
+                    this.SceneSaved = true;
                     this.updateTitle();
                 });
             }
@@ -303,7 +304,7 @@ namespace MCS
                         this.engine.SceneManager.ActiveCamera = this.engine.SceneManager.GetElement(xmlRoot.GetAttribute("ActiveCamera")) as MCamera;
                     }
 
-                    this.sceneSaved = false;
+                    this.SceneSaved = false;
                     this.updateTitle();
                 });
             }
@@ -570,8 +571,8 @@ namespace MCS
             this.engine.SceneManager.Changed += SceneManager_Changed;
             MSelector.SelectionChanged += MSelector_SelectionChanged;
 
-            this.sceneSaved = true;
-            this.sceneFilePath = string.Empty;
+            this.SceneSaved = true;
+            this.SceneFilePath = string.Empty;
             this.lastMousePosition = new Point();
             this.selectedCursor = ECursorType.Select;
 
@@ -583,7 +584,7 @@ namespace MCS
             this.engine.SceneManager.ActiveCamera = this.engine.SceneManager.AddElement(ESceneElementType.Camera, "Camera", @"MPackage#Meshes\System\Camera") as MCamera;
             this.engine.SceneManager.ActiveCamera.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
             this.OnPropertyChanged("SelectedElement");
-            this.sceneSaved = true;
+            this.SceneSaved = true;
             this.updateTitle();
 
             this.render.Child = new System.Windows.Forms.UserControl();
@@ -654,7 +655,7 @@ namespace MCS
 
         private void SceneManager_Changed(MSceneManager sender, MSceneElement element)
         {
-            this.sceneSaved = false;
+            this.SceneSaved = false;
             this.updateTitle();
             this.OnPropertyChanged("SelectedElement");
         }
@@ -836,13 +837,13 @@ namespace MCS
 
         public bool CheckSceneSaved()
         {
-            if (!this.sceneSaved)
+            if (!this.SceneSaved)
             {
                 ExtendedMessageBoxResult res = ExtendedMessageBox.Show("Do you want to save changes?", "Confirm", ExtendedMessageBoxButton.YesNoCancel, ExtendedMessageBoxImage.Question);
                 if (res == ExtendedMessageBoxResult.Yes)
                 {
                     this.SaveSceneCommand.Execute(null);
-                    return this.sceneSaved;
+                    return this.SceneSaved;
                 }
                 else if (res != ExtendedMessageBoxResult.No) // Cancel
                     return false;
@@ -856,9 +857,9 @@ namespace MCS
             this.Title = "My Creative Studio";
             if (MEngine.Mode != EEngineMode.Editor)
                 this.Title += "!";
-            if (!string.IsNullOrEmpty(this.sceneFilePath))
-                this.Title += " - " + Path.GetFileNameWithoutExtension(this.sceneFilePath);
-            if (!this.sceneSaved)
+            if (!string.IsNullOrEmpty(this.SceneFilePath))
+                this.Title += " - " + Path.GetFileNameWithoutExtension(this.SceneFilePath);
+            if (!this.SceneSaved)
                 this.Title += "*";
         }
 

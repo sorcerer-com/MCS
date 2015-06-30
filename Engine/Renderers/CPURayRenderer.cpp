@@ -226,7 +226,7 @@ namespace MyEngine {
     void CPURayRenderer::createRTCScene()
     {
         // Create Scene
-        embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_HIGH_QUALITY;
+        embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
         embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1 | embree::RTCAlgorithmFlags::RTC_INTERSECT4;
         this->rtcScene = embree::rtcNewScene(sflags, aflags);
 
@@ -269,7 +269,7 @@ namespace MyEngine {
         Mesh* mesh = (Mesh*)contentElement.get();
 
         // create rtcScene
-        embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_HIGH_QUALITY;
+        embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
         embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1 | embree::RTCAlgorithmFlags::RTC_INTERSECT4;
         embree::RTCScene rtcGeometry = embree::rtcNewScene(sflags, aflags);
 

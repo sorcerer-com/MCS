@@ -150,6 +150,8 @@ namespace MCS.Managers
             // RenderWindow
             keys = new List<HotKeyInfo>();
             keys.Add(new HotKeyInfo(Key.F9, false, false, false, "", "RenderCommand"));
+            keys.Add(new HotKeyInfo(Key.F11, false, false, false, "", "SaveBufferCommand"));
+            keys.Add(new HotKeyInfo(Key.F11, true, false, false, "", "SaveBufferCommand"));
             hotkeys.Add(typeof(RenderWindow), keys);
 
             saveHotkeys();
@@ -228,10 +230,10 @@ namespace MCS.Managers
             List<HotKeyInfo> keys = hotkeys[type];
             foreach (var info in keys)
             {
-                if (info.Key != e.Key || 
-                    (Keyboard.IsKeyDown(Key.LeftCtrl) != info.Ctrl && Keyboard.IsKeyDown(Key.RightCtrl) != info.Ctrl) ||
-                    (Keyboard.IsKeyDown(Key.LeftAlt) != info.Alt && Keyboard.IsKeyDown(Key.RightAlt) != info.Alt) ||
-                    (Keyboard.IsKeyDown(Key.LeftShift) != info.Shift && Keyboard.IsKeyDown(Key.RightShift) != info.Shift))
+                bool ctrl = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+                bool alt = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
+                bool shift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+                if (info.Key != e.Key || ctrl != info.Ctrl || alt != info.Alt || shift != info.Shift)
                     continue;
 
                 if (!string.IsNullOrEmpty(info.SourceType) && !e.Source.GetType().ToString().ToLowerInvariant().Contains(info.SourceType.ToLowerInvariant()))

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -20,7 +21,6 @@ namespace MCS.MainWindows
 
         private Point mousePos;
         private DispatcherTimer timer;
-        private List<System.Drawing.Rectangle> lastActiveRegions;
 
 
         public ObservableCollection<ERendererType> RendererTypes
@@ -112,6 +112,43 @@ namespace MCS.MainWindows
                 });
             }
         }
+        public string RenderCommandTooltip
+        {
+            get { return "Render " + WindowsManager.GetHotkey(this.GetType(), "RenderCommand", true); }
+        }
+
+        public ICommand SaveBufferCommand
+        {
+            get
+            {
+                return new DelegateCommand((o) =>
+                {
+                    MainWindow mainWindow = this.Owner as MainWindow;
+                    if (mainWindow == null)
+                        return;
+
+                    string sceneName = Path.GetFileNameWithoutExtension(mainWindow.SceneFilePath);
+                    if (string.IsNullOrEmpty(sceneName)) 
+                        sceneName = "Scene";
+
+                    System.Drawing.Bitmap bmp = this.engine.ProductionRenderer.GetBuffer(this.SelectedBufferName);
+                    if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                    {
+                        string name = "ScreenShots\\" + sceneName;
+                        int count = 0;
+                        while (File.Exists(name + count + ".png"))
+                            count++;
+                        bmp.Save(name + count + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                    }
+                    else
+                        bmp.Save("ScreenShots\\" + sceneName + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                });
+            }
+        }
+        public string SaveBufferCommandTooltip
+        {
+            get { return "Save Buffer " + WindowsManager.GetHotkey(this.GetType(), "SaveBufferCommand", true); }
+        }
 
         #endregion
 
@@ -137,32 +174,10 @@ namespace MCS.MainWindows
             this.timer = new DispatcherTimer();
             this.timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
             this.timer.Tick += new EventHandler(this.timer_Tick);
-            // TODO: add save button for the image
-
-            lastActiveRegions = new List<System.Drawing.Rectangle>();
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            bool equals = true;
-            var activeRegions = this.engine.ProductionRenderer.ActiveRegions;
-            if (activeRegions.Count != this.lastActiveRegions.Count)
-                equals = false;
-            else
-            { 
-                foreach(var region in activeRegions)
-                {
-                    if (!this.lastActiveRegions.Contains(region))
-                    {
-                        equals = false;
-                        break;
-                    }
-                }
-            }
-            //if (equals)
-            //    return;
-            this.lastActiveRegions = activeRegions;
-
             // Update Image
             this.OnPropertyChanged("Buffer");
 
