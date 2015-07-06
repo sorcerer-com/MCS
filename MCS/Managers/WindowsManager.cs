@@ -254,6 +254,7 @@ namespace MCS.Managers
                 }
 
                 command.Execute(null);
+                e.Handled = true;
             }
         }
 

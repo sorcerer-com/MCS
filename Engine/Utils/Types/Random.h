@@ -45,6 +45,11 @@ namespace MyEngine {
             return gen(generator);
         }
 
+        inline float randSample(int samples)
+        {
+            return (float)(this->_next() % samples + this->randFloat()) / samples;
+        }
+
         // return a random number in normal distribution
         inline double gaussian(double mean = 0.0, double sigma = 1.0)
         {

@@ -34,21 +34,21 @@ namespace MyEngine {
     };
 
 
-    inline vector<float> getMatrix(const Vector3& pos, const Quaternion& rot, const Vector3& scl)
+    inline vector<float> getMatrix(const Vector3& pos, Quaternion rot, const Vector3& scl)
     {
         vector<float> result(16);
         result[0] = (1.0f - 2.0f * rot.y * rot.y - 2.0f * rot.z * rot.z) * scl.x;
-        result[1] = 2.0f * rot.x * rot.y + 2.0f * rot.z * rot.w;
-        result[2] = 2.0f * rot.x * rot.z - 2.0f * rot.y * rot.w;
+        result[1] = (2.0f * rot.x * rot.y + 2.0f * rot.z * rot.w) * scl.x;
+        result[2] = (2.0f * rot.x * rot.z - 2.0f * rot.y * rot.w) * scl.x;
         result[3] = 0.0f;
 
-        result[4] = 2.0f * rot.x * rot.y - 2.0f * rot.z * rot.w;
+        result[4] = (2.0f * rot.x * rot.y - 2.0f * rot.z * rot.w) * scl.y;
         result[5] = (1.0f - 2.0f * rot.x * rot.x - 2.0f * rot.z * rot.z) * scl.y;
-        result[6] = 2.0f * rot.z * rot.y + 2.0f * rot.x * rot.w;
+        result[6] = (2.0f * rot.z * rot.y + 2.0f * rot.x * rot.w) * scl.y;
         result[7] = 0.0f;
 
-        result[8] = 2.0f * rot.x * rot.z + 2.0f * rot.y * rot.w;
-        result[9] = 2.0f * rot.z * rot.y - 2.0f * rot.x * rot.w;
+        result[8] = (2.0f * rot.x * rot.z + 2.0f * rot.y * rot.w) * scl.z;
+        result[9] = (2.0f * rot.z * rot.y - 2.0f * rot.x * rot.w) * scl.z;
         result[10] = (1.0f - 2.0f * rot.x * rot.x - 2.0f * rot.y * rot.y) * scl.z;
         result[11] = 0.0f;
 

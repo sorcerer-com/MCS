@@ -31,6 +31,12 @@ namespace MyEngine {
             property uint Height;
             [MPropertyAttribute(SortName = "003", Group = "Main Settings")]
             property uint RegionSize;
+            [MPropertyAttribute(SortName = "004", Group = "Samples Settings")]
+            property uint MinSamples;
+            [MPropertyAttribute(SortName = "005", Group = "Samples Settings")]
+            property uint MaxSamples;
+            [MPropertyAttribute(SortName = "006", Group = "Samples Settings")]
+            property double SamplesThreshold;
         };
 
         property bool IsStarted
@@ -79,6 +85,9 @@ namespace MyEngine {
             {
                 CPURayRenderer* renderer = (CPURayRenderer*)this->Renderer;
                 renderer->RegionSize = settings->RegionSize;
+                renderer->MinSamples = settings->MinSamples;
+                renderer->MaxSamples = settings->MaxSamples;
+                renderer->SamplesThreshold = (float)settings->SamplesThreshold;
             }
             this->Renderer->Init(settings->Width, settings->Height);
 

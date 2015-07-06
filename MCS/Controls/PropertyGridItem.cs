@@ -290,8 +290,17 @@ namespace MCS.Controls
             else if (type.IsSubclassOf(typeof(System.Drawing.Image)))
             {
                 System.Drawing.Bitmap img = this.Object as System.Drawing.Bitmap;
+
+                var bitmapSource = new System.Windows.Media.Imaging.BitmapImage();
+                bitmapSource.BeginInit();
+                var memoryStream = new System.IO.MemoryStream();
+                img.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Bmp);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                bitmapSource.StreamSource = memoryStream;
+                bitmapSource.EndInit();
+
                 Image image = new Image();
-                image.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                image.Source = bitmapSource;
                 image.ToolTip = this.Name;
                 this.Children.Add(image);
             }

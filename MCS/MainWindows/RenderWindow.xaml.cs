@@ -1,7 +1,6 @@
 ﻿using MCS.Managers;
 using MyEngine;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -83,15 +82,25 @@ namespace MCS.MainWindows
                         g.DrawLine(pen, region.X, region.Y + region.Height - 1, region.X, region.Y + region.Height - 1 - dy);
                         g.DrawLine(pen, region.X + region.Width - 1, region.Y, region.X + region.Width - 1, region.Y + dy);
                         g.DrawLine(pen, region.X + region.Width - 1, region.Y + region.Height - 1, region.X + region.Width - 1, region.Y + region.Height - 1 - dy);
-
                     }
                 }
 
-                return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                var bitmapSource = new System.Windows.Media.Imaging.BitmapImage();
+                bitmapSource.BeginInit();
+                MemoryStream memoryStream = new MemoryStream();
+                bmp.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Bmp);
+                memoryStream.Seek(0, System.IO.SeekOrigin.Begin);
+                bitmapSource.StreamSource = memoryStream;
+                bitmapSource.EndInit();
+                return bitmapSource;
             }
         }
 
-        public MProductionRenderer.MRenderSettings RenderSettings { get; set; }
+        private static MProductionRenderer.MRenderSettings renderSettings;
+        public MProductionRenderer.MRenderSettings RenderSettings
+        {
+            get { return RenderWindow.renderSettings; }
+        }
 
         #region Commands
 
@@ -153,6 +162,17 @@ namespace MCS.MainWindows
         #endregion
 
 
+        static RenderWindow()
+        {
+            RenderWindow.renderSettings = new MProductionRenderer.MRenderSettings();
+            RenderWindow.renderSettings.Width = 640;
+            RenderWindow.renderSettings.Height = 480;
+            RenderWindow.renderSettings.RegionSize = 64;
+            RenderWindow.renderSettings.MinSamples = 1;
+            RenderWindow.renderSettings.MaxSamples = 4;
+            RenderWindow.renderSettings.SamplesThreshold = 0.01;
+        }
+
         public RenderWindow(MEngine engine)
         {
             InitializeComponent();
@@ -165,12 +185,7 @@ namespace MCS.MainWindows
 
             this.SelectedRendererType = this.RendererTypes[0];
             this.SelectedBufferName = this.BuffersNames[this.BuffersNames.Count - 1];
-
-            this.RenderSettings = new MProductionRenderer.MRenderSettings();
-            this.RenderSettings.Width = 640;
-            this.RenderSettings.Height = 480;
-            this.RenderSettings.RegionSize = 64;
-
+            
             this.timer = new DispatcherTimer();
             this.timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
             this.timer.Tick += new EventHandler(this.timer_Tick);
@@ -204,9 +219,30 @@ namespace MCS.MainWindows
         {
             var tg = this.bufferImage.RenderTransform as TransformGroup;
             var st = tg.Children[0] as ScaleTransform;
-            double zoom = e.Delta > 0 ? 02 : 0.5;
+            double zoom = e.Delta > 0 ? 2.0 : 0.5;
             if (st.ScaleX > 0.1) st.ScaleX *= zoom;
             if (st.ScaleY > 0.1) st.ScaleY *= zoom;
+        }
+
+        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var tg = this.bufferImage.RenderTransform as TransformGroup;
+            var st = tg.Children[0] as ScaleTransform;
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                ImageSource buffer = this.Buffer;
+                st.ScaleX = buffer.Width / this.bufferImage.ActualWidth;
+                st.ScaleY = buffer.Height / this.bufferImage.ActualHeight;
+            }
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+                st.ScaleX = 1.0;
+                st.ScaleY = 1.0;
+                var tt = tg.Children[1] as TranslateTransform;
+                tt.X = 0.0;
+                tt.Y = 0.0;
+            }
+
         }
 
 

@@ -75,17 +75,48 @@ namespace MyEngine {
 	inline Color4 operator *(const Color4& a, float f)
 	{
 		return Color4(a.r * f, a.g * f, a.b * f, a.a * f);
-	}
+    }
 
-	inline Color4 operator +(const Color4& a, const Color4& b)
-	{
-		return Color4(a.r + b.r, a.g + b.g, a.b + b.b, a.a + b.a);
-	}
+    inline Color4 operator *(const Color4& a, const Color4& b)
+    {
+        return Color4(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
+    }
+
+    inline Color4 operator +(const Color4& a, const Color4& b)
+    {
+        return Color4(a.r + b.r, a.g + b.g, a.b + b.b, a.a + b.a);
+    }
+
+    inline Color4 operator -(const Color4& a, const Color4& b)
+    {
+        return Color4(a.r - b.r, a.g - b.g, a.b - b.b, a.a - b.a);
+    }
+
+
+    inline bool operator ==(const Color4& p1, const Color4& p2)
+    {
+        return p1.r == p2.r && p1.g == p2.g && p1.b == p2.b && p1.a == p2.a;
+    }
+
+    inline bool operator !=(const Color4& p1, const Color4& p2)
+    {
+        return !(p1 == p2);
+    }
+    
+    inline bool operator <(const Color4& p1, float f)
+    {
+        return p1.r < f && p1.g < f && p1.b < f && p1.a < f;
+    }
 
 
 	inline Color4 linearFilter(const Color4& a, const Color4& b, const Color4& c, const Color4& d, float u, float v)
 	{
 		return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
 	}
+
+    inline Color4 absolute(const Color4& c)
+    {
+        return Color4(abs(c.r), abs(c.g), abs(c.b), abs(c.a));
+    }
 
 }

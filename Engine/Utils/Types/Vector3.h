@@ -54,9 +54,9 @@ namespace MyEngine {
 		inline int maxDim() const
 		{
 			int bi = 0;
-			float maxD = fabs(x);
-			if (fabs(y) > maxD) { maxD = fabs(y); bi = 1; }
-			if (fabs(z) > maxD) { maxD = fabs(z); bi = 2; }
+			float maxD = abs(x);
+			if (abs(y) > maxD) { maxD = abs(y); bi = 1; }
+			if (abs(z) > maxD) { maxD = abs(z); bi = 2; }
 			return bi;
 		}
 
@@ -198,9 +198,9 @@ namespace MyEngine {
 	inline void orthonormedSystem(const Vector3& a, Vector3& b, Vector3& c)
 	{
 		Vector3 temp = Vector3(1, 0, 0);
-		if (fabs(dot(a, temp)) > 0.99f) {
+		if (abs(dot(a, temp)) > 0.99f) {
 			temp = Vector3(0, 1, 0);
-			if (fabs(dot(a, temp)) > 0.99f)
+			if (abs(dot(a, temp)) > 0.99f)
 				temp = Vector3(0, 0, 1);
 		}
 		b = cross(a, temp);

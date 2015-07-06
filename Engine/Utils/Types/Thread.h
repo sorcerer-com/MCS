@@ -102,18 +102,19 @@ namespace MyEngine {
                     threadsCount--;
             }
 
+            this->workers.clear();
             for (int i = 0; i < threadsCount; i++)
                 this->defWorker(&Thread::doTask, this, i);
         }
 
-        inline future<bool> addTask(function<bool(int)> func)
+        inline future<bool> addTask(const function<bool(int)>& func)
         {
             lock lck(this->tasksMutex);
             this->tasks.push(packaged_task<bool(int)>(func));
             return this->tasks.back().get_future();
         }
 
-        inline void addNTasks(function<bool(int)> func, int num = 0)
+        inline void addNTasks(const function<bool(int)>& func, int num = 0)
         {
             if (num == 0)
                 num = (int)this->workers.size();

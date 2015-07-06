@@ -50,7 +50,7 @@ namespace MyEngine {
             Profiler::data[this->name].counter++;
 
             if (this->log)
-                Engine::Log(LogType::ELog, "Profiler", this->name + " execution time " + duration_to_string(delta));
+                Engine::Log(LogType::ELog, "Profiler", this->name + " (" + duration_to_string(delta) + ")");
         }
 
 
@@ -65,6 +65,7 @@ namespace MyEngine {
                 return chrono::system_clock::duration();
 
             chrono::system_clock::duration delta = chrono::system_clock::now() - this->time;
+            this->time = chrono::system_clock::now();
 
             return delta;
         }

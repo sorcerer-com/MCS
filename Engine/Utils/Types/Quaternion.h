@@ -97,13 +97,13 @@ namespace MyEngine {
             float test = 2.0f * (y * w - x * z);
 
             Vector3 result;
-            if (fabs(test - 1.0f) < 0.000001f) // equal to 1.0 with epsilon
+            if (abs(test - 1.0f) < 0.000001f) // equal to 1.0 with epsilon
             {
                 result.z = -2.0f * atan2f(x, w);
                 result.x = 0.0f;
                 result.y = 3.14159265359f / 2.0f;
             }
-            else if (fabs(test + 1.0f) < 0.000001f) // equal to -1.0 with epsilon
+            else if (abs(test + 1.0f) < 0.000001f) // equal to -1.0 with epsilon
             {
                 result.z = 2.0f * atan2f(x, w);
                 result.x = 0.0f;
