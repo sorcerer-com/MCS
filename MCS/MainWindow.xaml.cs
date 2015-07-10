@@ -712,6 +712,22 @@ namespace MCS
                 MEngine.Mode = MEngine.Mode == EEngineMode.Editor ? EEngineMode.Engine : EEngineMode.Editor;
                 this.updateTitle();
             }
+            else if ((Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) && e.KeyCode == System.Windows.Forms.Keys.C) // change active camera
+            {
+                if (MSelector.Count(MSelector.ESelectionType.SceneElement) > 0) // set selected
+                {
+                    MCamera activeCamera = this.engine.SceneManager.GetElement(MSelector.Elements(MSelector.ESelectionType.SceneElement)[0]) as MCamera;
+                    if (activeCamera != null)
+                        this.engine.SceneManager.ActiveCamera = activeCamera;
+                }
+                else // switch between cameras
+                {
+                    List<MSceneElement> cameras = this.engine.SceneManager.GetElements(ESceneElementType.Camera);
+                    int idx = cameras.IndexOf(this.engine.SceneManager.ActiveCamera);
+                    idx = (idx + 1) % cameras.Count;
+                    this.engine.SceneManager.ActiveCamera = cameras[idx] as MCamera;
+                }
+            }
 
             this.OnPropertyChanged("SelectedElement");
         }

@@ -24,3 +24,4 @@ using byte = unsigned char;
 #define Now chrono::system_clock::now().time_since_epoch().count()
 
 #define PI 3.14159265359f
+#define LOG2 1.442695f

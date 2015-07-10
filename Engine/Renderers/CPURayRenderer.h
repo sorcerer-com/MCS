@@ -20,6 +20,7 @@ namespace MyEngine {
     struct Color4;
     class SceneElement;
     using SceneElementPtr = shared_ptr < SceneElement >;
+    class Light;
     class ContentElement;
     using ContentElementPtr = shared_ptr < ContentElement >;
 
@@ -37,6 +38,8 @@ namespace MyEngine {
 
     protected:
         using ColorsMapType = map < string, Color4 >; // buffer name / color
+        static const uint RAYS = 4;
+        static const int VALID[RAYS];
 
         Vector3 upLeft, dx, dy;
         Vector3 up, right, front;
@@ -73,16 +76,20 @@ namespace MyEngine {
         embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
         void cacheContentElements(const SceneElementPtr sceneElement);
 
-        bool preview();
-        bool render();
-        uint adaptiveSampling(const function<Color4()>& func);
+        bool render(bool preview);
         Color4 renderPixel(int x, int y);
         ColorsMapType computeColor(const embree::RTCRay& rtcRay);
+        ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Vector3& normal); // diffuse light / sepcular light / samples
+        ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const Vector3& normal); // diffuse light / sepcular light
+        Vector3 getLightSample(const Light* light, int numSamples, int sample);
+        Color4 getFogLighting(const embree::RTCRay& rtcRay, float fogFactor);
         bool postProcessing();
 
         static void onRTCError(const embree::RTCError code, const char* str);
+        static embree::RTCRay RTCRay(const Vector3& start, const Vector3& dir, float near = 0.1f, float far = 10000.0f);
         static void setRTCRay4(embree::RTCRay4& ray_o, int i, const embree::RTCRay& ray_i);
         static embree::RTCRay getRTCRay(const embree::RTCRay4& ray_i, int i);
+        static uint adaptiveSampling(uint minSamples, uint maxSamples, float samplesThreshold, const function<Color4(int)>& func);
 
 	};
 

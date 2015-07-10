@@ -318,7 +318,17 @@ namespace MyEngine {
 			result.push_back(pair.second);
 
 		return result;
-	}
+    }
+    
+    vector<SceneElementPtr> SceneManager::GetElements(SceneElementType type) const
+    {
+        vector<SceneElementPtr> result;
+        for (const auto& pair : this->sceneElements)
+            if (pair.second->Type == type)
+                result.push_back(pair.second);
+
+        return result;
+    }
 
 
     /* E N V I R O N M E N T */

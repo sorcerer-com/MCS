@@ -45,7 +45,8 @@ namespace MyEngine {
 		bool DeleteElement(uint id);
 		SceneElementPtr GetElement(uint id);
 		SceneElementPtr GetElement(const string& name);
-		vector<SceneElementPtr> GetElements() const;
+        vector<SceneElementPtr> GetElements() const;
+        vector<SceneElementPtr> GetElements(SceneElementType type) const;
 
         bool SetSkyBox(uint textureID);
         bool SetTimeOfDay(float hour);

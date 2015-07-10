@@ -89,6 +89,7 @@ namespace MyEngine {
 		bool DeleteElement(uint id);
 		MSceneElement^ GetElement(uint id);
 		MSceneElement^ GetElement(String^ name);
+        List<MSceneElement^>^ GetElements(ESceneElementType type);
         
 		bool CreateLayer(String^ layer);
 		bool RenameLayer(String^ oldLayer, String^ newLayer);

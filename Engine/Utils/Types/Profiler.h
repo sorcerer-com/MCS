@@ -2,6 +2,7 @@
 #pragma once
 
 #include <chrono>
+#include <mutex>
 
 #include "..\..\Engine.h"
 
@@ -19,6 +20,8 @@ namespace MyEngine {
         string name;
         bool log;
         chrono::system_clock::time_point time;
+
+        mutex dataMutex;
 
     public:
         Profiler()
@@ -42,6 +45,7 @@ namespace MyEngine {
 
         ~Profiler()
         {
+            lock_guard<mutex> lck(this->dataMutex);
             if (Engine::Mode == EngineMode::EEngine)
                 return;
 
@@ -88,6 +92,7 @@ namespace MyEngine {
     public:
         map<string, chrono::system_clock::duration> getDurations()
         {
+            lock_guard<mutex> lck(this->dataMutex);
             map<string, chrono::system_clock::duration> durations;
             for (auto& d : data)
                 durations[d.first] = d.second.deltaSum / d.second.counter;

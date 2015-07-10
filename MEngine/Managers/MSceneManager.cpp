@@ -236,7 +236,18 @@ namespace MyEngine {
 
 		return this->getMSceneElement(elem);
 	}
-    
+
+    List<MSceneElement^>^ MSceneManager::GetElements(ESceneElementType type)
+    {
+        List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
+
+        const auto elements = this->sceneManager->GetElements((SceneElementType)type);
+        for (const auto& element : elements)
+            collection->Add(this->getMSceneElement(element));
+
+        return collection;
+    }
+
 
 	bool MSceneManager::CreateLayer(String^ layer)
 	{

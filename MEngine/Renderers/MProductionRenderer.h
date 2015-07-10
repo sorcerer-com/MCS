@@ -91,7 +91,7 @@ namespace MyEngine {
             }
             this->Renderer->Init(settings->Width, settings->Height);
 
-            this->buffer = gcnew Bitmap(settings->Width, settings->Height, Imaging::PixelFormat::Format32bppRgb);
+            this->buffer = gcnew Bitmap(settings->Width, settings->Height, Imaging::PixelFormat::Format32bppArgb);
         }
 
         void Start()
@@ -111,16 +111,16 @@ namespace MyEngine {
 
             Imaging::BitmapData^ data =
                 this->buffer->LockBits(System::Drawing::Rectangle(0, 0, this->buffer->Width, this->buffer->Height),
-                Imaging::ImageLockMode::WriteOnly, Imaging::PixelFormat::Format32bppRgb);
+                Imaging::ImageLockMode::WriteOnly, Imaging::PixelFormat::Format32bppArgb);
             const auto& buffer = this->Renderer->Buffers[to_string(name)];
             byte* dataByte = (byte*)data->Scan0.ToPointer();
             for (uint i = 0; i < buffer.width * buffer.height; i++)
             {
                 // from RGBA to BGRA
-                dataByte[i * 4 + 2] = (byte)(buffer.data[i].r * 255);
-                dataByte[i * 4 + 1] = (byte)(buffer.data[i].g * 255);
-                dataByte[i * 4 + 0] = (byte)(buffer.data[i].b * 255);
-                dataByte[i * 4 + 3] = (byte)(buffer.data[i].a * 255);
+                dataByte[i * 4 + 2] = (byte)(std::min(buffer.data[i].r, 1.0f) * 255);
+                dataByte[i * 4 + 1] = (byte)(std::min(buffer.data[i].g, 1.0f) * 255);
+                dataByte[i * 4 + 0] = (byte)(std::min(buffer.data[i].b, 1.0f) * 255);
+                dataByte[i * 4 + 3] = (byte)(std::min(buffer.data[i].a, 1.0f) * 255);
             }
             //scene->Renderer->ImageMutex.lock();
             //memcpy((void*)data->Scan0, this->Renderer->Image.Pixels, scene->Renderer->Image.Width * scene->Renderer->Image.Height * scene->Renderer->Image.Components);

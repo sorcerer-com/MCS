@@ -73,7 +73,14 @@ namespace MyEngine {
 		inline void operator *=(float multiplier)
 		{
 			scale(multiplier);
-		}
+        }
+
+        inline void operator *=(const Vector3& v)
+        {
+            x *= v.x;
+            y *= v.y;
+            z *= v.z;
+        }
 
 		inline void operator +=(const Vector3& v)
 		{

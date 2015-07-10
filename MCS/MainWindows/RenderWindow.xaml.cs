@@ -187,7 +187,7 @@ namespace MCS.MainWindows
             this.SelectedBufferName = this.BuffersNames[this.BuffersNames.Count - 1];
             
             this.timer = new DispatcherTimer();
-            this.timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
+            this.timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             this.timer.Tick += new EventHandler(this.timer_Tick);
         }
 

@@ -498,8 +498,11 @@ namespace MCS.MainWindows
 
         private void contentManager_Changed(MContentManager sender, MContentElement element)
         {
-            this.OnPropertyChanged("PathsTree");
-            this.OnPropertyChanged("Contents");
+            if (element == null)
+            {
+                this.OnPropertyChanged("PathsTree");
+                this.OnPropertyChanged("Contents");
+            }
         }
 
 

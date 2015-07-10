@@ -47,7 +47,18 @@ namespace MyEngine {
 
         inline float randSample(int samples)
         {
-            return (float)(this->_next() % samples + this->randFloat()) / samples;
+            if (samples > 0)
+                return (float)(this->_next() % samples + this->randFloat()) / samples;
+            else
+                return this->randFloat();
+        }
+
+        inline float randSample(int numSamples, int sample)
+        {
+            if (numSamples > 0)
+                return (sample % numSamples + this->randFloat()) * (1.0f / numSamples);
+            else
+                return this->randFloat();
         }
 
         // return a random number in normal distribution
