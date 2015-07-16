@@ -127,6 +127,7 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.N, true, false, false, "", "NewSceneCommand"));
             keys.Add(new HotKeyInfo(Key.O, true, false, false, "", "OpenSceneCommand"));
             keys.Add(new HotKeyInfo(Key.S, true, false, false, "", "SaveSceneCommand"));
+            keys.Add(new HotKeyInfo(Key.S, true, false, true, "", "SaveSceneCommand"));
             keys.Add(new HotKeyInfo(Key.F8, false, false, false, "", "LogWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F3, false, false, false, "", "ContentWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F, true, false, false, "", "FindWindowCommand"));

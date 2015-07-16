@@ -37,6 +37,8 @@ namespace MyEngine {
             property uint MaxSamples;
             [MPropertyAttribute(SortName = "006", Group = "Samples Settings")]
             property double SamplesThreshold;
+            [MPropertyAttribute(SortName = "007", Group = "Samples Settings")]
+            property uint MaxLights;
         };
 
         property bool IsStarted
@@ -88,6 +90,7 @@ namespace MyEngine {
                 renderer->MinSamples = settings->MinSamples;
                 renderer->MaxSamples = settings->MaxSamples;
                 renderer->SamplesThreshold = (float)settings->SamplesThreshold;
+                renderer->MaxLights = settings->MaxLights;
             }
             this->Renderer->Init(settings->Width, settings->Height);
 

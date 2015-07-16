@@ -24,6 +24,7 @@ namespace MyEngine {
 	Texture::Texture(ContentManager* owner, istream& file) :
 		ContentElement(owner, file)
 	{
+        // TODO: synchronization problems with pixels and rawData
 		this->init();
 		if (this->Version >= 1)
 		{

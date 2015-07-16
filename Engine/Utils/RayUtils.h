@@ -6,6 +6,9 @@
 
 namespace MyEngine {
 
+    class SceneElement;
+    using SceneElementPtr = shared_ptr < SceneElement >;
+
     struct Region
     {
         int x, y, w, h;
@@ -33,6 +36,17 @@ namespace MyEngine {
         }
     };
 
+    struct InterInfo
+    {
+        SceneElementPtr sceneElement;
+        Vector3 UV;
+        Vector3 interPos;
+
+        Color4 color;
+        Vector3 normal;
+        // TODO: reflection / refraction pdf
+    };
+
 
     inline vector<float> getMatrix(const Vector3& pos, Quaternion rot, const Vector3& scl)
     {
@@ -57,6 +71,20 @@ namespace MyEngine {
         result[14] = pos.z;
         result[15] = 1.0f;
         return result;
+    }
+
+    inline Vector3 perpendicularVector(const Vector3& vec)
+    {
+        int max_compo = vec.maxDim();
+
+        switch (max_compo) {
+        case  0: return Vector3(-vec.y / vec.x, 1.0f, 0.0f);
+        case  1: return Vector3(0.0f, -vec.z / vec.y, 1.0f);
+        case  2: return Vector3(0.0f, 1.0f, -vec.y / vec.z);
+        case -1:
+        default:
+            return Vector3(0.0f, 0.0f, 0.0f);
+        }
     }
 
 }

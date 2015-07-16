@@ -35,6 +35,7 @@ namespace MyEngine {
         vector<Region> Regions;
         uint MinSamples, MaxSamples;
         float SamplesThreshold;
+        uint MaxLights;
 
     protected:
         using ColorsMapType = map < string, Color4 >; // buffer name / color
@@ -75,12 +76,13 @@ namespace MyEngine {
         void createRTCScene();
         embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
         void cacheContentElements(const SceneElementPtr sceneElement);
+        InterInfo getInterInfo(const embree::RTCRay& rtcRay);
 
         bool render(bool preview);
         Color4 renderPixel(int x, int y);
         ColorsMapType computeColor(const embree::RTCRay& rtcRay);
-        ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Vector3& normal); // diffuse light / sepcular light / samples
-        ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const Vector3& normal); // diffuse light / sepcular light
+        ColorsMapType getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo); // diffuse light / sepcular light / samples
+        ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo); // diffuse light / sepcular light
         Vector3 getLightSample(const Light* light, int numSamples, int sample);
         Color4 getFogLighting(const embree::RTCRay& rtcRay, float fogFactor);
         bool postProcessing();

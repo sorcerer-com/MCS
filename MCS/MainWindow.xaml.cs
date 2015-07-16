@@ -707,6 +707,11 @@ namespace MCS
                 this.OnPropertyChanged("SnapDropDownSelectedItem");
                 this.OnPropertyChanged("SnapDropDownIsEnabled");
             }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Delete) // delete scene element
+            {
+                if (this.DeleteElementCommand.CanExecute(null))
+                    this.DeleteElementCommand.Execute(null);
+            }
             else if (e.KeyCode == System.Windows.Forms.Keys.F2) // change Editor Mode
             {
                 MEngine.Mode = MEngine.Mode == EEngineMode.Editor ? EEngineMode.Engine : EEngineMode.Editor;

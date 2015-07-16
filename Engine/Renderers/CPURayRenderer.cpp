@@ -194,29 +194,41 @@ namespace MyEngine {
         if (!this->IsStarted)
             return false;
 
-        // TODO: make somekind of anlize to determine delta
+        // sort regions by complexity
         sort(this->Regions.begin(), this->Regions.end(), [&](const Region& a, const Region& b) -> bool
         {
-            const float delta = 10.0f;
-            float aComplexity = (a.time * a.time) / 1000;
-            float bComplexity = (b.time * b.time) / 1000;
-
-            if (abs(aComplexity - bComplexity) > delta)
-                return aComplexity < bComplexity;
-            else
-            {
-                if (abs(a.y - b.y) > (int)this->RegionSize)
-                    return a.y < b.y;
-                else if (((a.y / this->RegionSize) / 2) % 2 == 0)
-                    return a.x < b.x;
-                else
-                    return a.x > b.x;
-            }
+            float aComplexity = (float)(a.time * a.time) / (a.w * a.h);
+            float bComplexity = (float)(b.time * b.time) / (b.w * b.h);
+            return aComplexity < bComplexity;
         });
+
+        // start from region with smallest complexity then find closest to it, etc.
+        vector<Region> temp = this->Regions;
+        this->Regions.clear();
+        while (!temp.empty())
+        {
+            Region region = temp[0];
+            this->Regions.push_back(region);
+            temp.erase(temp.begin());
+
+            sort(temp.begin(), temp.end(), [&](const Region& a, const Region& b) -> bool
+            {
+                float aDist = (float)(a.x - region.x) * (a.x - region.x) + (a.y - region.y) * (a.y - region.y);
+                float bDist = (float)(b.x - region.x) * (b.x - region.x) + (b.y - region.y) * (b.y - region.y);
+                if (aDist != bDist)
+                    return aDist < bDist;
+                else
+                {
+                    float aComplexity = (float)(a.time * a.time) / (a.w * a.h);
+                    float bComplexity = (float)(b.time * b.time) / (b.w * b.h);
+                    return aComplexity < bComplexity;
+                }
+            });
+        }
 
         // split last 5 regions
         int numThreads = (int)this->thread->workersCount();
-        vector<Region> temp;
+        temp.clear();
         for (int i = 0; i < numThreads * 2; i++)
         {
             temp.push_back(this->Regions.back());
@@ -474,6 +486,90 @@ namespace MyEngine {
         }
     }
 
+    InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay)
+    {
+        InterInfo result;
+
+        result.sceneElement = this->rtcInstances[rtcRay.instID];
+        result.interPos = Vector3(rtcRay.org[0], rtcRay.org[1], rtcRay.org[2]) + Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * rtcRay.tfar;
+        result.color = Color4(1.0f, 1.0f, 1.0f, 1.0f);
+
+        if (result.sceneElement)
+        {
+            Mesh* mesh = (Mesh*)this->contentElementCache[result.sceneElement->ContentID].get();
+            if (mesh)
+            {
+                const Triangle& triangle = mesh->Triangles[rtcRay.primID];
+                const Vector3& tA = mesh->TexCoords[triangle.texCoords[0]];
+                const Vector3& tB = mesh->TexCoords[triangle.texCoords[1]];
+                const Vector3& tC = mesh->TexCoords[triangle.texCoords[2]];
+                result.UV = barycentric(tA, tB, tC, rtcRay.u, rtcRay.v);
+
+                const Vector3& nA = mesh->Normals[triangle.normals[0]];
+                const Vector3& nB = mesh->Normals[triangle.normals[1]];
+                const Vector3& nC = mesh->Normals[triangle.normals[2]];
+                result.normal = barycentric(nA, nB, nC, rtcRay.u, rtcRay.v);
+                result.normal = result.sceneElement->Rotation * result.normal;
+                result.normal.normalize();
+            }
+            
+            Material* material = (Material*)this->contentElementCache[result.sceneElement->MaterialID].get();
+            if (material)
+            {
+                result.color = material->DiffuseColor;
+                // diffuse map
+                Texture* diffuseMap = NULL;
+                if (result.sceneElement->Textures.DiffuseMapID != INVALID_ID)
+                    diffuseMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.DiffuseMapID].get();
+                else
+                    diffuseMap = (Texture*)this->contentElementCache[material->Textures.DiffuseMapID].get();
+
+                if (diffuseMap)
+                    result.color *= diffuseMap->GetColor(result.UV.x, result.UV.y);
+
+                // normal map
+                Texture* normalMap = NULL;
+                if (result.sceneElement->Textures.NormalMapID != INVALID_ID)
+                    normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
+                else
+                    normalMap = (Texture*)this->contentElementCache[material->Textures.NormalMapID].get();
+
+                if (normalMap)
+                {
+                    Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
+                    Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
+                    Vector3 pn1 = perpendicularVector(result.normal);
+                    pn1.normalize();
+                    Vector3 pn2 = cross(result.normal, pn1);
+                    result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+                    result.normal.normalize();
+                }
+            }
+            else
+            {
+                // diffuse map
+                Texture* diffuseMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.DiffuseMapID].get();
+                if (diffuseMap)
+                    result.color = diffuseMap->GetColor(result.UV.x, result.UV.y);
+
+                // normal map
+                Texture* normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
+                if (normalMap)
+                {
+                    Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
+                    Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
+                    Vector3 pn1 = perpendicularVector(result.normal);
+                    pn1.normalize();
+                    Vector3 pn2 = cross(result.normal, pn1);
+                    result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+                    result.normal.normalize();
+                }
+            }
+        }
+
+        return result;
+    }
+
 
     bool CPURayRenderer::render(bool preview)
     {
@@ -576,58 +672,16 @@ namespace MyEngine {
         if (!this->IsStarted)
             return result;
 
-        const SceneElementPtr& sceneElement = this->rtcInstances[rtcRay.instID];
-        if (!sceneElement)
+        const InterInfo& interInfo = this->getInterInfo(rtcRay);
+        if (!interInfo.sceneElement)
             return result;
 
-        // proccess content
-        Vector3 UV, normal;
-        Mesh* mesh = (Mesh*)this->contentElementCache[sceneElement->ContentID].get();
-        if (mesh)
-        {
-            const Triangle& triangle = mesh->Triangles[rtcRay.primID];
-            const Vector3& tA = mesh->TexCoords[triangle.texCoords[0]];
-            const Vector3& tB = mesh->TexCoords[triangle.texCoords[1]];
-            const Vector3& tC = mesh->TexCoords[triangle.texCoords[2]];
-            UV = barycentric(tA, tB, tC, rtcRay.u, rtcRay.v);
-
-            const Vector3& nA = mesh->Normals[triangle.normals[0]];
-            const Vector3& nB = mesh->Normals[triangle.normals[1]];
-            const Vector3& nC = mesh->Normals[triangle.normals[2]];
-            normal = barycentric(nA, nB, nC, rtcRay.u, rtcRay.v);
-            normal = sceneElement->Rotation * normal;
-            normal.normalize();
-        }
-
-        // process material
-        Material* material = (Material*)this->contentElementCache[sceneElement->MaterialID].get();
-        if (material)
-        {
-            result["Diffuse"] = material->DiffuseColor;
-            Texture* diffuseMap = NULL;
-            if (sceneElement->Textures.DiffuseMapID != INVALID_ID)
-                diffuseMap = (Texture*)this->contentElementCache[sceneElement->Textures.DiffuseMapID].get();
-            else
-                diffuseMap = (Texture*)this->contentElementCache[material->Textures.DiffuseMapID].get();
-
-            if (diffuseMap)
-                result["Diffuse"] *= diffuseMap->GetColor(UV.x, UV.y);
-
-            // TODO: normalmap
-        }
-        else if (sceneElement->Textures.DiffuseMapID != INVALID_ID)
-        {
-            Texture* diffuseMap = (Texture*)this->contentElementCache[sceneElement->Textures.DiffuseMapID].get();
-            if (diffuseMap)
-                result["Diffuse"] = diffuseMap->GetColor(UV.x, UV.y);
-        }
-        else
-            result["Diffuse"] = Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        result["Diffuse"] = interInfo.color;
 
         // calculate lighting
-        if (sceneElement->Type == SceneElementType::EStaticObject)
+        if (interInfo.sceneElement->Type == SceneElementType::EStaticObject)
         {
-            const auto& lighting = this->getLighting(rtcRay, normal);
+            const auto& lighting = this->getLighting(rtcRay, interInfo);
             for (const auto& color : lighting)
                 result[color.first] = color.second;
             result["IndirectLight"] = this->Owner->SceneManager->AmbientLight; // TODO: add GI
@@ -662,18 +716,19 @@ namespace MyEngine {
             result["Final"] = this->Owner->SceneManager->FogColor * fog * (1.0f - fogFactor) + result["Final"] * fogFactor;
         }
 
+        // TODO: inside of the object color
+
         return result;
     }
 
-    ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const Vector3& normal)
+    ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
     {
         Profile;
-        const uint MAXLIGHTS = 8;
         ColorsMapType lighting;
 
-        Vector3 interPos = Vector3(rtcRay.org[0], rtcRay.org[1], rtcRay.org[2]) + Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * rtcRay.tfar; // TODO: many times calculated
         auto lights = this->Owner->SceneManager->GetElements(SceneElementType::ELight);
-        if (lights.size() > MAXLIGHTS)
+        uint count = this->MaxLights > 0 ? this->MaxLights : (uint)lights.size();
+        if (lights.size() > count)
         {
             sort(lights.begin(), lights.end(), [&](const SceneElementPtr a, const SceneElementPtr b) -> bool
             {
@@ -683,15 +738,15 @@ namespace MyEngine {
                 {
                     Light* aLight = (Light*)a.get();
                     Light* bLight = (Light*)b.get();
-                    float aContribution = aLight->Intensity / (aLight->Position - interPos).lengthSqr();
-                    float bContribution = bLight->Intensity / (bLight->Position - interPos).lengthSqr();
+                    float aContribution = aLight->Intensity / (aLight->Position - interInfo.interPos).lengthSqr();
+                    float bContribution = bLight->Intensity / (bLight->Position - interInfo.interPos).lengthSqr();
                     return aContribution > bContribution;
                 }
             });
         }
 
-        int count = std::min((uint)lights.size(), MAXLIGHTS);
-        for (int i = 0; i < count; i++)
+        count = std::min((uint)lights.size(), count);
+        for (uint i = 0; i < count; i++)
         {
             if (!lights[i]->Visible)
                 continue;
@@ -699,7 +754,7 @@ namespace MyEngine {
             ColorsMapType tempLighting;
             uint samples = adaptiveSampling(this->MinSamples, this->MaxSamples, this->SamplesThreshold, [&](int) -> Color4
             {
-                const auto& temp = this->getLighting(rtcRay, (Light*)lights[i].get(), normal);
+                const auto& temp = this->getLighting(rtcRay, (Light*)lights[i].get(), interInfo);
                 for (const auto& color : temp)
                     tempLighting[color.first] += color.second;
                 return temp.size() != 0 ? temp.at("DirectLight") : Color4();
@@ -717,45 +772,31 @@ namespace MyEngine {
         return lighting;
     }
 
-    ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const Light* light, const Vector3& normal)
+    ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo)
     {
         ColorsMapType lighting;
         lighting["DirectLight"] = Color4();
         lighting["Specular"] = Color4();
         
-        Vector3 interPos = Vector3(rtcRay.org[0], rtcRay.org[1], rtcRay.org[2]) + Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * rtcRay.tfar;
-        
         // light direction
         Vector3 lightDir = light->Rotation * Vector3(0.0f, -1.0f, 0.0f);
         lightDir.normalize();
 
-        Vector3 shadowDirs[RAYS];
+        // calculate base lighting
         embree::RTCRay4 rtcRay4;
+        Color4 baseLightings[RAYS];
+        Vector3 shadowDirs[RAYS];
+        float lightDists[RAYS];
         for (int i = 0; i < RAYS; i++)
         {
+            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, Vector3(), 0.1f, 0.1f));
+
             Vector3 lightSample = this->getLightSample(light, RAYS, i);
-            Vector3 dir = lightSample - interPos;
-            shadowDirs[i] = dir;
-            if (dir.length() > light->Radius * 1.10f)
-                dir = Vector3();
-            dir.normalize();
-
-            setRTCRay4(rtcRay4, i, RTCRay(interPos, dir, 0.1f, shadowDirs[i].length() - 0.1f));
-        }
-        embree::rtcIntersect4(VALID, this->rtcScene, rtcRay4);
-
-        for (int i = 0; i < RAYS; i++)
-        {
-            Vector3 shadowDir = shadowDirs[i];
-            if (shadowDir.length() > light->Radius * 1.10f)
+            shadowDirs[i] = lightSample - interInfo.interPos;
+            if (shadowDirs[i].length() > light->Radius * 1.10f)
                 continue;
-            float lensq = shadowDir.lengthSqr();
-            shadowDir.normalize();
-
-            // test of occlusion
-            // TODO: partial transparancy
-            if (rtcRay4.instID[i] != RTC_INVALID_GEOMETRY_ID && this->rtcInstances[rtcRay4.instID[i]]->Type != SceneElementType::ELight)
-                continue;
+            float lensq = shadowDirs[i].lengthSqr();
+            shadowDirs[i].normalize();
 
             // fog
             float fogFactor = 1.0f;
@@ -767,35 +808,68 @@ namespace MyEngine {
                     continue;
             }
 
-            // calculate lighting
-            Color4 baseLight = light->Color * (light->Intensity / lensq);// *abs(dot(lightDir, -shadowDir)); // (cosine between the light's direction and the normed ray toward the hitpos)
-            if (sqrt(lensq) > light->Radius)
-                baseLight *= (light->Radius * 1.10f - sqrt(lensq)) / (light->Radius * 0.10f);
-
             // spot effect
-            float spotEffect = dot(-shadowDir, lightDir);
+            float spotEffect = dot(-shadowDirs[i], lightDir);
             if (spotEffect < cos(light->SpotCutoffOuter * PI / 180.0f))
             {
                 spotEffect = 0.0f;
-                return lighting; // if spotEffect is 0 then no need for further calculations
+                continue; // if spotEffect is 0 then no need for further calculations
             }
             else if (spotEffect > 0.0f)
                 spotEffect = pow(spotEffect, light->SpotExponent);
             else
                 spotEffect = 1.0f;
 
-            float cosTheta = dot(shadowDir, normal);
+            // calculate lighting
+            baseLightings[i] = light->Color * (light->Intensity / lensq);// *abs(dot(lightDir, -shadowDir)); // (cosine between the light's direction and the normed ray toward the hitpos)
+            baseLightings[i] = baseLightings[i] * spotEffect * fogFactor;
+            if (sqrt(lensq) > light->Radius)
+                baseLightings[i] *= (light->Radius * 1.10f - sqrt(lensq)) / (light->Radius * 0.10f);
+
+            lightDists[i] = sqrt(lensq) - 0.1f;
+            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, shadowDirs[i], 0.1f, lightDists[i]));
+        }
+
+        // shadow
+        while (lightDists[0] > 0.01f || lightDists[1] > 0.01f || lightDists[2] > 0.01f || lightDists[3] > 0.01f)
+        {
+            embree::rtcIntersect4(VALID, this->rtcScene, rtcRay4);
+
+            for (int i = 0; i < RAYS; i++)
+            {
+                const InterInfo& interInfo = this->getInterInfo(getRTCRay(rtcRay4, i));
+                if (rtcRay4.instID[i] != RTC_INVALID_GEOMETRY_ID && this->rtcInstances[rtcRay4.instID[i]]->Type != SceneElementType::ELight)
+                    baseLightings[i] *= interInfo.color * (1.0f - interInfo.color.a);
+                // TODO: inside of the object color
+
+                // start = start + dir * dist
+                rtcRay4.orgx[i] += rtcRay4.dirx[i] * rtcRay4.tfar[i];
+                rtcRay4.orgy[i] += rtcRay4.diry[i] * rtcRay4.tfar[i];
+                rtcRay4.orgz[i] += rtcRay4.dirz[i] * rtcRay4.tfar[i];
+                if (baseLightings[i].intensity() < 0.01f)
+                    lightDists[i] = 0.0f;
+                else
+                    lightDists[i] -= rtcRay4.tfar[i];
+                rtcRay4.tfar[i] = lightDists[i];
+            }
+        }
+
+        // calculate lighting
+        for (int i = 0; i < RAYS; i++)
+        {
+            // calculate diffuse
+            float cosTheta = dot(shadowDirs[i], interInfo.normal);
             if (cosTheta > 0.0f)
-                lighting["DirectLight"] += baseLight * cosTheta * spotEffect * fogFactor;
+                lighting["DirectLight"] += baseLightings[i] * cosTheta;
 
             // calculate specular
-            Vector3 r = reflect(-shadowDir, normal);
+            Vector3 r = reflect(-shadowDirs[i], interInfo.normal);
             float cosGamma = dot(r, -Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]));
             if (cosGamma > 0.0f) // Specular
             {
                 Material* mat = (Material*)this->contentElementCache[this->rtcInstances[rtcRay.instID]->MaterialID].get();
                 if (mat)
-                    lighting["Specular"] += baseLight * mat->SpecularColor * pow(cosGamma, 0.3f * mat->Shininess) * spotEffect * fogFactor;
+                    lighting["Specular"] += baseLightings[i] * mat->SpecularColor * pow(cosGamma, 0.3f * mat->Shininess);
             }
         }
 
@@ -822,7 +896,8 @@ namespace MyEngine {
         {
             result = Vector3((rand.randSample(numSamples / 2, sample % 2) - 0.5f),
                              (rand.randSample(numSamples) - 0.5f),
-                             (rand.randSample(numSamples / 2, sample / 2) - 0.5f)) * 20;
+                             (rand.randSample(numSamples / 2, sample / 2) - 0.5f));
+            result *= 20.0f;
         }
 
         result *= light->Scale;
@@ -836,17 +911,20 @@ namespace MyEngine {
         Profile;
         Color4 result;
 
-        Vector3 normal(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
+        InterInfo interInfo;
+        interInfo.normal = Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
+
         Color4 prevLighting;
         float delta = std::min(100.0f, rtcRay.tfar / 10);
         for (float dist = 0.0f; dist < rtcRay.tfar; dist += delta)
         {
             embree::RTCRay newRay = rtcRay;
             newRay.tfar = dist;
-            Color4 lighting = this->getLighting(newRay, normal)["DirectLight"];
+            interInfo.interPos = Vector3(newRay.org[0], newRay.org[1], newRay.org[2]) + Vector3(newRay.dir[0], newRay.dir[1], newRay.dir[2]) * newRay.tfar;
+            Color4 lighting = this->getLighting(newRay, interInfo)["DirectLight"];
             
             float ration = lighting.intensity() / std::max(prevLighting.intensity(), 1.0f);
-            if (dist > 0 && ration > 10.0f)
+            if (dist > 0 && ration > 10.0f && delta > rtcRay.tfar / 100)
                 dist -= delta;
             else
             {
@@ -855,7 +933,7 @@ namespace MyEngine {
             }
 
             if (dist > 0 && ration > 10.0f)
-                delta = std::max(0.1f, delta * (0.5f * (1.0f - fogFactor)));
+                delta = std::max(rtcRay.tfar / 100, delta * (0.5f * (1.0f - fogFactor)));
 
             if (dist > 0 && ration < 0.1f)
                 delta = std::min(rtcRay.tfar / 10, delta * (2.0f / (1.0f - fogFactor)));

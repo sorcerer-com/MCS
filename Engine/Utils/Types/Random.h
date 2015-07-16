@@ -56,7 +56,7 @@ namespace MyEngine {
         inline float randSample(int numSamples, int sample)
         {
             if (numSamples > 0)
-                return (sample % numSamples + this->randFloat()) * (1.0f / numSamples);
+                return (sample % numSamples + this->randFloat()) / numSamples;
             else
                 return this->randFloat();
         }
