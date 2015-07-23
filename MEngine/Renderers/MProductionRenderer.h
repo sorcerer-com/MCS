@@ -25,20 +25,22 @@ namespace MyEngine {
         ref struct MRenderSettings
         {
         public:
-            [MPropertyAttribute(SortName = "001", Group = "Main Settings")]
+            [MPropertyAttribute(SortName = "01", Group = "01. Main Settings")]
             property uint Width;
-            [MPropertyAttribute(SortName = "002", Group = "Main Settings")]
+            [MPropertyAttribute(SortName = "02", Group = "01. Main Settings")]
             property uint Height;
-            [MPropertyAttribute(SortName = "003", Group = "Main Settings")]
+            [MPropertyAttribute(SortName = "03", Group = "01. Main Settings")]
             property uint RegionSize;
-            [MPropertyAttribute(SortName = "004", Group = "Samples Settings")]
+            [MPropertyAttribute(SortName = "01", Group = "02. Samples Settings")]
             property uint MinSamples;
-            [MPropertyAttribute(SortName = "005", Group = "Samples Settings")]
+            [MPropertyAttribute(SortName = "02", Group = "02. Samples Settings")]
             property uint MaxSamples;
-            [MPropertyAttribute(SortName = "006", Group = "Samples Settings")]
+            [MPropertyAttribute(SortName = "03", Group = "02. Samples Settings")]
             property double SamplesThreshold;
-            [MPropertyAttribute(SortName = "007", Group = "Samples Settings")]
+            [MPropertyAttribute(SortName = "01", Group = "03. Limits")]
             property uint MaxLights;
+            [MPropertyAttribute(SortName = "02", Group = "03. Limits")]
+            property uint MaxDepth;
         };
 
         property bool IsStarted
@@ -91,6 +93,7 @@ namespace MyEngine {
                 renderer->MaxSamples = settings->MaxSamples;
                 renderer->SamplesThreshold = (float)settings->SamplesThreshold;
                 renderer->MaxLights = settings->MaxLights;
+                renderer->MaxDepth = settings->MaxDepth;
             }
             this->Renderer->Init(settings->Width, settings->Height);
 
@@ -125,9 +128,6 @@ namespace MyEngine {
                 dataByte[i * 4 + 0] = (byte)(std::min(buffer.data[i].b, 1.0f) * 255);
                 dataByte[i * 4 + 3] = (byte)(std::min(buffer.data[i].a, 1.0f) * 255);
             }
-            //scene->Renderer->ImageMutex.lock();
-            //memcpy((void*)data->Scan0, this->Renderer->Image.Pixels, scene->Renderer->Image.Width * scene->Renderer->Image.Height * scene->Renderer->Image.Components);
-            //scene->Renderer->ImageMutex.unlock();
             this->buffer->UnlockBits(data);
             return this->buffer;
         }

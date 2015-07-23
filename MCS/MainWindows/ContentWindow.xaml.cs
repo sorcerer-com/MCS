@@ -588,7 +588,7 @@ namespace MCS.MainWindows
                 if (!this.contentManager.ContainsPath(fullPath))
                     this.contentManager.CreatePath(fullPath);
 
-                // if allready exists
+                // if already exists
                 MContentElement elem = this.contentManager.GetElement(fullPath + name, true);
                 uint id = 0;
                 if (elem != null)

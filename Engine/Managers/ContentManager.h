@@ -44,6 +44,7 @@ namespace MyEngine {
 
 	public:
 		ContentManager(Engine* owner);
+        ~ContentManager();
 
 		bool ImportPackage(const string& filePath);
 		bool ExportToPackage(const string& filePath, uint id);

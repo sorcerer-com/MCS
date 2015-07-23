@@ -2,7 +2,6 @@
 #pragma once
 
 #include <vector>
-#include <thread>
 #include <random>
 
 
@@ -83,10 +82,11 @@ namespace MyEngine {
     private:
         static const int RGENS = 257; // 257 is a prime number
         static pair<unsigned, Random> rg_table[RGENS];
+        static function<int()> threadIdFunc;
 
     public:
         // seed the whole array of random generators.
-        static inline void initRandom(unsigned seed)
+        static inline void initRandom(unsigned seed, function<int()> _threadIdFunc)
         {
             for (int i = 0; i < RGENS; i++)
                 rg_table[i].first = 0xffffffff;
@@ -106,6 +106,8 @@ namespace MyEngine {
                 for (int i = 0; i < n; i++)
                     next._next();
             }
+
+            threadIdFunc = _threadIdFunc;
         }
 
         // fetch the idx-th random generator. There are at least 250 random generators, which are prepared and ready.
@@ -137,7 +139,7 @@ namespace MyEngine {
         // thus no locking is required, and no performance degradation can occur.
         static inline Random& getRandomGen(void)
         {
-            return getRandomGen((int)this_thread::get_id().hash());
+            return getRandomGen(threadIdFunc());
         }
 
     };

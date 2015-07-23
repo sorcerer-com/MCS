@@ -55,7 +55,14 @@ namespace MyEngine {
 		{
 			double get() { return material->Glossiness; }
 			void set(double value) { material->Glossiness = (float)value; OnChanged(); }
-		}
+        }
+
+        [MPropertyAttribute(Group = "Characteristics")]
+        property double IOR
+        {
+            double get() { return material->IOR; }
+            void set(double value) { material->IOR = (float)value; OnChanged(); }
+        }
 
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
 		property MContentElement^ DiffuseMap
@@ -120,7 +127,13 @@ namespace MyEngine {
 						double value = 0.0;
 						Double::TryParse(docElem->GetAttribute("Value"), value);
 						this->Glossiness = value;
-					}
+                    }
+                    else if (docElem->Name == "IOR")
+                    {
+                        double value = 0.0;
+                        Double::TryParse(docElem->GetAttribute("Value"), value);
+                        this->IOR = value;
+                    }
 					else if (docElem->Name == "DiffuseMap")
                     {
                         String^ value = docElem->GetAttribute("Value");
@@ -182,7 +195,11 @@ namespace MyEngine {
 
 				docElem = doc->CreateElement("Glossiness");
 				docElem->SetAttribute("Value", this->Glossiness.ToString("0.000000"));
-				docRoot->AppendChild(docElem);
+                docRoot->AppendChild(docElem);
+
+                docElem = doc->CreateElement("IOR");
+                docElem->SetAttribute("Value", this->IOR.ToString("0.000000"));
+                docRoot->AppendChild(docElem);
 
 				if (this->DiffuseMap != nullptr)
 				{

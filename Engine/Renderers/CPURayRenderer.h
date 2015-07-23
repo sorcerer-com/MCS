@@ -36,6 +36,7 @@ namespace MyEngine {
         uint MinSamples, MaxSamples;
         float SamplesThreshold;
         uint MaxLights;
+        uint MaxDepth;
 
     protected:
         using ColorsMapType = map < string, Color4 >; // buffer name / color
@@ -80,7 +81,7 @@ namespace MyEngine {
 
         bool render(bool preview);
         Color4 renderPixel(int x, int y);
-        ColorsMapType computeColor(const embree::RTCRay& rtcRay);
+        ColorsMapType computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo);
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo); // diffuse light / sepcular light / samples
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo); // diffuse light / sepcular light
         Vector3 getLightSample(const Light* light, int numSamples, int sample);
@@ -88,7 +89,7 @@ namespace MyEngine {
         bool postProcessing();
 
         static void onRTCError(const embree::RTCError code, const char* str);
-        static embree::RTCRay RTCRay(const Vector3& start, const Vector3& dir, float near = 0.1f, float far = 10000.0f);
+        static embree::RTCRay RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near = 0.1f, float far = 10000.0f);
         static void setRTCRay4(embree::RTCRay4& ray_o, int i, const embree::RTCRay& ray_i);
         static embree::RTCRay getRTCRay(const embree::RTCRay4& ray_i, int i);
         static uint adaptiveSampling(uint minSamples, uint maxSamples, float samplesThreshold, const function<Color4(int)>& func);

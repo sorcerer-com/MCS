@@ -1,8 +1,10 @@
 // RayUtils.h
 #pragma once
 
+#include "Types\Random.h"
 #include "Types\Vector3.h"
 #include "Types\Quaternion.h"
+
 
 namespace MyEngine {
 
@@ -44,8 +46,43 @@ namespace MyEngine {
 
         Color4 color;
         Vector3 normal;
-        // TODO: reflection / refraction pdf
+
+        float diffuse;
+        float refraction;
+        float reflection;
     };
+
+    
+    enum RayFlags
+    {
+        RAY_INDIRECT = (1 << 0),
+        RAY_INSIDE = (1 << 1),
+    };
+
+    inline bool getFlag(uint flags, uint flag)
+    {
+        return (flags & flag) != 0;
+    }
+
+    inline bool getFlag(float flags, uint flag)
+    {
+        return getFlag((uint)flags, flag);
+    }
+
+    inline void setFlag(uint& flags, uint flag, bool value)
+    {
+        if (value)
+            flags |= flag;
+        else
+            flags &= !flag;
+    }
+
+    inline void setFlag(float& flags, uint flag, bool value)
+    {
+        uint _flags = (uint)flags;
+        setFlag(_flags, flag, value);
+        flags = (float)_flags;
+    }
 
 
     inline vector<float> getMatrix(const Vector3& pos, Quaternion rot, const Vector3& scl)
@@ -73,18 +110,67 @@ namespace MyEngine {
         return result;
     }
 
-    inline Vector3 perpendicularVector(const Vector3& vec)
-    {
-        int max_compo = vec.maxDim();
 
-        switch (max_compo) {
-        case  0: return Vector3(-vec.y / vec.x, 1.0f, 0.0f);
-        case  1: return Vector3(0.0f, -vec.z / vec.y, 1.0f);
-        case  2: return Vector3(0.0f, 1.0f, -vec.y / vec.z);
-        case -1:
-        default:
-            return Vector3(0.0f, 0.0f, 0.0f);
+    inline Vector3 faceforward(const Vector3& ray, const Vector3& norm)
+    {
+        if (dot(ray, norm) < 0.0f) return norm;
+        else return -norm;
+    }
+
+    inline Vector3 reflect(const Vector3& ray, const Vector3& norm)
+    {
+        Vector3 result = ray - dot(ray, norm) * norm * 2.0f;
+        result.normalize();
+        return result;
+    }
+
+    inline Vector3 refract(const Vector3& i, const Vector3& n, float ior)
+    {
+        float NdotI = dot(i, n);
+        float k = 1 - (ior * ior) * (1 - NdotI * NdotI);
+        if (k < 0)
+            return Vector3(0, 0, 0);
+        Vector3 newN = ior * i - (ior * NdotI + (float)sqrtf(k)) * n;
+        newN.normalize();
+        return newN;
+    }
+
+    void orthonormedSystem(const Vector3& a, Vector3& b, Vector3& c);
+    inline Vector3 glossy(const Vector3& n, float glossiness)
+    {
+        Random& rand = Random::getRandomGen();
+        Vector3 pn1, pn2;
+        orthonormedSystem(n, pn1, pn2);
+        float x, y;
+        rand.unitDiscSample(x, y);
+        Vector3 newN = n + (pn1 * x + pn2 * y) * tan((1.0f -  glossiness) * PI / 2.0f);
+        newN.normalize();
+        return newN;
+    }
+
+    // Use the Schlick's approximation to evaluate the fresnel coefficient
+    // for an incident ray `i', normal `n' and the given ior.
+    // The coefficient represents Reflection / (Reflection + Refraction)
+    inline float fresnel(const Vector3& i, const Vector3& n, float ior)
+    {
+        float f = (1.0f - ior) / (1.0f + ior);
+        f = f * f;
+        float NdotI = -dot(n, i);
+        return f + (1.0f - f) * pow(1.0f - NdotI, 5.0f);
+    }
+
+    inline void orthonormedSystem(const Vector3& a, Vector3& b, Vector3& c)
+    {
+        Vector3 temp = Vector3(1, 0, 0);
+        if (abs(dot(a, temp)) > 0.99f) {
+            temp = Vector3(0, 1, 0);
+            if (abs(dot(a, temp)) > 0.99f)
+                temp = Vector3(0, 0, 1);
         }
+        b = cross(a, temp);
+        b.normalize();
+        c = cross(a, b);
+        c.normalize();
     }
 
 }

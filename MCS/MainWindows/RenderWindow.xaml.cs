@@ -172,6 +172,7 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.MaxSamples = 4;
             RenderWindow.renderSettings.SamplesThreshold = 0.01;
             RenderWindow.renderSettings.MaxLights = 8;
+            RenderWindow.renderSettings.MaxDepth = 8;
         }
 
         public RenderWindow(MEngine engine)

@@ -30,7 +30,8 @@ namespace MyEngine {
 			Read(file, this->DiffuseColor);
 			Read(file, this->SpecularColor);
 			Read(file, this->Shininess);
-			Read(file, this->Glossiness);
+            Read(file, this->Glossiness);
+            Read(file, this->IOR);
 			Read(file, this->Textures);
 		}
 		this->IsLoaded = true;
@@ -43,6 +44,7 @@ namespace MyEngine {
 		this->SpecularColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
 		this->Shininess = 10.0f;
 		this->Glossiness = 1.0f;
+        this->IOR = 1.5f;
 		this->Textures.DiffuseMapID = INVALID_ID;
         this->Textures.NormalMapID = INVALID_ID;
 	}
@@ -70,7 +72,8 @@ namespace MyEngine {
 		size += SizeOf(this->DiffuseColor);
 		size += SizeOf(this->SpecularColor);
 		size += SizeOf(this->Shininess);
-		size += SizeOf(this->Glossiness);
+        size += SizeOf(this->Glossiness);
+        size += SizeOf(this->IOR);
 		size += SizeOf(this->Textures);
 		return size;
 	}
@@ -83,7 +86,8 @@ namespace MyEngine {
 		Write(file, this->DiffuseColor);
 		Write(file, this->SpecularColor);
 		Write(file, this->Shininess);
-		Write(file, this->Glossiness);
+        Write(file, this->Glossiness);
+        Write(file, this->IOR);
         Write(file, this->Textures);
 		file.flush();
 	}

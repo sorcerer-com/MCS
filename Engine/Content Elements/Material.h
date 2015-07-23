@@ -13,22 +13,23 @@ namespace MyEngine {
 
     struct TextureSet
     {
-        uint DiffuseMapID;
-        uint NormalMapID;
+        uint DiffuseMapID; // alpha - refraction
+        uint NormalMapID; // alpha - reflection
     };
 
 	class Material : public ContentElement
 	{
 	public:
 		Color4 AmbientColor;
-		Color4 DiffuseColor;
-		Color4 SpecularColor;
+		Color4 DiffuseColor; // alpha - refraction
+		Color4 SpecularColor; // alpha - reflection
 
 		float Shininess;
 		float Glossiness;
+        float IOR;
 
         TextureSet Textures;
-		// TODO: reflection/refraction (map, may be unite all maps in struct), IOR, Absorption	* update save/load to/from file
+		// TODO: InnerColor, Absorption	* update save/load to/from file
 
 	public:
 		Material(ContentManager* owner, const string& name, const string& package, const string& path);

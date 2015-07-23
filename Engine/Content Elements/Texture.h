@@ -20,13 +20,14 @@ namespace MyEngine {
 	public:
 		Texture(ContentManager* owner, const string& name, const string& package, const string& path);
 		Texture(ContentManager* owner, istream& file);
+        Texture(const Texture& texture);
         ~Texture();
 
-		void Init(uint width, uint height);
+        void Init(uint width, uint height);
 		Color4 GetColor(uint x, uint y) const;
 		Color4 GetColor(float u, float v) const;
 		void SetColor(uint x, uint y, const Color4& color);
-        void UpdateRawData();
+        void SetBGRAData(const byte* data);
 
 		virtual long long Size() const override;
 		virtual void WriteToFile(ostream& file) override;
@@ -36,7 +37,8 @@ namespace MyEngine {
         long long rawDataSize;
         byte* rawData;
 
-		void init();
+        void init();
+        void updateRawData();
 	};
 
 }

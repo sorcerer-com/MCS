@@ -179,40 +179,4 @@ namespace MyEngine {
 		return c;
 	}
 
-
-	inline Vector3 reflect(const Vector3& ray, const Vector3& norm)
-	{
-		Vector3 result = ray - dot(ray, norm) * norm * 2.0f;
-		result.normalize();
-		return result;
-	}
-
-	inline Vector3 faceforward(const Vector3& ray, const Vector3& norm)
-	{
-		if (dot(ray, norm) < 0.0f) return norm;
-		else return -norm;
-	}
-
-	inline Vector3 refract(const Vector3& i, const Vector3& n, float ior)
-	{
-		float NdotI = dot(i, n);
-		float k = 1 - (ior * ior) * (1 - NdotI * NdotI);
-		if (k < 0)
-			return Vector3(0, 0, 0);
-		return ior * i - (ior * NdotI + (float)sqrtf(k)) * n;
-	}
-
-	inline void orthonormedSystem(const Vector3& a, Vector3& b, Vector3& c)
-	{
-		Vector3 temp = Vector3(1, 0, 0);
-		if (abs(dot(a, temp)) > 0.99f) {
-			temp = Vector3(0, 1, 0);
-			if (abs(dot(a, temp)) > 0.99f)
-				temp = Vector3(0, 0, 1);
-		}
-		b = cross(a, temp);
-		b.normalize();
-		c = cross(a, b);
-		c.normalize();
-	}
 }

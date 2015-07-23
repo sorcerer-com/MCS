@@ -614,7 +614,7 @@ namespace MCS
             MSceneElement mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
             mse.Position = new MPoint(0, 0, -100);
             mse.Rotation = new MPoint(-20, -20, 0);
-            mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\FlatWhite");
+            mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\Glass");
             for (int i = 0; i < 10; i++)
             {
                 mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test1" + i, @"MPackage#Meshes\Primitives\Cube");
@@ -630,8 +630,8 @@ namespace MCS
             light.Position = new MPoint(15, 30, -50);
             light.Color = new MColor(0.1f, 1.0f, 0.1f);
             light.Intensity = 500;
-            this.engine.SceneManager.FogColor = new MColor(0.5, 0.5, 0.5);
-            this.engine.SceneManager.FogDensity = 0.01;
+            //this.engine.SceneManager.FogColor = new MColor(0.5, 0.5, 0.5);
+            //this.engine.SceneManager.FogDensity = 0.01;
             this.engine.SceneManager.TimeOfDay = 10;
             this.engine.SceneManager.SkyBox = this.engine.ContentManager.GetElement(@"MPackage#Textures\SkyBoxes\ElyHills");
         }

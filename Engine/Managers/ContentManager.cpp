@@ -25,7 +25,12 @@ namespace MyEngine {
 		this->thread->defMutex("content", true);
 
 		this->addRequest(ELoadDatabase, true);
-	}
+    }
+
+    ContentManager::~ContentManager()
+    {
+        this->thread->joinWorkers();
+    }
 
 
 	/* P A C K A G E S */
@@ -400,11 +405,11 @@ namespace MyEngine {
 		}
 
 		// load element if it isn't
-		if (load)
+        if (load && !this->content[id]->IsLoaded)
 		{
 			if (waitForLoad)
 				this->loadElement(id);
-			else
+            else
 				this->addRequest(ELoadElement, id);
 		}
 
@@ -717,7 +722,7 @@ namespace MyEngine {
 	{
 		lock lck(this->thread->mutex("content"));
 
-		ContentElementPtr element = this->GetElement(id, false);
+		ContentElementPtr element = this->GetElement(id, true, true);
 		if (!element)
 		{
 			Engine::Log(LogType::EError, "ContentManager", "Cannot save non existent content element (" + to_string(id) + ")");
@@ -773,7 +778,7 @@ namespace MyEngine {
 	{
 		lock lck(this->thread->mutex("content"));
 
-		ContentElementPtr element = this->GetElement(id, false);
+		ContentElementPtr element = this->GetElement(id, true, true);
 		if (!element)
 		{
 			Engine::Log(LogType::EError, "ContentManager", "Cannot erase non existent content element (" + to_string(id) + ")");

@@ -9,8 +9,6 @@
 #include "..\Utils\IOUtils.h"
 #include "..\Utils\External\lodepng.h"
 
-#include "..\Managers\ContentManager.h"
-
 
 namespace MyEngine {
 
@@ -24,8 +22,7 @@ namespace MyEngine {
 	Texture::Texture(ContentManager* owner, istream& file) :
 		ContentElement(owner, file)
 	{
-        // TODO: synchronization problems with pixels and rawData
-		this->init();
+        this->init();
 		if (this->Version >= 1)
 		{
 			Read(file, this->Width);
@@ -40,6 +37,23 @@ namespace MyEngine {
             lodepng_decode_memory(&this->Pixels, &this->Width, &this->Height, this->rawData, this->rawDataSize, LCT_RGBA, 8);
 		}
 		this->IsLoaded = true;
+    }
+
+    Texture::Texture(const Texture& texture) : 
+        ContentElement(texture)
+    {
+        this->init();
+        
+        this->Width = texture.Width;
+        this->Height = texture.Height;
+        this->Pixels = new byte[this->Width * this->Height * 4];
+        memcpy(this->Pixels, texture.Pixels, this->Width * this->Height * 4);
+
+        this->rawDataSize = texture.rawDataSize;
+        this->rawData = new byte[this->rawDataSize];
+        memcpy(this->rawData, texture.rawData, this->rawDataSize);
+
+        this->IsLoaded = true;
     }
     
     Texture::~Texture()
@@ -65,7 +79,7 @@ namespace MyEngine {
 
 
 	void Texture::Init(uint width, uint height)
-	{
+    {
 		if (this->Pixels != NULL)
 			delete[] this->Pixels;
         this->Pixels = NULL;
@@ -76,11 +90,11 @@ namespace MyEngine {
 		memset(this->Pixels, 255, width * height * 4);
 		this->Changed = true;
 
-        this->UpdateRawData();
+        this->updateRawData();
 	}
 
 	Color4 Texture::GetColor(uint x, uint y) const
-	{
+    {
 		if (x >= this->Width || y >= this->Height)
 			return Color4();
 
@@ -108,7 +122,7 @@ namespace MyEngine {
 	}
 
 	void Texture::SetColor(uint x, uint y, const Color4& color)
-	{
+    {
 		if (x < this->Width && y < this->Height)
 		{
 			this->Pixels[(y * this->Width + x) * 4 + 0] = (byte)(color.r * 255);
@@ -119,7 +133,21 @@ namespace MyEngine {
 		}
     }
 
-    void Texture::UpdateRawData()
+    void Texture::SetBGRAData(const byte* data)
+    {
+        for (uint i = 0; i < this->Width * this->Height; i++)
+        {
+            // from BGRA to RGBA
+            this->Pixels[i * 4 + 0] = data[i * 4 + 2];
+            this->Pixels[i * 4 + 1] = data[i * 4 + 1];
+            this->Pixels[i * 4 + 2] = data[i * 4 + 0];
+            this->Pixels[i * 4 + 3] = data[i * 4 + 3];
+        }
+
+        this->updateRawData();
+    }
+
+    void Texture::updateRawData()
     {
         this->rawDataSize = 0;
         if (this->rawData != NULL)
@@ -130,7 +158,7 @@ namespace MyEngine {
 
 
 	long long Texture::Size() const
-	{
+    {
 		long long size = ContentElement::Size();
 		size += SizeOf(this->Width);
         size += SizeOf(this->Height);
@@ -140,7 +168,7 @@ namespace MyEngine {
 	}
 
 	void Texture::WriteToFile(ostream& file)
-	{
+    {
 		ContentElement::WriteToFile(file);
 
 		Write(file, this->Width);
@@ -154,7 +182,7 @@ namespace MyEngine {
 	}
 
 	ContentElement* Texture::Clone() const
-	{
+    {
 		Texture* newElem = new Texture(*this);
 		newElem->ID = INVALID_ID;
 		newElem->PackageOffset = 0;

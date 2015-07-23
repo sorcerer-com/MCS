@@ -29,6 +29,7 @@ namespace embree {
 namespace MyEngine {
 
     pair<unsigned, Random> Random::rg_table[Random::RGENS];
+    function<int()> Random::threadIdFunc;
 
     const int CPURayRenderer::VALID[RAYS] = { -1, -1, -1, -1 };
 
@@ -75,7 +76,7 @@ namespace MyEngine {
 
     vector<string> CPURayRenderer::GetBufferNames()
     {
-        return { "Diffuse", "Specular", "Reflection", "Refraction", "DirectLight", "IndirectLight", "TotalLight", "Samples", "Depth", "Final" };
+        return { "Diffuse", "Specular", "DirectLight", "IndirectLight", "TotalLight", "Lighted", "Reflection", "Refraction", "Samples", "Depth", "Final" };
     }
     
     vector<Region> CPURayRenderer::GetActiveRegions()
@@ -103,7 +104,7 @@ namespace MyEngine {
         for (const auto& bufferName : bufferNames)
             this->Buffers[bufferName].init(width, height);
 
-        Random::initRandom((int)Now);
+        Random::initRandom((int)Now, []() -> int { return (int)this_thread::get_id().hash(); });
         this->generateRegions();
 
         embree::rtcSetErrorFunction((embree::RTCErrorFunc)&onRTCError);
@@ -298,7 +299,6 @@ namespace MyEngine {
         Vector3 start, dir;
         start = this->pos;
         dir = upLeft + dx * x + dy * y;
-        dir.normalize();
 
         if (this->focalPlaneDist > 0.0f)
         {
@@ -315,10 +315,10 @@ namespace MyEngine {
 
             start = start + dx * right + dy * up;
             dir = T - start;
-            dir.normalize();
         }
+        dir.normalize();
 
-        return RTCRay(start, dir);
+        return RTCRay(start, dir, 0);
     }
     
 
@@ -488,11 +488,15 @@ namespace MyEngine {
 
     InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay)
     {
-        InterInfo result;
+        Vector3 rayDir(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
 
+        InterInfo result;
         result.sceneElement = this->rtcInstances[rtcRay.instID];
-        result.interPos = Vector3(rtcRay.org[0], rtcRay.org[1], rtcRay.org[2]) + Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * rtcRay.tfar;
+        result.interPos = Vector3(rtcRay.org[0], rtcRay.org[1], rtcRay.org[2]) + rayDir * rtcRay.tfar;
         result.color = Color4(1.0f, 1.0f, 1.0f, 1.0f);
+        result.diffuse = 1.0f;
+        result.refraction = 0.0f;
+        result.reflection = 0.0f;
 
         if (result.sceneElement)
         {
@@ -510,13 +514,15 @@ namespace MyEngine {
                 const Vector3& nC = mesh->Normals[triangle.normals[2]];
                 result.normal = barycentric(nA, nB, nC, rtcRay.u, rtcRay.v);
                 result.normal = result.sceneElement->Rotation * result.normal;
-                result.normal.normalize();
             }
             
             Material* material = (Material*)this->contentElementCache[result.sceneElement->MaterialID].get();
             if (material)
             {
                 result.color = material->DiffuseColor;
+                result.refraction = 1.0f - material->DiffuseColor.a;
+                result.reflection = 1.0f - material->SpecularColor.a;
+
                 // diffuse map
                 Texture* diffuseMap = NULL;
                 if (result.sceneElement->Textures.DiffuseMapID != INVALID_ID)
@@ -525,7 +531,10 @@ namespace MyEngine {
                     diffuseMap = (Texture*)this->contentElementCache[material->Textures.DiffuseMapID].get();
 
                 if (diffuseMap)
+                {
                     result.color *= diffuseMap->GetColor(result.UV.x, result.UV.y);
+                    result.refraction = 1.0f - result.color.a;
+                }
 
                 // normal map
                 Texture* normalMap = NULL;
@@ -538,19 +547,22 @@ namespace MyEngine {
                 {
                     Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
                     Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
-                    Vector3 pn1 = perpendicularVector(result.normal);
-                    pn1.normalize();
-                    Vector3 pn2 = cross(result.normal, pn1);
+                    Vector3 pn1, pn2;
+                    orthonormedSystem(result.normal, pn1, pn2);
                     result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
-                    result.normal.normalize();
+
+                    result.reflection = 1.0f - (material->SpecularColor.a * n.a);
                 }
             }
-            else
+            else // scene element's maps
             {
                 // diffuse map
                 Texture* diffuseMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.DiffuseMapID].get();
                 if (diffuseMap)
+                {
                     result.color = diffuseMap->GetColor(result.UV.x, result.UV.y);
+                    result.refraction = 1.0f - result.color.a;
+                }
 
                 // normal map
                 Texture* normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
@@ -558,14 +570,28 @@ namespace MyEngine {
                 {
                     Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
                     Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
-                    Vector3 pn1 = perpendicularVector(result.normal);
-                    pn1.normalize();
-                    Vector3 pn2 = cross(result.normal, pn1);
+                    Vector3 pn1, pn2;
+                    orthonormedSystem(result.normal, pn1, pn2);
                     result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
-                    result.normal.normalize();
+
+                    result.reflection = 1.0f - n.a;
                 }
             }
+            result.normal.normalize();
+            result.normal = faceforward(rayDir, result.normal);
+
+            // fresnel
+            if (result.reflection > 0.001f && result.reflection < 0.01f)
+            {
+                float ior = 1.0f / (material ? material->IOR : 1.5f);
+                if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
+                    ior = 1.0f / ior;
+                result.reflection = fresnel(rayDir, result.normal, ior);
+            }
         }
+
+        result.diffuse = (1.0f - result.refraction) * (1.0f - result.reflection);
+        result.refraction *= (1.0f - result.reflection);
 
         return result;
     }
@@ -621,7 +647,7 @@ namespace MyEngine {
             }
 
             if (!preview)
-                this_thread::sleep_for(chrono::milliseconds(1));
+                this_thread::sleep_for(chrono::milliseconds(10));
         }
 
         region.active = false;
@@ -651,7 +677,9 @@ namespace MyEngine {
             if (rtcRay4.instID[k] == RTC_INVALID_GEOMETRY_ID)
                 continue;
 
-            const ColorsMapType& temp = this->computeColor(getRTCRay(rtcRay4, k));
+            const embree::RTCRay& rtcRay = getRTCRay(rtcRay4, k);
+            const InterInfo& interInfo = this->getInterInfo(rtcRay);
+            const ColorsMapType& temp = this->computeColor(rtcRay, interInfo);
             for (const auto& color : temp)
                 colors[color.first] += color.second;
         }
@@ -664,7 +692,7 @@ namespace MyEngine {
     }
 
     using ColorsMapType = map < string, Color4 >; // buffer name / color
-    ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay)
+    ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
     {
         Profile;
         ColorsMapType result;
@@ -672,35 +700,80 @@ namespace MyEngine {
         if (!this->IsStarted)
             return result;
 
-        const InterInfo& interInfo = this->getInterInfo(rtcRay);
         if (!interInfo.sceneElement)
             return result;
+
+        // TODO: add if sample is between diffuse/refraction/reflection for GI only
+        //Random& rand = Random::getRandomGen();
+        //float sample = rand.randSample((int)RAYS);
 
         result["Diffuse"] = interInfo.color;
 
         // calculate lighting
-        if (interInfo.sceneElement->Type == SceneElementType::EStaticObject)
+        if (interInfo.sceneElement->Type == SceneElementType::EStaticObject &&
+            interInfo.diffuse > 0.001f)
         {
             const auto& lighting = this->getLighting(rtcRay, interInfo);
             for (const auto& color : lighting)
                 result[color.first] = color.second;
-            result["IndirectLight"] = this->Owner->SceneManager->AmbientLight; // TODO: add GI
+            result["IndirectLight"] = this->Owner->SceneManager->AmbientLight;
+            // TODO: add GI
         }
         else
             result["DirectLight"] = Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        // "Diffuse", "Specular", "Reflection", "Refraction", "DirectLight", "IndirectLight", "TotalLight", Samples, "Depth", "Final"
         result["TotalLight"] = result["DirectLight"] + result["IndirectLight"];
+        result["Lighted"] = (result["Diffuse"] * result["TotalLight"] + result["Specular"]) * interInfo.diffuse;
+
+        // calculate refraction
+        if (interInfo.refraction > 0.001f && (uint)rtcRay.align0 < this->MaxDepth)
+        {
+            Vector3 n = interInfo.normal;
+            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            if (material && material->Glossiness > 0.0f && material->Glossiness < 0.999f) // glossy
+                n = glossy(n, material->Glossiness);
+
+            float ior = 1.0f / (material ? material->IOR : 1.5f);
+            if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
+                ior = 1.0f / ior;
+            Vector3 dir = refract(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n, ior);
+
+            if (dir.length() > 0.001f) // if not total inner reflection
+            {
+                embree::RTCRay rtcRefrRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+                setFlag(rtcRefrRay.align1, RayFlags::RAY_INSIDE, !getFlag(rtcRay.align1, RayFlags::RAY_INSIDE));
+
+                embree::rtcIntersect(this->rtcScene, rtcRefrRay);
+                const InterInfo& interInfoRefr = this->getInterInfo(rtcRefrRay);
+
+                result["Refraction"] = this->computeColor(rtcRefrRay, interInfoRefr)["Final"];
+                result["Refraction"] *= interInfo.refraction;
+                result["Refraction"].a = 1.0f;
+            }
+        }
+
+        // calculate reflection
+        if (interInfo.reflection > 0.001f && (uint)rtcRay.align0 < this->MaxDepth)
+        {
+            Vector3 n = interInfo.normal;
+            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            if (material && material->Glossiness > 0.0f && material->Glossiness < 0.999f) // glossy
+                n = glossy(n, material->Glossiness);
+
+            Vector3 dir = reflect(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n);
+            embree::RTCRay rtcReflRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+
+            embree::rtcIntersect(this->rtcScene, rtcReflRay);
+            const InterInfo& interInfoRefl = this->getInterInfo(rtcReflRay);
+
+            result["Reflection"] = this->computeColor(rtcReflRay, interInfoRefl)["Final"];
+            result["Reflection"] *= interInfo.reflection;
+            result["Reflection"].a = 1.0f;
+        }
 
         float depth = rtcRay.tfar;
         result["Depth"] = Color4(depth, depth, depth);
-
-        // TODO: add reflection / refraction
-        float refract = 0.0f;
-        float reflect = 0.0f;
-        result["Final"] = result["Diffuse"] * result["TotalLight"] + result["Specular"];
-        result["Final"] = result["Final"] * (1.0f - refract) + result["Refraction"] * refract;
-        result["Final"] = result["Final"] * (1.0f - reflect) + result["Reflection"] * reflect;
+        result["Final"] = result["Lighted"] + result["Refraction"] + result["Reflection"];
 
         // fog
         float fogDensity = this->Owner->SceneManager->FogDensity;
@@ -710,7 +783,7 @@ namespace MyEngine {
             fogFactor = std::min(std::max(fogFactor, 0.0f), 1.0f);
 
             Color4 fog(1.0f, 1.0f, 1.0f, 1.0f);
-            //if (!ray.getFlag(Ray::INDIRECT)) // TODO: only for primary rays
+            if (!getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT)) // only for primary rays
                 fog += this->getFogLighting(rtcRay, fogFactor);
 
             result["Final"] = this->Owner->SceneManager->FogColor * fog * (1.0f - fogFactor) + result["Final"] * fogFactor;
@@ -789,7 +862,7 @@ namespace MyEngine {
         float lightDists[RAYS];
         for (int i = 0; i < RAYS; i++)
         {
-            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, Vector3(), 0.1f, 0.1f));
+            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, Vector3(), 0, 0.1f, 0.1f));
 
             Vector3 lightSample = this->getLightSample(light, RAYS, i);
             shadowDirs[i] = lightSample - interInfo.interPos;
@@ -827,7 +900,7 @@ namespace MyEngine {
                 baseLightings[i] *= (light->Radius * 1.10f - sqrt(lensq)) / (light->Radius * 0.10f);
 
             lightDists[i] = sqrt(lensq) - 0.1f;
-            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, shadowDirs[i], 0.1f, lightDists[i]));
+            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, shadowDirs[i], 0, 0.1f, lightDists[i]));
         }
 
         // shadow
@@ -846,7 +919,7 @@ namespace MyEngine {
                 rtcRay4.orgx[i] += rtcRay4.dirx[i] * rtcRay4.tfar[i];
                 rtcRay4.orgy[i] += rtcRay4.diry[i] * rtcRay4.tfar[i];
                 rtcRay4.orgz[i] += rtcRay4.dirz[i] * rtcRay4.tfar[i];
-                if (baseLightings[i].intensity() < 0.01f)
+                if (baseLightings[i].intensity() < 0.0001f)
                     lightDists[i] = 0.0f;
                 else
                     lightDists[i] -= rtcRay4.tfar[i];
@@ -875,7 +948,9 @@ namespace MyEngine {
 
         float div = 1.0f / RAYS;
         lighting["DirectLight"] *= div;
+        lighting["DirectLight"].a = 1.0f;
         lighting["Specular"] *= div;
+        lighting["Specular"].a = 1.0f;
 
         return lighting;
     }
@@ -915,7 +990,7 @@ namespace MyEngine {
         interInfo.normal = Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
 
         Color4 prevLighting;
-        float delta = std::min(100.0f, rtcRay.tfar / 10);
+        float delta = std::min(100.0f, rtcRay.tfar > 1000 ? rtcRay.tfar / 10 : rtcRay.tfar / 100);
         for (float dist = 0.0f; dist < rtcRay.tfar; dist += delta)
         {
             embree::RTCRay newRay = rtcRay;
@@ -925,17 +1000,17 @@ namespace MyEngine {
             
             float ration = lighting.intensity() / std::max(prevLighting.intensity(), 1.0f);
             if (dist > 0 && ration > 10.0f && delta > rtcRay.tfar / 100)
+            {
                 dist -= delta;
+                delta = std::max(rtcRay.tfar / 100, delta * (0.5f * (1.0f - fogFactor)));
+            }
             else
             {
                 result += lighting * (delta / rtcRay.tfar);
                 prevLighting = lighting;
             }
 
-            if (dist > 0 && ration > 10.0f)
-                delta = std::max(rtcRay.tfar / 100, delta * (0.5f * (1.0f - fogFactor)));
-
-            if (dist > 0 && ration < 0.1f)
+            if (dist > 0 && 0.0f < ration && ration < 0.1f)
                 delta = std::min(rtcRay.tfar / 10, delta * (2.0f / (1.0f - fogFactor)));
         }
 
@@ -976,7 +1051,7 @@ namespace MyEngine {
         Engine::Log(LogType::EError, "CPURayRenderer", "Embree: " +  string(str));
     }
 
-    embree::RTCRay CPURayRenderer::RTCRay(const Vector3& start, const Vector3& dir, float near /* = 0.1f */, float far /* = 10000.0f */)
+    embree::RTCRay CPURayRenderer::RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near /* = 0.1f */, float far /* = 10000.0f */)
     {
         embree::RTCRay result;
         for (int i = 0; i < 3; i++)
@@ -984,6 +1059,9 @@ namespace MyEngine {
             result.org[i] = start[i];
             result.dir[i] = dir[i];
         }
+        result.align0 = (float)depth; // depth
+        result.align1 = 0; // flags
+        result.align2 = 0;
         result.tnear = near;
         result.tfar = far;
         result.geomID = RTC_INVALID_GEOMETRY_ID;
@@ -1023,9 +1101,11 @@ namespace MyEngine {
         ray_o.org[0] = ray_i.orgx[i];
         ray_o.org[1] = ray_i.orgy[i];
         ray_o.org[2] = ray_i.orgz[i];
+        ray_o.align0 = 0;
         ray_o.dir[0] = ray_i.dirx[i];
         ray_o.dir[1] = ray_i.diry[i];
         ray_o.dir[2] = ray_i.dirz[i];
+        ray_o.align1 = 0;
         ray_o.tnear = ray_i.tnear[i];
         ray_o.tfar = ray_i.tfar[i];
         ray_o.time = ray_i.time[i];
@@ -1034,6 +1114,7 @@ namespace MyEngine {
         ray_o.Ng[0] = ray_i.Ngx[i];
         ray_o.Ng[1] = ray_i.Ngy[i];
         ray_o.Ng[2] = ray_i.Ngz[i];
+        ray_o.align2 = 0;
         ray_o.u = ray_i.u[i];
         ray_o.v = ray_i.v[i];
         ray_o.geomID = ray_i.geomID[i];
