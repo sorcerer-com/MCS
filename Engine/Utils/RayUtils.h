@@ -41,8 +41,8 @@ namespace MyEngine {
     struct InterInfo
     {
         SceneElementPtr sceneElement;
-        Vector3 UV;
         Vector3 interPos;
+        Vector3 UV;
 
         Color4 color;
         Vector3 normal;
@@ -57,6 +57,7 @@ namespace MyEngine {
     {
         RAY_INDIRECT = (1 << 0),
         RAY_INSIDE = (1 << 1),
+        RAY_GLOSSY = (1 << 2),
     };
 
     inline bool getFlag(uint flags, uint flag)
@@ -74,7 +75,7 @@ namespace MyEngine {
         if (value)
             flags |= flag;
         else
-            flags &= !flag;
+            flags &= ~flag;
     }
 
     inline void setFlag(float& flags, uint flag, bool value)
@@ -127,12 +128,12 @@ namespace MyEngine {
     inline Vector3 refract(const Vector3& i, const Vector3& n, float ior)
     {
         float NdotI = dot(i, n);
-        float k = 1 - (ior * ior) * (1 - NdotI * NdotI);
-        if (k < 0)
-            return Vector3(0, 0, 0);
-        Vector3 newN = ior * i - (ior * NdotI + (float)sqrtf(k)) * n;
-        newN.normalize();
-        return newN;
+        float k = 1.0f - (ior * ior) * (1.0f - NdotI * NdotI);
+        if (k < 0.0f) // Check for total inner reflection
+            return Vector3(0.0f, 0.0f, 0.0f);
+        Vector3 result = i * ior - n * (ior * NdotI + sqrt(k));
+        result.normalize();
+        return result;
     }
 
     void orthonormedSystem(const Vector3& a, Vector3& b, Vector3& c);

@@ -56,7 +56,7 @@ namespace MyEngine {
 
 		inline float magnitude(void) const
 		{
-			return sqrtf(x * x + y * y + z * z + w * w);
+			return sqrt(x * x + y * y + z * z + w * w);
 		}
 
 		inline float magnitudeSqr(void) const

@@ -28,7 +28,7 @@ namespace MyEngine {
 
 		inline float length(void) const
 		{
-			return sqrtf(x * x + y * y + z * z);
+			return sqrt(x * x + y * y + z * z);
 		}
 
 		inline float lengthSqr(void) const

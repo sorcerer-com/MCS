@@ -54,6 +54,7 @@ namespace MyEngine {
         map<int, SceneElementPtr> rtcInstances; // rtcInstance id / scene element
 
         map<uint, ContentElementPtr> contentElementCache; // id / content element
+        vector<SceneElementPtr> lightsCache;
 
         shared_ptr<Profiler> phasePofiler;
 
@@ -77,7 +78,7 @@ namespace MyEngine {
         void createRTCScene();
         embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
         void cacheContentElements(const SceneElementPtr sceneElement);
-        InterInfo getInterInfo(const embree::RTCRay& rtcRay);
+        InterInfo getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor = false);
 
         bool render(bool preview);
         Color4 renderPixel(int x, int y);

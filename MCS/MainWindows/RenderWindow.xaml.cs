@@ -204,6 +204,10 @@ namespace MCS.MainWindows
 
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
+            if (!(e.OriginalSource is System.Windows.Controls.Image ||
+                  e.OriginalSource is System.Windows.Controls.Border))
+                return;
+
             var tg = this.bufferImage.RenderTransform as TransformGroup;
             var tt = tg.Children[1] as TranslateTransform;
 
@@ -219,6 +223,10 @@ namespace MCS.MainWindows
         
         private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
         {
+            if (!(e.OriginalSource is System.Windows.Controls.Image ||
+                  e.OriginalSource is System.Windows.Controls.Border))
+                return;
+
             var tg = this.bufferImage.RenderTransform as TransformGroup;
             var st = tg.Children[0] as ScaleTransform;
             double zoom = e.Delta > 0 ? 2.0 : 0.5;
@@ -228,6 +236,10 @@ namespace MCS.MainWindows
 
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if (!(e.OriginalSource is System.Windows.Controls.Image ||
+                  e.OriginalSource is System.Windows.Controls.Border))
+                return;
+
             var tg = this.bufferImage.RenderTransform as TransformGroup;
             var st = tg.Children[0] as ScaleTransform;
             if (e.ChangedButton == MouseButton.Left)

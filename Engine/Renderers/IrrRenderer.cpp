@@ -266,6 +266,8 @@ namespace MyEngine {
         irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->getSceneNodeFromId(sceneElement->ID);
         if (!irrSceneNode)
             irrSceneNode = this->createIrrSceneNode(sceneElement);
+        if (!irrSceneNode)
+            return;
 
         // Set Name and Visibility
         irrSceneNode->setName(sceneElement->Name.c_str());
@@ -419,6 +421,10 @@ namespace MyEngine {
 
     irr::scene::ISceneNode* IrrRenderer::createIrrSceneNode(const SceneElementPtr sceneElement)
     {
+        if (this->Owner->ContentManager->ContainsElement(sceneElement->ContentID) &&
+            !this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, false)->IsLoaded)
+            return NULL;
+
         irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->addEmptySceneNode(NULL, sceneElement->ID);
 
         if (sceneElement->Type == SceneElementType::ECamera ||
@@ -465,7 +471,7 @@ namespace MyEngine {
     {
         ContentElementPtr contentElement = NULL;
         if (this->Owner->ContentManager->ContainsElement(sceneElement->ContentID))
-            contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true); // TODO: without wait?
+            contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, false);
         if (!contentElement || contentElement->Type != ContentElementType::EMesh || !contentElement->IsLoaded)
         {
             if ((irrMesh->getMeshBufferCount() > 0 && irrMesh->getMeshBuffer(0)->getIndexCount() == 36))
@@ -534,7 +540,7 @@ namespace MyEngine {
         {
             ContentElementPtr contentElement = NULL;
             if (this->Owner->ContentManager->ContainsElement(sceneElement->MaterialID))
-                contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+                contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, false);
             if (!contentElement || contentElement->Type != ContentElementType::EMaterial || !contentElement->IsLoaded)
             {
                 if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
@@ -585,7 +591,7 @@ namespace MyEngine {
     {
         ContentElementPtr contentElement = NULL;
         if (this->Owner->ContentManager->ContainsElement(textureID))
-            contentElement = this->Owner->ContentManager->GetElement(textureID, true, true);
+            contentElement = this->Owner->ContentManager->GetElement(textureID, true, false); // TODO: crash from time to time most probably because textures
         if (!contentElement || contentElement->Type != ContentElementType::ETexture || !contentElement->IsLoaded)
         {
             if (irrTexture != NULL)
@@ -600,7 +606,12 @@ namespace MyEngine {
                     to_string(textureID) + ")");
             }
 
-            if (irrTexture == NULL || irrTexture->getSize().Width != 2 || irrTexture->getSize().Height != 2)
+            if (irrTexture != NULL && (irrTexture->getSize().Width != 2 || irrTexture->getSize().Height != 2))
+            {
+                this->irrDriver->removeTexture(irrTexture);
+                irrTexture = NULL;
+            }
+            if (irrTexture == NULL)
                 irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(2, 2), irr::core::stringw(to_string(textureID).c_str()));
             return true;
         }

@@ -121,6 +121,7 @@ namespace MyEngine {
         // clear previous scene
         if (this->rtcScene != NULL)
         {
+            this->lightsCache.clear();
             this->contentElementCache.clear();
 
             this->rtcInstances.clear();
@@ -486,7 +487,7 @@ namespace MyEngine {
         }
     }
 
-    InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay)
+    InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor/* = false*/)
     {
         Vector3 rayDir(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
 
@@ -509,11 +510,14 @@ namespace MyEngine {
                 const Vector3& tC = mesh->TexCoords[triangle.texCoords[2]];
                 result.UV = barycentric(tA, tB, tC, rtcRay.u, rtcRay.v);
 
-                const Vector3& nA = mesh->Normals[triangle.normals[0]];
-                const Vector3& nB = mesh->Normals[triangle.normals[1]];
-                const Vector3& nC = mesh->Normals[triangle.normals[2]];
-                result.normal = barycentric(nA, nB, nC, rtcRay.u, rtcRay.v);
-                result.normal = result.sceneElement->Rotation * result.normal;
+                if (!onlyColor)
+                {
+                    const Vector3& nA = mesh->Normals[triangle.normals[0]];
+                    const Vector3& nB = mesh->Normals[triangle.normals[1]];
+                    const Vector3& nC = mesh->Normals[triangle.normals[2]];
+                    result.normal = barycentric(nA, nB, nC, rtcRay.u, rtcRay.v);
+                    result.normal = result.sceneElement->Rotation * result.normal;
+                }
             }
             
             Material* material = (Material*)this->contentElementCache[result.sceneElement->MaterialID].get();
@@ -537,21 +541,24 @@ namespace MyEngine {
                 }
 
                 // normal map
-                Texture* normalMap = NULL;
-                if (result.sceneElement->Textures.NormalMapID != INVALID_ID)
-                    normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
-                else
-                    normalMap = (Texture*)this->contentElementCache[material->Textures.NormalMapID].get();
-
-                if (normalMap)
+                if (!onlyColor)
                 {
-                    Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
-                    Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
-                    Vector3 pn1, pn2;
-                    orthonormedSystem(result.normal, pn1, pn2);
-                    result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+                    Texture* normalMap = NULL;
+                    if (result.sceneElement->Textures.NormalMapID != INVALID_ID)
+                        normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
+                    else
+                        normalMap = (Texture*)this->contentElementCache[material->Textures.NormalMapID].get();
 
-                    result.reflection = 1.0f - (material->SpecularColor.a * n.a);
+                    if (normalMap)
+                    {
+                        Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
+                        Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
+                        Vector3 pn1, pn2;
+                        orthonormedSystem(result.normal, pn1, pn2);
+                        result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+
+                        result.reflection = 1.0f - (material->SpecularColor.a * n.a);
+                    }
                 }
             }
             else // scene element's maps
@@ -565,16 +572,19 @@ namespace MyEngine {
                 }
 
                 // normal map
-                Texture* normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
-                if (normalMap)
+                if (!onlyColor)
                 {
-                    Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
-                    Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
-                    Vector3 pn1, pn2;
-                    orthonormedSystem(result.normal, pn1, pn2);
-                    result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+                    Texture* normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
+                    if (normalMap)
+                    {
+                        Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
+                        Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
+                        Vector3 pn1, pn2;
+                        orthonormedSystem(result.normal, pn1, pn2);
+                        result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
 
-                    result.reflection = 1.0f - n.a;
+                        result.reflection = 1.0f - n.a;
+                    }
                 }
             }
             result.normal.normalize();
@@ -650,6 +660,9 @@ namespace MyEngine {
                 this_thread::sleep_for(chrono::milliseconds(10));
         }
 
+        if (preview)
+            this_thread::sleep_for(chrono::milliseconds(1));
+
         region.active = false;
         region.time = (float)chrono::duration_cast<chrono::milliseconds>(prof.stop()).count();
 
@@ -711,7 +724,7 @@ namespace MyEngine {
 
         // calculate lighting
         if (interInfo.sceneElement->Type == SceneElementType::EStaticObject &&
-            interInfo.diffuse > 0.001f)
+            interInfo.diffuse > 0.01f)
         {
             const auto& lighting = this->getLighting(rtcRay, interInfo);
             for (const auto& color : lighting)
@@ -726,47 +739,70 @@ namespace MyEngine {
         result["Lighted"] = (result["Diffuse"] * result["TotalLight"] + result["Specular"]) * interInfo.diffuse;
 
         // calculate refraction
-        if (interInfo.refraction > 0.001f && (uint)rtcRay.align0 < this->MaxDepth)
+        if (interInfo.refraction > 0.01f && (uint)rtcRay.align0 < this->MaxDepth)
         {
-            Vector3 n = interInfo.normal;
             Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
-            if (material && material->Glossiness > 0.0f && material->Glossiness < 0.999f) // glossy
-                n = glossy(n, material->Glossiness);
+            float glossiness = material ? material->Glossiness : 1.0f;
 
-            float ior = 1.0f / (material ? material->IOR : 1.5f);
-            if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
-                ior = 1.0f / ior;
-            Vector3 dir = refract(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n, ior);
-
-            if (dir.length() > 0.001f) // if not total inner reflection
+            int maxSamples = glossiness > 0.0f && glossiness < 0.999f && !getFlag(rtcRay.align1, RayFlags::RAY_GLOSSY) ? this->MaxSamples : 1;
+            uint samples = adaptiveSampling(this->MinSamples, maxSamples, this->SamplesThreshold, [&](int) -> Color4
             {
-                embree::RTCRay rtcRefrRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
-                setFlag(rtcRefrRay.align1, RayFlags::RAY_INSIDE, !getFlag(rtcRay.align1, RayFlags::RAY_INSIDE));
+                Vector3 n = interInfo.normal;
+                if (glossiness > 0.0f && glossiness < 0.999f) // glossy
+                    n = glossy(n, glossiness);
 
-                embree::rtcIntersect(this->rtcScene, rtcRefrRay);
-                const InterInfo& interInfoRefr = this->getInterInfo(rtcRefrRay);
+                float ior = 1.0f / (material ? material->IOR : 1.5f);
+                if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
+                    ior = 1.0f / ior;
+                Vector3 dir = refract(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n, ior);
 
-                result["Refraction"] = this->computeColor(rtcRefrRay, interInfoRefr)["Final"];
-                result["Refraction"] *= interInfo.refraction;
-                result["Refraction"].a = 1.0f;
-            }
+                if (dir.length() > 0.001f) // if not total inner reflection
+                {
+                    embree::RTCRay rtcRefrRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+                    setFlag(rtcRefrRay.align1, RayFlags::RAY_INSIDE, !getFlag(rtcRay.align1, RayFlags::RAY_INSIDE));
+                    setFlag(rtcRefrRay.align1, RayFlags::RAY_GLOSSY, glossiness > 0.0f && glossiness < 0.999f);
+
+                    embree::rtcIntersect(this->rtcScene, rtcRefrRay);
+                    const InterInfo& interInfoRefr = this->getInterInfo(rtcRefrRay);
+
+                    ColorsMapType colors = this->computeColor(rtcRefrRay, interInfoRefr);
+                    result["Refraction"] += colors["Final"];
+                    return colors["Final"];
+                }
+                return Color4();
+            });
+            result["Refraction"] *= 1.0f / samples;
+
+            result["Refraction"] *= interInfo.refraction;
+            result["Refraction"].a = 1.0f;
         }
 
         // calculate reflection
-        if (interInfo.reflection > 0.001f && (uint)rtcRay.align0 < this->MaxDepth)
+        if (interInfo.reflection > 0.01f && (uint)rtcRay.align0 < this->MaxDepth)
         {
-            Vector3 n = interInfo.normal;
             Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
-            if (material && material->Glossiness > 0.0f && material->Glossiness < 0.999f) // glossy
-                n = glossy(n, material->Glossiness);
+            float glossiness = material ? material->Glossiness : 1.0f;
 
-            Vector3 dir = reflect(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n);
-            embree::RTCRay rtcReflRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+            int maxSamples = glossiness > 0.0f && glossiness < 0.999f && !getFlag(rtcRay.align1, RayFlags::RAY_GLOSSY) ? this->MaxSamples : 1;
+            uint samples = adaptiveSampling(this->MinSamples, maxSamples, this->SamplesThreshold, [&](int) -> Color4
+            {
+                Vector3 n = interInfo.normal;
+                if (glossiness > 0.0f && glossiness < 0.999f) // glossy
+                    n = glossy(n, glossiness);
 
-            embree::rtcIntersect(this->rtcScene, rtcReflRay);
-            const InterInfo& interInfoRefl = this->getInterInfo(rtcReflRay);
+                Vector3 dir = reflect(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n);
+                embree::RTCRay rtcReflRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+                setFlag(rtcReflRay.align1, RayFlags::RAY_GLOSSY, glossiness > 0.0f && glossiness < 0.999f);
 
-            result["Reflection"] = this->computeColor(rtcReflRay, interInfoRefl)["Final"];
+                embree::rtcIntersect(this->rtcScene, rtcReflRay);
+                const InterInfo& interInfoRefl = this->getInterInfo(rtcReflRay);
+
+                ColorsMapType colors = this->computeColor(rtcReflRay, interInfoRefl);
+                result["Reflection"] += colors["Final"];
+                return colors["Final"];
+            });
+            result["Reflection"] *= 1.0f / samples;
+
             result["Reflection"] *= interInfo.reflection;
             result["Reflection"].a = 1.0f;
         }
@@ -799,7 +835,9 @@ namespace MyEngine {
         Profile;
         ColorsMapType lighting;
 
-        auto lights = this->Owner->SceneManager->GetElements(SceneElementType::ELight);
+        auto lights = this->lightsCache;
+        if (lights.empty())
+            lights = this->Owner->SceneManager->GetElements(SceneElementType::ELight);
         uint count = this->MaxLights > 0 ? this->MaxLights : (uint)lights.size();
         if (lights.size() > count)
         {
@@ -811,12 +849,14 @@ namespace MyEngine {
                 {
                     Light* aLight = (Light*)a.get();
                     Light* bLight = (Light*)b.get();
-                    float aContribution = aLight->Intensity / (aLight->Position - interInfo.interPos).lengthSqr();
-                    float bContribution = bLight->Intensity / (bLight->Position - interInfo.interPos).lengthSqr();
+                    float aContribution = aLight->Color.intensity() * aLight->Intensity / (aLight->Position - interInfo.interPos).lengthSqr();
+                    float bContribution = bLight->Color.intensity() * bLight->Intensity / (bLight->Position - interInfo.interPos).lengthSqr();
                     return aContribution > bContribution;
                 }
             });
         }
+        if (this->lightsCache.empty())
+            this->lightsCache = lights;
 
         count = std::min((uint)lights.size(), count);
         for (uint i = 0; i < count; i++)
@@ -868,7 +908,7 @@ namespace MyEngine {
             shadowDirs[i] = lightSample - interInfo.interPos;
             if (shadowDirs[i].length() > light->Radius * 1.10f)
                 continue;
-            float lensq = shadowDirs[i].lengthSqr();
+            float lensq = std::max(shadowDirs[i].lengthSqr(), 1.0f);
             shadowDirs[i].normalize();
 
             // fog
@@ -910,7 +950,7 @@ namespace MyEngine {
 
             for (int i = 0; i < RAYS; i++)
             {
-                const InterInfo& interInfo = this->getInterInfo(getRTCRay(rtcRay4, i));
+                const InterInfo& interInfo = this->getInterInfo(getRTCRay(rtcRay4, i), true);
                 if (rtcRay4.instID[i] != RTC_INVALID_GEOMETRY_ID && this->rtcInstances[rtcRay4.instID[i]]->Type != SceneElementType::ELight)
                     baseLightings[i] *= interInfo.color * (1.0f - interInfo.color.a);
                 // TODO: inside of the object color
