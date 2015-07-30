@@ -168,6 +168,7 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.Width = 640;
             RenderWindow.renderSettings.Height = 480;
             RenderWindow.renderSettings.RegionSize = 64;
+            RenderWindow.renderSettings.VolumetricFog = true;
             RenderWindow.renderSettings.MinSamples = 1;
             RenderWindow.renderSettings.MaxSamples = 4;
             RenderWindow.renderSettings.SamplesThreshold = 0.01;

@@ -23,13 +23,6 @@ namespace MyEngine {
 
 	public:
 		[MPropertyAttribute(Group = "Colors")]
-		property MColor AmbientColor
-		{
-			MColor get() { return MColor(material->AmbientColor); }
-			void set(MColor value) { material->AmbientColor = value.ToColor4(); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Colors")]
 		property MColor DiffuseColor
 		{
 			MColor get() { return MColor(material->DiffuseColor); }
@@ -41,27 +34,41 @@ namespace MyEngine {
 		{
 			MColor get() { return MColor(material->SpecularColor); }
 			void set(MColor value) { material->SpecularColor = value.ToColor4(); OnChanged(); }
-		}
+        }
 
-		[MPropertyAttribute(Group = "Characteristics")]
+        [MPropertyAttribute(Group = "Colors")]
+        property MColor InnerColor
+        {
+            MColor get() { return MColor(material->InnerColor); }
+            void set(MColor value) { material->InnerColor = value.ToColor4(); OnChanged(); }
+        }
+
+		[MPropertyAttribute(Group = "Material")]
 		property double Shininess
 		{
 			double get() { return material->Shininess; }
 			void set(double value) { material->Shininess = (float)value; OnChanged(); }
 		}
 
-		[MPropertyAttribute(Group = "Characteristics")]
+		[MPropertyAttribute(Group = "Material")]
 		property double Glossiness
 		{
 			double get() { return material->Glossiness; }
 			void set(double value) { material->Glossiness = (float)value; OnChanged(); }
         }
 
-        [MPropertyAttribute(Group = "Characteristics")]
+        [MPropertyAttribute(Group = "Material")]
         property double IOR
         {
             double get() { return material->IOR; }
             void set(double value) { material->IOR = (float)value; OnChanged(); }
+        }
+
+        [MPropertyAttribute(Group = "Material")]
+        property double Absorption
+        {
+            double get() { return material->Absorption; }
+            void set(double value) { material->Absorption = (float)value; OnChanged(); }
         }
 
 		[MPropertyAttribute(Group = "Textures", Choosable = true)]
@@ -99,9 +106,9 @@ namespace MyEngine {
 				{
 					XmlElement^ docElem = (XmlElement^)docRoot->ChildNodes[i];
 
-					if (docElem->Name == "AmbientColor" || 
-						docElem->Name == "DiffuseColor" ||
-						docElem->Name == "SpecularColor")
+					if (docElem->Name == "DiffuseColor" || 
+						docElem->Name == "SpecularColor" ||
+						docElem->Name == "InnerColor")
 					{
 						double r = 0.0, g = 0.0, b = 0.0, a = 0.0;
 						Double::TryParse(docElem->GetAttribute("R"), r);
@@ -109,12 +116,12 @@ namespace MyEngine {
 						Double::TryParse(docElem->GetAttribute("B"), b);
 						Double::TryParse(docElem->GetAttribute("A"), a);
 
-						if (docElem->Name == "AmbientColor")
-							this->AmbientColor = MColor(r, g, b, a);
-						else if (docElem->Name == "DiffuseColor")
+						if (docElem->Name == "DiffuseColor")
 							this->DiffuseColor = MColor(r, g, b, a);
 						else if (docElem->Name == "SpecularColor")
-							this->SpecularColor = MColor(r, g, b, a);
+                            this->SpecularColor = MColor(r, g, b, a);
+                        else if (docElem->Name == "InnerColor")
+                            this->InnerColor = MColor(r, g, b, a);
 					}
 					else if (docElem->Name == "Shininess")
 					{
@@ -133,6 +140,12 @@ namespace MyEngine {
                         double value = 0.0;
                         Double::TryParse(docElem->GetAttribute("Value"), value);
                         this->IOR = value;
+                    }
+                    else if (docElem->Name == "Absorption")
+                    {
+                        double value = 0.0;
+                        Double::TryParse(docElem->GetAttribute("Value"), value);
+                        this->Absorption = value;
                     }
 					else if (docElem->Name == "DiffuseMap")
                     {
@@ -168,14 +181,7 @@ namespace MyEngine {
 				XmlElement^ docRoot = doc->CreateElement("Material");
 				doc->AppendChild(docRoot);
 
-				XmlElement^ docElem = doc->CreateElement("AmbientColor");
-				docElem->SetAttribute("R", this->AmbientColor.R.ToString("0.000000"));
-				docElem->SetAttribute("G", this->AmbientColor.G.ToString("0.000000"));
-				docElem->SetAttribute("B", this->AmbientColor.B.ToString("0.000000"));
-				docElem->SetAttribute("A", this->AmbientColor.A.ToString("0.000000"));
-				docRoot->AppendChild(docElem);
-
-				docElem = doc->CreateElement("DiffuseColor");
+				XmlElement^ docElem = doc->CreateElement("DiffuseColor");
 				docElem->SetAttribute("R", this->DiffuseColor.R.ToString("0.000000"));
 				docElem->SetAttribute("G", this->DiffuseColor.G.ToString("0.000000"));
 				docElem->SetAttribute("B", this->DiffuseColor.B.ToString("0.000000"));
@@ -187,7 +193,14 @@ namespace MyEngine {
 				docElem->SetAttribute("G", this->SpecularColor.G.ToString("0.000000"));
 				docElem->SetAttribute("B", this->SpecularColor.B.ToString("0.000000"));
 				docElem->SetAttribute("A", this->SpecularColor.A.ToString("0.000000"));
-				docRoot->AppendChild(docElem);
+                docRoot->AppendChild(docElem);
+
+                docElem = doc->CreateElement("InnerColor");
+                docElem->SetAttribute("R", this->InnerColor.R.ToString("0.000000"));
+                docElem->SetAttribute("G", this->InnerColor.G.ToString("0.000000"));
+                docElem->SetAttribute("B", this->InnerColor.B.ToString("0.000000"));
+                docElem->SetAttribute("A", this->InnerColor.A.ToString("0.000000"));
+                docRoot->AppendChild(docElem);
 
 				docElem = doc->CreateElement("Shininess");
 				docElem->SetAttribute("Value", this->Shininess.ToString("0.000000"));
@@ -199,6 +212,10 @@ namespace MyEngine {
 
                 docElem = doc->CreateElement("IOR");
                 docElem->SetAttribute("Value", this->IOR.ToString("0.000000"));
+                docRoot->AppendChild(docElem);
+
+                docElem = doc->CreateElement("Absorption");
+                docElem->SetAttribute("Value", this->Absorption.ToString("0.000000"));
                 docRoot->AppendChild(docElem);
 
 				if (this->DiffuseMap != nullptr)

@@ -383,8 +383,8 @@ namespace MyEngine {
                 irrLightData.DiffuseColor = irr::video::SColorf(light->Color.r, light->Color.g, light->Color.b, light->Color.a);
                 irrLightData.SpecularColor = irr::video::SColorf(light->Color.r / 8, light->Color.g / 8, light->Color.b / 8, light->Color.a / 8);
                 irrLightData.Falloff = light->SpotExponent;
-                irrLightData.InnerCone = light->SpotCutoffInner;
-                irrLightData.OuterCone = light->SpotCutoffOuter;
+                irrLightData.InnerCone = 0;
+                irrLightData.OuterCone = light->SpotCutoff;
                 irrLightData.Attenuation = irr::core::vector3df(0.0f, 1.0f / light->Radius, 1.0f / light->Intensity);
                 irrLightSceneNode->setLightData(irrLightData);
                 irrLightSceneNode->setLightType(irr::video::E_LIGHT_TYPE::ELT_SPOT);
@@ -557,7 +557,6 @@ namespace MyEngine {
             }
             Material* material = (Material*)contentElement.get();
 
-            irrMaterial.AmbientColor = irr::video::SColorf(material->AmbientColor.r, material->AmbientColor.g, material->AmbientColor.b, material->AmbientColor.a).toSColor();
             irrMaterial.DiffuseColor = irr::video::SColorf(material->DiffuseColor.r, material->DiffuseColor.g, material->DiffuseColor.b, material->DiffuseColor.a).toSColor();
             irrMaterial.SpecularColor = irr::video::SColorf(material->SpecularColor.r, material->SpecularColor.g, material->SpecularColor.b, material->SpecularColor.a).toSColor();
             irrMaterial.Shininess = material->Shininess;

@@ -21,8 +21,7 @@ namespace MyEngine {
 		float Radius;
 		Color4 Color;
 		float SpotExponent;
-		float SpotCutoffInner;
-		float SpotCutoffOuter;
+		float SpotCutoff;
 		float Intensity; // 0 - light is off, else on
 
 	public:

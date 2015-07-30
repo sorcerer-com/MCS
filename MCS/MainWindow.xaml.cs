@@ -292,8 +292,7 @@ namespace MCS
                                 light.Radius = double.Parse(xmlElement.GetAttribute("Radius"));
                                 light.Color = MColor.Parse(xmlElement.GetAttribute("Color"));
                                 light.SpotExponent = double.Parse(xmlElement.GetAttribute("SpotExponent"));
-                                light.SpotCutoffInner = double.Parse(xmlElement.GetAttribute("SpotCutoffInner"));
-                                light.SpotCutoffOuter = double.Parse(xmlElement.GetAttribute("SpotCutoffOuter"));
+                                light.SpotCutoff = double.Parse(xmlElement.GetAttribute("SpotCutoff"));
                                 light.Intensity = double.Parse(xmlElement.GetAttribute("Intensity"));
                             }
                         }
@@ -367,8 +366,7 @@ namespace MCS
                                 xmlElement.SetAttribute("Radius", light.Radius.ToString());
                                 xmlElement.SetAttribute("Color", light.Color.ToString());
                                 xmlElement.SetAttribute("SpotExponent", light.SpotExponent.ToString());
-                                xmlElement.SetAttribute("SpotCutoffInner", light.SpotCutoffInner.ToString());
-                                xmlElement.SetAttribute("SpotCutoffOuter", light.SpotCutoffOuter.ToString());
+                                xmlElement.SetAttribute("SpotCutoff", light.SpotCutoff.ToString());
                                 xmlElement.SetAttribute("Intensity", light.Intensity.ToString());
                             }
 

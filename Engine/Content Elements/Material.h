@@ -20,16 +20,16 @@ namespace MyEngine {
 	class Material : public ContentElement
 	{
 	public:
-		Color4 AmbientColor;
 		Color4 DiffuseColor; // alpha - refraction
 		Color4 SpecularColor; // alpha - reflection
+        Color4 InnerColor;
 
 		float Shininess;
 		float Glossiness;
         float IOR;
+        float Absorption;
 
         TextureSet Textures;
-		// TODO: InnerColor, Absorption	* update save/load to/from file
 
 	public:
 		Material(ContentManager* owner, const string& name, const string& package, const string& path);

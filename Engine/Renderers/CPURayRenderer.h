@@ -33,6 +33,7 @@ namespace MyEngine {
 	public:
         uint RegionSize;
         vector<Region> Regions;
+        bool VolumetricFog;
         uint MinSamples, MaxSamples;
         float SamplesThreshold;
         uint MaxLights;
@@ -86,7 +87,7 @@ namespace MyEngine {
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo); // diffuse light / sepcular light / samples
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo); // diffuse light / sepcular light
         Vector3 getLightSample(const Light* light, int numSamples, int sample);
-        Color4 getFogLighting(const embree::RTCRay& rtcRay, float fogFactor);
+        Color4 getFogLighting(const embree::RTCRay& rtcRay);
         bool postProcessing();
 
         static void onRTCError(const embree::RTCError code, const char* str);

@@ -26,8 +26,7 @@ namespace MyEngine {
 			Read(file, this->Radius);
 			Read(file, this->Color);
 			Read(file, this->SpotExponent);
-			Read(file, this->SpotCutoffInner);
-			Read(file, this->SpotCutoffOuter);
+			Read(file, this->SpotCutoff);
 			Read(file, this->Intensity);
 		}
 	}
@@ -38,8 +37,7 @@ namespace MyEngine {
 		this->Radius = 128.0f;
 		this->Color = Color4(0.8f, 0.8f, 0.8f, 1.0f);
 		this->SpotExponent = 0.5f;
-		this->SpotCutoffInner = 0.0f;
-		this->SpotCutoffOuter = 180.0f;
+		this->SpotCutoff = 180.0f;
 		this->Intensity = 128.0f;
 	}
 
@@ -52,8 +50,7 @@ namespace MyEngine {
 		Write(file, this->Radius);
 		Write(file, this->Color);
 		Write(file, this->SpotExponent);
-		Write(file, this->SpotCutoffInner);
-		Write(file, this->SpotCutoffOuter);
+		Write(file, this->SpotCutoff);
 		Write(file, this->Intensity);
 		file.flush();
 	}

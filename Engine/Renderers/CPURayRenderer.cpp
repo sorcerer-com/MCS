@@ -38,9 +38,12 @@ namespace MyEngine {
         ProductionRenderer(owner, RendererType::ECPURayRenderer)
     {
         this->RegionSize = 0;
+        this->VolumetricFog = false;
         this->MinSamples = 0;
         this->MaxSamples = 0;
         this->SamplesThreshold = 0.0f;
+        this->MaxLights = 0;
+        this->MaxDepth = 0;
 
         this->thread->defThreadPool();
         this->thread->defMutex("regions");
@@ -598,10 +601,26 @@ namespace MyEngine {
                     ior = 1.0f / ior;
                 result.reflection = fresnel(rayDir, result.normal, ior);
             }
-        }
+    
+            result.diffuse = (1.0f - result.refraction) * (1.0f - result.reflection);
+            result.refraction *= (1.0f - result.reflection);
 
-        result.diffuse = (1.0f - result.refraction) * (1.0f - result.reflection);
-        result.refraction *= (1.0f - result.reflection);
+            // if total inner reflection do only reflection
+            if (result.refraction > 0.01f)
+            {
+                float ior = 1.0f / (material ? material->IOR : 1.5f);
+                if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
+                    ior = 1.0f / ior;
+
+                float NdotI = dot(rayDir, result.normal);
+                float k = 1.0f - (ior * ior) * (1.0f - NdotI * NdotI);
+                if (k < 0.0f)
+                {
+                    result.reflection += result.refraction;
+                    result.refraction = 0.0f;
+                }
+            }
+        }
 
         return result;
     }
@@ -744,7 +763,7 @@ namespace MyEngine {
             Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
             float glossiness = material ? material->Glossiness : 1.0f;
 
-            int maxSamples = glossiness > 0.0f && glossiness < 0.999f && !getFlag(rtcRay.align1, RayFlags::RAY_GLOSSY) ? this->MaxSamples : 1;
+            int maxSamples = (glossiness > 0.0f && glossiness < 0.999f && !getFlag(rtcRay.align1, RayFlags::RAY_GLOSSY)) ? this->MaxSamples : 1;
             uint samples = adaptiveSampling(this->MinSamples, maxSamples, this->SamplesThreshold, [&](int) -> Color4
             {
                 Vector3 n = interInfo.normal;
@@ -759,6 +778,7 @@ namespace MyEngine {
                 if (dir.length() > 0.001f) // if not total inner reflection
                 {
                     embree::RTCRay rtcRefrRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+                    rtcRefrRay.align1 = rtcRay.align1; // flags
                     setFlag(rtcRefrRay.align1, RayFlags::RAY_INSIDE, !getFlag(rtcRay.align1, RayFlags::RAY_INSIDE));
                     setFlag(rtcRefrRay.align1, RayFlags::RAY_GLOSSY, glossiness > 0.0f && glossiness < 0.999f);
 
@@ -783,7 +803,7 @@ namespace MyEngine {
             Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
             float glossiness = material ? material->Glossiness : 1.0f;
 
-            int maxSamples = glossiness > 0.0f && glossiness < 0.999f && !getFlag(rtcRay.align1, RayFlags::RAY_GLOSSY) ? this->MaxSamples : 1;
+            int maxSamples = (glossiness > 0.0f && glossiness < 0.999f && !getFlag(rtcRay.align1, RayFlags::RAY_GLOSSY)) ? this->MaxSamples : 1;
             uint samples = adaptiveSampling(this->MinSamples, maxSamples, this->SamplesThreshold, [&](int) -> Color4
             {
                 Vector3 n = interInfo.normal;
@@ -792,6 +812,7 @@ namespace MyEngine {
 
                 Vector3 dir = reflect(Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]), n);
                 embree::RTCRay rtcReflRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
+                rtcReflRay.align1 = rtcRay.align1; // flags
                 setFlag(rtcReflRay.align1, RayFlags::RAY_GLOSSY, glossiness > 0.0f && glossiness < 0.999f);
 
                 embree::rtcIntersect(this->rtcScene, rtcReflRay);
@@ -818,14 +839,28 @@ namespace MyEngine {
             float fogFactor = pow(2.0f, -fogDensity * fogDensity * rtcRay.tfar * rtcRay.tfar * LOG2);
             fogFactor = std::min(std::max(fogFactor, 0.0f), 1.0f);
 
-            Color4 fog(1.0f, 1.0f, 1.0f, 1.0f);
-            if (!getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT)) // only for primary rays
-                fog += this->getFogLighting(rtcRay, fogFactor);
+            Color4 lighting(1.0f, 1.0f, 1.0f, 1.0f);
+            if (this->VolumetricFog && !getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT)) // volumetric fog only for primary rays
+                lighting += this->getFogLighting(rtcRay);
 
-            result["Final"] = this->Owner->SceneManager->FogColor * fog * (1.0f - fogFactor) + result["Final"] * fogFactor;
+            result["Final"] = this->Owner->SceneManager->FogColor * lighting * (1.0f - fogFactor) + result["Final"] * fogFactor;
         }
 
-        // TODO: inside of the object color
+        // inside of the object (in getLighting - shadow too)
+        if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
+        {
+            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            if (material && material->InnerColor.intensity() > 0.01f)
+            {
+                float absFactor = exp(-rtcRay.tfar * material->Absorption);
+                absFactor = std::min(std::max(absFactor, 0.0f), 1.0f);
+
+                Color4 lighting(1.0f, 1.0f, 1.0f, 1.0f);
+                if (!getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT)) // volumetric fog only for primary rays
+                    lighting += this->getFogLighting(rtcRay);
+                result["Final"] = material->InnerColor * lighting * (1.0f - absFactor) + result["Final"] * absFactor;
+            }
+        }
 
         return result;
     }
@@ -902,7 +937,8 @@ namespace MyEngine {
         float lightDists[RAYS];
         for (int i = 0; i < RAYS; i++)
         {
-            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, Vector3(), 0, 0.1f, 0.1f));
+            lightDists[i] = 0.1f;
+            setRTCRay4(rtcRay4, i, RTCRay(interInfo.interPos, Vector3(), 0, 0.1f, lightDists[i]));
 
             Vector3 lightSample = this->getLightSample(light, RAYS, i);
             shadowDirs[i] = lightSample - interInfo.interPos;
@@ -923,7 +959,7 @@ namespace MyEngine {
 
             // spot effect
             float spotEffect = dot(-shadowDirs[i], lightDir);
-            if (spotEffect < cos(light->SpotCutoffOuter * PI / 180.0f))
+            if (spotEffect < cos(light->SpotCutoff * PI / 180.0f))
             {
                 spotEffect = 0.0f;
                 continue; // if spotEffect is 0 then no need for further calculations
@@ -944,27 +980,43 @@ namespace MyEngine {
         }
 
         // shadow
+        bool inside = getFlag(rtcRay.align1, RayFlags::RAY_INSIDE);
         while (lightDists[0] > 0.01f || lightDists[1] > 0.01f || lightDists[2] > 0.01f || lightDists[3] > 0.01f)
         {
             embree::rtcIntersect4(VALID, this->rtcScene, rtcRay4);
 
             for (int i = 0; i < RAYS; i++)
             {
-                const InterInfo& interInfo = this->getInterInfo(getRTCRay(rtcRay4, i), true);
-                if (rtcRay4.instID[i] != RTC_INVALID_GEOMETRY_ID && this->rtcInstances[rtcRay4.instID[i]]->Type != SceneElementType::ELight)
-                    baseLightings[i] *= interInfo.color * (1.0f - interInfo.color.a);
-                // TODO: inside of the object color
+                const InterInfo& shadowInterInfo = this->getInterInfo(getRTCRay(rtcRay4, i), true);
+                if (rtcRay4.instID[i] != RTC_INVALID_GEOMETRY_ID && shadowInterInfo.sceneElement->Type != SceneElementType::ELight)
+                {
+                    baseLightings[i] *= shadowInterInfo.color * (1.0f - shadowInterInfo.color.a);
+
+                    // inside of the object color
+                    if (baseLightings[i].intensity() > 0.001f && inside)
+                    {
+                        Material* material = (Material*)this->contentElementCache[shadowInterInfo.sceneElement->MaterialID].get();
+                        if (material && material->InnerColor.intensity() > 0.01f)
+                        {
+                            float absFactor = exp(-rtcRay.tfar * material->Absorption);
+                            absFactor = std::min(std::max(absFactor, 0.0f), 1.0f);
+
+                            baseLightings[i] = material->InnerColor * (1.0f - absFactor) + baseLightings[i] * absFactor;
+                        }
+                    }
+                }
 
                 // start = start + dir * dist
                 rtcRay4.orgx[i] += rtcRay4.dirx[i] * rtcRay4.tfar[i];
                 rtcRay4.orgy[i] += rtcRay4.diry[i] * rtcRay4.tfar[i];
                 rtcRay4.orgz[i] += rtcRay4.dirz[i] * rtcRay4.tfar[i];
-                if (baseLightings[i].intensity() < 0.0001f)
+                if (baseLightings[i].intensity() < 0.001f)
                     lightDists[i] = 0.0f;
                 else
                     lightDists[i] -= rtcRay4.tfar[i];
                 rtcRay4.tfar[i] = lightDists[i];
             }
+            inside = !inside;
         }
 
         // calculate lighting
@@ -978,7 +1030,7 @@ namespace MyEngine {
             // calculate specular
             Vector3 r = reflect(-shadowDirs[i], interInfo.normal);
             float cosGamma = dot(r, -Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]));
-            if (cosGamma > 0.0f) // Specular
+            if (cosGamma > 0.0f)
             {
                 Material* mat = (Material*)this->contentElementCache[this->rtcInstances[rtcRay.instID]->MaterialID].get();
                 if (mat)
@@ -1021,28 +1073,31 @@ namespace MyEngine {
         return result;
     }
 
-    Color4 CPURayRenderer::getFogLighting(const embree::RTCRay& rtcRay, float fogFactor)
+    Color4 CPURayRenderer::getFogLighting(const embree::RTCRay& rtcRay)
     {
         Profile;
+        const float deltaFactor = 1.01f;
         Color4 result;
 
+        embree::RTCRay newRay = rtcRay;
         InterInfo interInfo;
+        if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
+            interInfo.sceneElement = this->rtcInstances[rtcRay.instID];
         interInfo.normal = Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
 
         Color4 prevLighting;
         float delta = std::min(100.0f, rtcRay.tfar > 1000 ? rtcRay.tfar / 10 : rtcRay.tfar / 100);
         for (float dist = 0.0f; dist < rtcRay.tfar; dist += delta)
         {
-            embree::RTCRay newRay = rtcRay;
             newRay.tfar = dist;
             interInfo.interPos = Vector3(newRay.org[0], newRay.org[1], newRay.org[2]) + Vector3(newRay.dir[0], newRay.dir[1], newRay.dir[2]) * newRay.tfar;
             Color4 lighting = this->getLighting(newRay, interInfo)["DirectLight"];
             
-            float ration = lighting.intensity() / std::max(prevLighting.intensity(), 1.0f);
-            if (dist > 0 && ration > 10.0f && delta > rtcRay.tfar / 100)
+            float ration = lighting.intensity() / (prevLighting.intensity() == 0.0f ? 1.0f : prevLighting.intensity());
+            if (dist > 0 && ration > 2.0f && delta > rtcRay.tfar / 1000)
             {
                 dist -= delta;
-                delta = std::max(rtcRay.tfar / 100, delta * (0.5f * (1.0f - fogFactor)));
+                delta = std::max(rtcRay.tfar / 1000, delta / deltaFactor);
             }
             else
             {
@@ -1050,8 +1105,8 @@ namespace MyEngine {
                 prevLighting = lighting;
             }
 
-            if (dist > 0 && 0.0f < ration && ration < 0.1f)
-                delta = std::min(rtcRay.tfar / 10, delta * (2.0f / (1.0f - fogFactor)));
+            if (dist > 0 && ration < 0.5f)
+                delta = std::min(rtcRay.tfar / 10, delta * deltaFactor);
         }
 
         result.a = 1.0f;

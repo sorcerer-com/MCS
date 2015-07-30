@@ -31,6 +31,8 @@ namespace MyEngine {
             property uint Height;
             [MPropertyAttribute(SortName = "03", Group = "01. Main Settings")]
             property uint RegionSize;
+            [MPropertyAttribute(SortName = "04", Group = "01. Main Settings")]
+            property bool VolumetricFog;
             [MPropertyAttribute(SortName = "01", Group = "02. Samples Settings")]
             property uint MinSamples;
             [MPropertyAttribute(SortName = "02", Group = "02. Samples Settings")]
@@ -89,6 +91,7 @@ namespace MyEngine {
             {
                 CPURayRenderer* renderer = (CPURayRenderer*)this->Renderer;
                 renderer->RegionSize = settings->RegionSize;
+                renderer->VolumetricFog = settings->VolumetricFog;
                 renderer->MinSamples = settings->MinSamples;
                 renderer->MaxSamples = settings->MaxSamples;
                 renderer->SamplesThreshold = (float)settings->SamplesThreshold;

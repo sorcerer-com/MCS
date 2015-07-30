@@ -55,17 +55,10 @@ namespace MyEngine {
 		}
 
 		[MPropertyAttribute(Group = "Light")]
-		property double SpotCutoffInner
+		property double SpotCutoff
 		{
-			double get() { return light->SpotCutoffInner; }
-			void set(double value) { light->SpotCutoffInner = (float)value; OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Light")]
-		property double SpotCutoffOuter
-		{
-			double get() { return light->SpotCutoffOuter; }
-			void set(double value) { light->SpotCutoffOuter = (float)value; OnChanged(); }
+			double get() { return light->SpotCutoff; }
+			void set(double value) { light->SpotCutoff = (float)value; OnChanged(); }
 		}
 
 		[MPropertyAttribute(Group = "Light")]
