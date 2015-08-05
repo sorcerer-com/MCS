@@ -43,6 +43,8 @@ namespace MyEngine {
             property uint MaxLights;
             [MPropertyAttribute(SortName = "02", Group = "03. Limits")]
             property uint MaxDepth;
+            [MPropertyAttribute(SortName = "01", Group = "04. Global Illumination")]
+            property bool GI;
         };
 
         property bool IsStarted
@@ -70,12 +72,22 @@ namespace MyEngine {
             {
                 List<Rectangle>^ collection = gcnew List<Rectangle>();
 
-                const auto& activeRegions = this->Renderer->GetActiveRegions();
-                for (const auto& region : activeRegions)
+                const auto& regions = this->Renderer->GetActiveRegions();
+                for (const auto& region : regions)
                     collection->Add(Rectangle(region.x, region.y, region.w, region.h));
 
                 return collection;
             }
+        }
+
+        property TimeSpan RenderTime
+        {
+            TimeSpan get() { return TimeSpan::FromSeconds(this->Renderer->GetRenderTime()); }
+        }
+
+        property double Progress
+        {
+            double get() { return this->Renderer->GetProgress(); }
         }
 
 	public:
@@ -89,14 +101,15 @@ namespace MyEngine {
         {
             if (this->Type == ERendererType::CPURayRenderer)
             {
-                CPURayRenderer* renderer = (CPURayRenderer*)this->Renderer;
-                renderer->RegionSize = settings->RegionSize;
-                renderer->VolumetricFog = settings->VolumetricFog;
-                renderer->MinSamples = settings->MinSamples;
-                renderer->MaxSamples = settings->MaxSamples;
-                renderer->SamplesThreshold = (float)settings->SamplesThreshold;
-                renderer->MaxLights = settings->MaxLights;
-                renderer->MaxDepth = settings->MaxDepth;
+                CPURayRenderer* rayRenderer = (CPURayRenderer*)this->Renderer;
+                rayRenderer->RegionSize = settings->RegionSize;
+                rayRenderer->VolumetricFog = settings->VolumetricFog;
+                rayRenderer->MinSamples = settings->MinSamples;
+                rayRenderer->MaxSamples = settings->MaxSamples;
+                rayRenderer->SamplesThreshold = (float)settings->SamplesThreshold;
+                rayRenderer->MaxLights = settings->MaxLights;
+                rayRenderer->MaxDepth = settings->MaxDepth;
+                rayRenderer->GI = settings->GI;
             }
             this->Renderer->Init(settings->Width, settings->Height);
 

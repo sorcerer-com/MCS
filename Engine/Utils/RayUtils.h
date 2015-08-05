@@ -57,7 +57,6 @@ namespace MyEngine {
     {
         RAY_INDIRECT = (1 << 0),
         RAY_INSIDE = (1 << 1),
-        RAY_GLOSSY = (1 << 2),
     };
 
     inline bool getFlag(uint flags, uint flag)
@@ -172,6 +171,24 @@ namespace MyEngine {
         b.normalize();
         c = cross(a, b);
         c.normalize();
+    }
+
+    inline Vector3 hemisphereSample(const Vector3& normal)
+    {
+        Random& rand = Random::getRandomGen();
+        float z = rand.randSample(20) * 2.0f - 1.0f;
+        float t = rand.randSample(36) * 2.0f * PI;
+        float r = sqrt(1.0f - z * z);
+        
+        Vector3 res;
+        res.x = r * cos(t);
+        res.y = r * sin(t);
+        res.z = z;
+        res.normalize();
+
+        if (dot(res, normal) < 0)
+            res = -res;
+        return res;
     }
 
 }

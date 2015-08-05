@@ -54,6 +54,11 @@ namespace MCS.MainWindows
             }
         }
 
+        public string RenderProgress
+        {
+            get { return this.engine.ProductionRenderer.RenderTime.ToString(@"hh\:mm\:ss") + " (" + this.engine.ProductionRenderer.Progress.ToString("00") + "%)"; }
+        }
+
         public ImageSource Buffer
         {
             get
@@ -173,7 +178,8 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.MaxSamples = 4;
             RenderWindow.renderSettings.SamplesThreshold = 0.01;
             RenderWindow.renderSettings.MaxLights = 8;
-            RenderWindow.renderSettings.MaxDepth = 8;
+            RenderWindow.renderSettings.MaxDepth = 4;
+            RenderWindow.renderSettings.GI = true;
         }
 
         public RenderWindow(MEngine engine)
@@ -197,6 +203,7 @@ namespace MCS.MainWindows
         private void timer_Tick(object sender, EventArgs e)
         {
             // Update Image
+            this.OnPropertyChanged("RenderProgress");
             this.OnPropertyChanged("Buffer");
 
             if (!this.engine.ProductionRenderer.IsStarted)

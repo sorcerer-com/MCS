@@ -74,6 +74,14 @@ namespace MyEngine {
             return delta;
         }
 
+        inline chrono::system_clock::duration duration()
+        {
+            if (this->time == chrono::system_clock::time_point())
+                return chrono::system_clock::duration();
+
+            return chrono::system_clock::now() - this->time;
+        }
+
     private:
         struct Data
         {
@@ -105,7 +113,10 @@ namespace MyEngine {
         int hours = chrono::duration_cast<chrono::hours>(delta).count();
         int minutes = chrono::duration_cast<chrono::minutes>(delta).count();
         long long seconds = chrono::duration_cast<chrono::seconds>(delta).count();
-        long long milisecs = chrono::duration_cast<chrono::milliseconds>(delta).count() - seconds * 1000;
+        long long milisecs = chrono::duration_cast<chrono::milliseconds>(delta).count();
+        milisecs -= seconds * 1000;
+        seconds -= minutes * 60;
+        minutes -= hours * 60;
         return to_string(hours) + "h " + to_string(minutes) + "min " + to_string(seconds) + "sec " + to_string(milisecs) + "milisec";
     }
 }

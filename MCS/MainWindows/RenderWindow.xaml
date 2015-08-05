@@ -34,7 +34,7 @@
             </Image>
         </Border>
 
-        <ToolBarTray Grid.Row="0" Grid.Column="0">
+        <ToolBarTray Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
             <ToolBar>
                 <Label Content="Renderer:"/>
                 <ComboBox ItemsSource="{Binding Path=RendererTypes}" SelectedItem="{Binding Path=SelectedRendererType}" MinWidth="120"/>
@@ -49,10 +49,12 @@
                 <Button ToolTip="{Binding Path=SaveBufferCommandTooltip}"  Command="{Binding Path=SaveBufferCommand}">
                     <Image Source="/Images/Common/Save.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
+                <Separator/>
+                <Label Content="{Binding Path=RenderProgress}"/>
             </ToolBar>
         </ToolBarTray>
 
-        <mc:PropertyGrid Object="{Binding Path=RenderSettings}" Expanded="True" Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"/>
+        <mc:PropertyGrid Object="{Binding Path=RenderSettings}" Expanded="True" Grid.Row="1" Grid.Column="1"/>
 
     </Grid>
 </Window>

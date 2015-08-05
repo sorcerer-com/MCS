@@ -69,8 +69,10 @@ namespace MyEngine {
         ProductionRenderer(Engine* owner, RendererType type);
         virtual ~ProductionRenderer() = 0;
 
+        double GetRenderTime(); // in seconds
         virtual vector<string> GetBufferNames() = 0;
         virtual vector<Region> GetActiveRegions() = 0;
+        virtual double GetProgress() = 0;
         virtual bool Init(uint width, uint height);
         virtual void Start();
         virtual void Stop();

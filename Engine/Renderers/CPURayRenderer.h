@@ -38,6 +38,7 @@ namespace MyEngine {
         float SamplesThreshold;
         uint MaxLights;
         uint MaxDepth;
+        bool GI;
 
     protected:
         using ColorsMapType = map < string, Color4 >; // buffer name / color
@@ -65,6 +66,7 @@ namespace MyEngine {
 
         virtual vector<string> GetBufferNames() override;
         virtual vector<Region> GetActiveRegions() override;
+        virtual double GetProgress() override;
         virtual bool Init(uint width, uint height) override;
         virtual void Start() override;
         virtual void Stop() override;
@@ -88,6 +90,7 @@ namespace MyEngine {
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo); // diffuse light / sepcular light
         Vector3 getLightSample(const Light* light, int numSamples, int sample);
         Color4 getFogLighting(const embree::RTCRay& rtcRay);
+        Color4 getGILighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo, const Color4& pathMultiplier);
         bool postProcessing();
 
         static void onRTCError(const embree::RTCError code, const char* str);

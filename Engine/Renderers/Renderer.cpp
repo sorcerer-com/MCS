@@ -63,6 +63,12 @@ namespace MyEngine {
             this->Stop();
     }
 
+
+    double ProductionRenderer::GetRenderTime()
+    {
+        return (double)chrono::duration_cast<chrono::milliseconds>(this->profiler->duration()).count() / 1000;
+    }
+
     bool ProductionRenderer::Init(uint width, uint height)
     {
         this->Width = width;
