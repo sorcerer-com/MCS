@@ -22,7 +22,7 @@ namespace MyEngine {
     SceneManager::SceneManager(Engine* owner) :
         BaseManager(owner)
 	{
-        this->thread->defMutex("content", true);
+        this->thread->defMutex("content", mutex_type::recursive);
 
 		this->New();
     }

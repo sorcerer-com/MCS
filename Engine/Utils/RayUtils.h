@@ -85,6 +85,13 @@ namespace MyEngine {
     }
 
 
+    struct LightCacheSample
+    {
+        Vector3 position;
+        Color4 color;
+    };
+
+
     inline vector<float> getMatrix(const Vector3& pos, Quaternion rot, const Vector3& scl)
     {
         vector<float> result(16);
@@ -173,18 +180,31 @@ namespace MyEngine {
         c.normalize();
     }
 
-    inline Vector3 hemisphereSample(const Vector3& normal)
+    inline Vector3 hemisphereSample(const Vector3& normal, int numSamples, int sample)
     {
         Random& rand = Random::getRandomGen();
-        float z = rand.randSample(20) * 2.0f - 1.0f;
-        float t = rand.randSample(36) * 2.0f * PI;
-        float r = sqrt(1.0f - z * z);
+        //float z = rand.randSample(/*20*/numSamples / 2, sample % 2) * 2.0f - 1.0f;
+        //float t = rand.randSample(/*36*/numSamples / 2, sample / 2) * 2.0f * PI;
+        /*float r = sqrt(1.0f - z * z);
         
         Vector3 res;
         res.x = r * cos(t);
         res.y = r * sin(t);
         res.z = z;
-        res.normalize();
+        res.normalize();*/
+
+        int sqrtNumSamples = max((int)sqrt(numSamples), 1);
+        float u = rand.randSample(sqrtNumSamples, sample % sqrtNumSamples);
+        float v = rand.randSample(sqrtNumSamples, sample / sqrtNumSamples);
+
+        float theta = 2 * PI * u;
+        float phi = acos(2 * v - 1) - PI / 2;
+
+        Vector3 res(
+            cos(theta) * cos(phi),
+            sin(phi),
+            sin(theta) * cos(phi)
+            );
 
         if (dot(res, normal) < 0)
             res = -res;

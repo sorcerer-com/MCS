@@ -35,19 +35,25 @@ namespace MyEngine {
 
     
     CPURayRenderer::CPURayRenderer(Engine* owner) :
-        ProductionRenderer(owner, RendererType::ECPURayRenderer)
+        ProductionRenderer(owner, RendererType::ECPURayRenderer),
+        lightCacheKdTree(3)
     {
-        this->RegionSize = 0;
-        this->VolumetricFog = false;
-        this->MinSamples = 0;
-        this->MaxSamples = 0;
-        this->SamplesThreshold = 0.0f;
-        this->MaxLights = 0;
-        this->MaxDepth = 0;
-        this->GI = false;
+        this->RegionSize = 64;
+        this->VolumetricFog = true;
+        this->MinSamples = 1;
+        this->MaxSamples = 4;
+        this->SampleThreshold = 0.01f;
+        this->MaxLights = 8;
+        this->MaxDepth = 4;
+        this->GI = true;
+        this->GISamples = 4;
+        this->LightCache = true;
+        this->LightCacheSampleSize = 0.1f;
 
         this->thread->defThreadPool();
         this->thread->defMutex("regions");
+        this->thread->defMutex("lights", mutex_type::read_write);
+        this->thread->defMutex("lightCache", mutex_type::read_write);
 
         this->phasePofiler = make_shared<Profiler>();
         
@@ -63,7 +69,7 @@ namespace MyEngine {
         if (this->rtcScene != NULL)
         {
             this->Regions.clear();
-            this->contentElementCache.clear();
+            this->contentElements.clear();
 
             this->rtcInstances.clear();
             for (const auto& rtcGeom : this->rtcGeometries)
@@ -141,8 +147,10 @@ namespace MyEngine {
         // clear previous scene
         if (this->rtcScene != NULL)
         {
-            this->lightsCache.clear();
-            this->contentElementCache.clear();
+            this->lights.clear();
+            this->contentElements.clear();
+            this->lightCacheSamples.clear();
+            this->lightCacheKdTree.clear();
 
             this->rtcInstances.clear();
             for (const auto& rtcGeom : this->rtcGeometries)
@@ -172,6 +180,7 @@ namespace MyEngine {
         this->thread->addTask([&](int) { return this->postProcessing(); });
         this->thread->addWaitTask();
         this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Post-processing phase time"); return true; });
+        this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", to_string(this->lightCacheSamples.size()) + " light cache samples generated"); return true; });
         this->thread->addTask([&](int) { this->Stop(); return true; });
         
         Engine::Log(LogType::ELog, "CPURayRenderer", "Start Rendering");
@@ -197,9 +206,9 @@ namespace MyEngine {
             for (int x = 0; x < sw; x++)
             {
                 int left = x * this->RegionSize;
-                int right = std::min(this->Width, (x + 1) * this->RegionSize);
+                int right = min(this->Width, (x + 1) * this->RegionSize);
                 int top = y * this->RegionSize;
-                int bottom = std::min(this->Height, (y + 1) * this->RegionSize);
+                int bottom = min(this->Height, (y + 1) * this->RegionSize);
                 if (left == right || top == bottom)
                     continue;
 
@@ -417,7 +426,7 @@ namespace MyEngine {
                 to_string(sceneElement->ContentID) + ")");
             return NULL;
         }
-        this->contentElementCache[sceneElement->ContentID] = contentElement;
+        this->contentElements[sceneElement->ContentID] = contentElement;
         Mesh* mesh = (Mesh*)contentElement.get();
 
         // create rtcScene
@@ -453,7 +462,7 @@ namespace MyEngine {
     {
         // scene element's material
         ContentElementPtr contentElement = NULL;
-        if (this->contentElementCache.find(sceneElement->MaterialID) == this->contentElementCache.end())
+        if (this->contentElements.find(sceneElement->MaterialID) == this->contentElements.end())
         {
             if (this->Owner->ContentManager->ContainsElement(sceneElement->MaterialID))
                 contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
@@ -464,14 +473,14 @@ namespace MyEngine {
                         to_string(sceneElement->MaterialID) + ")");
                 contentElement.reset();
             }
-            this->contentElementCache[sceneElement->MaterialID] = contentElement;
+            this->contentElements[sceneElement->MaterialID] = contentElement;
 
             if (contentElement)
             {
                 Material* material = (Material*)contentElement.get();
                 // material's diffuse map texture
                 contentElement = NULL;
-                if (this->contentElementCache.find(material->Textures.DiffuseMapID) == this->contentElementCache.end())
+                if (this->contentElements.find(material->Textures.DiffuseMapID) == this->contentElements.end())
                 {
                     if (this->Owner->ContentManager->ContainsElement(material->Textures.DiffuseMapID))
                         contentElement = this->Owner->ContentManager->GetElement(material->Textures.DiffuseMapID, true, true);
@@ -482,11 +491,11 @@ namespace MyEngine {
                                 to_string(material->Textures.DiffuseMapID) + ")");
                         contentElement.reset();
                     }
-                    this->contentElementCache[material->Textures.DiffuseMapID] = contentElement;
+                    this->contentElements[material->Textures.DiffuseMapID] = contentElement;
                 }
                 // material's normal map texture
                 contentElement = NULL;
-                if (this->contentElementCache.find(material->Textures.NormalMapID) == this->contentElementCache.end())
+                if (this->contentElements.find(material->Textures.NormalMapID) == this->contentElements.end())
                 {
                     if (this->Owner->ContentManager->ContainsElement(material->Textures.NormalMapID))
                         contentElement = this->Owner->ContentManager->GetElement(material->Textures.NormalMapID, true, true);
@@ -497,14 +506,14 @@ namespace MyEngine {
                                 to_string(material->Textures.NormalMapID) + ")");
                         contentElement.reset();
                     }
-                    this->contentElementCache[material->Textures.NormalMapID] = contentElement;
+                    this->contentElements[material->Textures.NormalMapID] = contentElement;
                 }
             }
         }
 
         // scene element's diffuse map texture
         contentElement = NULL;
-        if (this->contentElementCache.find(sceneElement->Textures.DiffuseMapID) == this->contentElementCache.end())
+        if (this->contentElements.find(sceneElement->Textures.DiffuseMapID) == this->contentElements.end())
         {
             if (this->Owner->ContentManager->ContainsElement(sceneElement->Textures.DiffuseMapID))
                 contentElement = this->Owner->ContentManager->GetElement(sceneElement->Textures.DiffuseMapID, true, true);
@@ -515,12 +524,12 @@ namespace MyEngine {
                         to_string(sceneElement->Textures.DiffuseMapID) + ")");
                 contentElement.reset();
             }
-            this->contentElementCache[sceneElement->Textures.DiffuseMapID] = contentElement;
+            this->contentElements[sceneElement->Textures.DiffuseMapID] = contentElement;
         }
 
         // scene element's normal map texture
         contentElement = NULL;
-        if (this->contentElementCache.find(sceneElement->Textures.NormalMapID) == this->contentElementCache.end())
+        if (this->contentElements.find(sceneElement->Textures.NormalMapID) == this->contentElements.end())
         {
             if (this->Owner->ContentManager->ContainsElement(sceneElement->Textures.NormalMapID))
                 contentElement = this->Owner->ContentManager->GetElement(sceneElement->Textures.NormalMapID, true, true);
@@ -531,7 +540,7 @@ namespace MyEngine {
                         to_string(sceneElement->Textures.NormalMapID) + ")");
                 contentElement.reset();
             }
-            this->contentElementCache[sceneElement->Textures.NormalMapID] = contentElement;
+            this->contentElements[sceneElement->Textures.NormalMapID] = contentElement;
         }
     }
 
@@ -549,7 +558,7 @@ namespace MyEngine {
 
         if (result.sceneElement)
         {
-            Mesh* mesh = (Mesh*)this->contentElementCache[result.sceneElement->ContentID].get();
+            Mesh* mesh = (Mesh*)this->contentElements[result.sceneElement->ContentID].get();
             if (mesh)
             {
                 const Triangle& triangle = mesh->Triangles[rtcRay.primID];
@@ -568,7 +577,7 @@ namespace MyEngine {
                 }
             }
             
-            Material* material = (Material*)this->contentElementCache[result.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[result.sceneElement->MaterialID].get();
             if (material)
             {
                 result.color = material->DiffuseColor;
@@ -578,9 +587,9 @@ namespace MyEngine {
                 // diffuse map
                 Texture* diffuseMap = NULL;
                 if (result.sceneElement->Textures.DiffuseMapID != INVALID_ID)
-                    diffuseMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.DiffuseMapID].get();
+                    diffuseMap = (Texture*)this->contentElements[result.sceneElement->Textures.DiffuseMapID].get();
                 else
-                    diffuseMap = (Texture*)this->contentElementCache[material->Textures.DiffuseMapID].get();
+                    diffuseMap = (Texture*)this->contentElements[material->Textures.DiffuseMapID].get();
 
                 if (diffuseMap)
                 {
@@ -593,9 +602,9 @@ namespace MyEngine {
                 {
                     Texture* normalMap = NULL;
                     if (result.sceneElement->Textures.NormalMapID != INVALID_ID)
-                        normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
+                        normalMap = (Texture*)this->contentElements[result.sceneElement->Textures.NormalMapID].get();
                     else
-                        normalMap = (Texture*)this->contentElementCache[material->Textures.NormalMapID].get();
+                        normalMap = (Texture*)this->contentElements[material->Textures.NormalMapID].get();
 
                     if (normalMap)
                     {
@@ -612,7 +621,7 @@ namespace MyEngine {
             else // scene element's maps
             {
                 // diffuse map
-                Texture* diffuseMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.DiffuseMapID].get();
+                Texture* diffuseMap = (Texture*)this->contentElements[result.sceneElement->Textures.DiffuseMapID].get();
                 if (diffuseMap)
                 {
                     result.color = diffuseMap->GetColor(result.UV.x, result.UV.y);
@@ -622,7 +631,7 @@ namespace MyEngine {
                 // normal map
                 if (!onlyColor)
                 {
-                    Texture* normalMap = (Texture*)this->contentElementCache[result.sceneElement->Textures.NormalMapID].get();
+                    Texture* normalMap = (Texture*)this->contentElements[result.sceneElement->Textures.NormalMapID].get();
                     if (normalMap)
                     {
                         Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
@@ -701,16 +710,15 @@ namespace MyEngine {
                 for (auto& buffer : this->Buffers)
                     buffer.second.setElement(x, y, Color4());
 
-                uint minSamples = preview ? std::min(1u, this->MinSamples) : this->MinSamples;
-                uint maxSamples = preview ? std::min(4u, this->MaxSamples) : this->MaxSamples;
-                float samplesThreshold = preview ? std::min(0.01f, this->SamplesThreshold) : this->SamplesThreshold;
-                uint samples = adaptiveSampling(minSamples, maxSamples, samplesThreshold, [&](int) { return this->renderPixel(x, y); });
+                uint minSamples = preview ? min(1u, this->MinSamples) : this->MinSamples;
+                uint maxSamples = preview ? min(4u, this->MaxSamples) : this->MaxSamples;
+                float sampleThreshold = preview ? min(0.01f, this->SampleThreshold) : this->SampleThreshold;
+                uint samples = adaptiveSampling(minSamples, maxSamples, sampleThreshold, [&](int) { return this->renderPixel(x, y); });
 
                 float div = 1.0f / samples;
                 for (auto& buffer : this->Buffers)
                     buffer.second.setElement(x, y, this->Buffers[buffer.first].getElement(x, y) * div);
 
-                // TODO: add GI samples in Green chanel
                 this->Buffers["Samples"].setElement(x, y, this->Buffers["Samples"].getElement(x, y) + Color4((float)(samples - 2) / (maxSamples - 2), 0, 0));
                 
                 // do preview
@@ -796,25 +804,28 @@ namespace MyEngine {
             // calculate GI
             if (this->GI)
             {
-                embree::RTCRay4 rtcRay4;
-                for (int k = 0; k < RAYS; k++)
-                    setRTCRay4(rtcRay4, k, RTCRay(interInfo.interPos, hemisphereSample(interInfo.normal), 0));
-                embree::rtcIntersect4(VALID, this->rtcScene, rtcRay4);
-
-                Color4 lighting;
-                for (int k = 0; k < RAYS; k++)
+                uint samples = adaptiveSampling(1, this->GISamples, 0.01f, [&](int sample) -> Color4
                 {
-                    embree::RTCRay rtcGIRay = getRTCRay(rtcRay4, k);
-                    rtcGIRay.align0 = rtcRay.align0 + 1;
-                    rtcGIRay.align1 = rtcRay.align1;
-                    setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
-                    const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
+                    const int tries = 3;
+                    for (int i = 0; i < tries; i++)
+                    {
+                        const Vector3& dir = hemisphereSample(interInfo.normal, this->GISamples, sample);
+                        embree::RTCRay rtcGIRay = RTCRay(interInfo.interPos + dir * 0.01f, dir, (uint)rtcRay.align0 + 1);
+                        rtcGIRay.align1 = rtcRay.align1; // flags
+                        setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
+                        embree::rtcIntersect(this->rtcScene, rtcGIRay);
 
-                    lighting += this->getGILighting(rtcGIRay, interInfoGI, Color4(1.0f, 1.0f, 1.0f, 1.0f));
-                }
-                lighting *= (1.0f / RAYS);
-
-                result["IndirectLight"] += lighting;
+                        const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
+                        const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4(1.0f, 1.0f, 1.0f, 1.0f));
+                        if (lighting.intensity() > 20.0f && i < tries - 1)
+                            continue;
+                        result["IndirectLight"] += lighting;
+                        return lighting;
+                    }
+                    return Color4();
+                });
+                result["IndirectLight"] *= (1.0f / samples);
+                result["Samples"] += Color4(0, (float)(samples - 2) / (this->GISamples - 2), 0);
             }
             else
                 result["IndirectLight"] = this->Owner->SceneManager->AmbientLight;
@@ -829,7 +840,7 @@ namespace MyEngine {
         // calculate refraction
         if (interInfo.refraction > 0.01f && (uint)rtcRay.align0 < this->MaxDepth)
         {
-            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[interInfo.sceneElement->MaterialID].get();
             float glossiness = material ? material->Glossiness : 1.0f;
 
             Vector3 n = interInfo.normal;
@@ -859,7 +870,7 @@ namespace MyEngine {
         // calculate reflection
         if (interInfo.reflection > 0.01f && (uint)rtcRay.align0 < this->MaxDepth)
         {
-            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[interInfo.sceneElement->MaterialID].get();
             float glossiness = material ? material->Glossiness : 1.0f;
 
             Vector3 n = interInfo.normal;
@@ -888,7 +899,7 @@ namespace MyEngine {
         if (fogDensity > 0.0f)
         {
             float fogFactor = pow(2.0f, -fogDensity * fogDensity * rtcRay.tfar * rtcRay.tfar * LOG2);
-            fogFactor = std::min(std::max(fogFactor, 0.0f), 1.0f);
+            fogFactor = min(max(fogFactor, 0.0f), 1.0f);
 
             Color4 lighting(1.0f, 1.0f, 1.0f, 1.0f);
             if (this->VolumetricFog && !getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT)) // volumetric fog only for primary rays
@@ -900,11 +911,11 @@ namespace MyEngine {
         // inside of the object (in computeColor, getLighting.shadow, getGILighting too)
         if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
         {
-            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[interInfo.sceneElement->MaterialID].get();
             if (material && material->InnerColor.intensity() > 0.01f)
             {
                 float absFactor = exp(-rtcRay.tfar * material->Absorption);
-                absFactor = std::min(std::max(absFactor, 0.0f), 1.0f);
+                absFactor = min(max(absFactor, 0.0f), 1.0f);
 
                 Color4 lighting(1.0f, 1.0f, 1.0f, 1.0f);
                 if (!getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT)) // volumetric fog only for primary rays
@@ -921,13 +932,15 @@ namespace MyEngine {
         Profile;
         ColorsMapType lighting;
 
-        auto lights = this->lightsCache;
-        if (lights.empty())
-            lights = this->Owner->SceneManager->GetElements(SceneElementType::ELight);
-        uint count = this->MaxLights > 0 ? this->MaxLights : (uint)lights.size();
-        if (lights.size() > count)
+        this->thread->rw_mutex("lights").read_lock();
+        auto newLights = this->lights;
+        this->thread->rw_mutex("lights").read_unlock();
+        if (newLights.empty())
+            newLights = this->Owner->SceneManager->GetElements(SceneElementType::ELight);
+        uint count = this->MaxLights > 0 ? this->MaxLights : (uint)newLights.size();
+        if (newLights.size() > count)
         {
-            sort(lights.begin(), lights.end(), [&](const SceneElementPtr a, const SceneElementPtr b) -> bool
+            sort(newLights.begin(), newLights.end(), [&](const SceneElementPtr a, const SceneElementPtr b) -> bool
             {
                 if (a->Visible != b->Visible)
                     return a->Visible > b->Visible;
@@ -941,21 +954,32 @@ namespace MyEngine {
                 }
             });
         }
-        if (this->lightsCache.empty())
-            this->lightsCache = lights;
+        if (this->lights.empty())
+        {
+            this->thread->rw_mutex("lights").write_lock();
+            this->lights = newLights;
+            this->thread->rw_mutex("lights").write_unlock();
+        }
 
-        count = std::min((uint)lights.size(), count);
+
+        count = min((uint)newLights.size(), count);
         for (uint i = 0; i < count; i++)
         {
-            if (i > 0 && getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT))
-                break;
-            if (!lights[i]->Visible)
+            // for indirect rays
+            if (getFlag(rtcRay.align1, RayFlags::RAY_INDIRECT))
+            {
+                if (i > 0)
+                    break;
+                i = Random::getRandomGen().randInt(0, count - 1);
+            }
+
+            if (!newLights[i]->Visible)
                 continue;
 
             ColorsMapType tempLighting;
-            uint samples = adaptiveSampling(this->MinSamples, this->MaxSamples, this->SamplesThreshold, [&](int) -> Color4
+            uint samples = adaptiveSampling(this->MinSamples, this->MaxSamples, this->SampleThreshold, [&](int) -> Color4
             {
-                const auto& temp = this->getLighting(rtcRay, (Light*)lights[i].get(), interInfo);
+                const auto& temp = this->getLighting(rtcRay, (Light*)newLights[i].get(), interInfo);
                 for (const auto& color : temp)
                     tempLighting[color.first] += color.second;
                 return temp.size() != 0 ? temp.at("DirectLight") : Color4();
@@ -997,7 +1021,7 @@ namespace MyEngine {
             shadowDirs[i] = lightSample - interInfo.interPos;
             if (shadowDirs[i].length() > light->Radius * 1.10f)
                 continue;
-            float lensq = std::max(shadowDirs[i].lengthSqr(), 1.0f);
+            float lensq = max(shadowDirs[i].lengthSqr(), 1.0f);
             shadowDirs[i].normalize();
 
             // fog
@@ -1005,7 +1029,7 @@ namespace MyEngine {
             if (this->Owner->SceneManager->FogDensity > 0.0f)
             {
                 fogFactor = pow(2.0f, -this->Owner->SceneManager->FogDensity * this->Owner->SceneManager->FogDensity * lensq * LOG2);
-                fogFactor = std::min(std::max(fogFactor, 0.0f), 1.0f);
+                fogFactor = min(max(fogFactor, 0.0f), 1.0f);
                 if (fogFactor == 0.0f)
                     continue;
             }
@@ -1048,11 +1072,11 @@ namespace MyEngine {
                     // inside of the object (in computeColor, getLighting.shadow, getGILighting too)
                     if (baseLightings[i].intensity() > 0.001f && inside)
                     {
-                        Material* material = (Material*)this->contentElementCache[shadowInterInfo.sceneElement->MaterialID].get();
+                        Material* material = (Material*)this->contentElements[shadowInterInfo.sceneElement->MaterialID].get();
                         if (material && material->InnerColor.intensity() > 0.01f)
                         {
                             float absFactor = exp(-rtcRay.tfar * material->Absorption);
-                            absFactor = std::min(std::max(absFactor, 0.0f), 1.0f);
+                            absFactor = min(max(absFactor, 0.0f), 1.0f);
 
                             baseLightings[i] = material->InnerColor * (1.0f - absFactor) + baseLightings[i] * absFactor;
                         }
@@ -1085,7 +1109,7 @@ namespace MyEngine {
             float cosGamma = dot(r, -Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]));
             if (cosGamma > 0.0f)
             {
-                Material* mat = (Material*)this->contentElementCache[this->rtcInstances[rtcRay.instID]->MaterialID].get();
+                Material* mat = (Material*)this->contentElements[this->rtcInstances[rtcRay.instID]->MaterialID].get();
                 if (mat)
                     lighting["Specular"] += baseLightings[i] * mat->SpecularColor * pow(cosGamma, 0.3f * mat->Shininess);
             }
@@ -1105,7 +1129,7 @@ namespace MyEngine {
         Random& rand = Random::getRandomGen();
         Vector3 result;
 
-        Mesh* mesh = (Mesh*)this->contentElementCache[light->ContentID].get();
+        Mesh* mesh = (Mesh*)this->contentElements[light->ContentID].get();
         if (mesh && mesh->Name != "Cube")
         {
             int trglSample = (int)(rand.randSample(numSamples, sample) * (mesh->Triangles.size() - 1));
@@ -1114,9 +1138,10 @@ namespace MyEngine {
         }
         else
         {
-            result = Vector3((rand.randSample(numSamples / 2, sample % 2) - 0.5f),
+            int sqrtNumSamples = max((int)sqrt(numSamples), 1); 
+            result = Vector3((rand.randSample(sqrtNumSamples, sample % sqrtNumSamples) - 0.5f),
                              (rand.randSample(numSamples) - 0.5f),
-                             (rand.randSample(numSamples / 2, sample / 2) - 0.5f));
+                             (rand.randSample(sqrtNumSamples, sample / sqrtNumSamples) - 0.5f));
             result *= 20.0f;
         }
 
@@ -1139,7 +1164,7 @@ namespace MyEngine {
         interInfo.normal = Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
 
         Color4 prevLighting;
-        float delta = std::min(100.0f, rtcRay.tfar > 1000 ? rtcRay.tfar / 10 : rtcRay.tfar / 100);
+        float delta = min(100.0f, rtcRay.tfar > 1000 ? rtcRay.tfar / 10 : rtcRay.tfar / 100);
         for (float dist = 0.0f; dist < rtcRay.tfar; dist += delta)
         {
             newRay.tfar = dist;
@@ -1150,7 +1175,7 @@ namespace MyEngine {
             if (dist > 0 && ration > 2.0f && delta > rtcRay.tfar / 1000)
             {
                 dist -= delta;
-                delta = std::max(rtcRay.tfar / 1000, delta / deltaFactor);
+                delta = max(rtcRay.tfar / 1000, delta / deltaFactor);
             }
             else
             {
@@ -1159,7 +1184,7 @@ namespace MyEngine {
             }
 
             if (dist > 0 && ration < 0.5f)
-                delta = std::min(rtcRay.tfar / 10, delta * deltaFactor);
+                delta = min(rtcRay.tfar / 10, delta * deltaFactor);
         }
 
         result.a = 1.0f;
@@ -1169,7 +1194,7 @@ namespace MyEngine {
     Color4 CPURayRenderer::getGILighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo, const Color4& pathMultiplier)
     {
         Profile;
-        if ((uint)rtcRay.align0 > this->MaxDepth || pathMultiplier.intensity() < 0.02f)
+        if ((uint)rtcRay.align0 >= this->MaxDepth || pathMultiplier.intensity() < 0.02f)
             return interInfo.color * this->Owner->SceneManager->AmbientLight;
 
         Color4 result;
@@ -1178,6 +1203,23 @@ namespace MyEngine {
 
         if (!interInfo.sceneElement)
             return result;
+
+        // light cache
+        if (this->LightCache && this->lightCacheSamples.size() > 0)
+        {
+            vector<int> indices;
+            this->thread->rw_mutex("lightCache").read_lock();
+            this->lightCacheKdTree.find_range(interInfo.interPos, [&](int idx) { return this->lightCacheSamples[idx].position; }, this->LightCacheSampleSize, indices);
+            this->thread->rw_mutex("lightCache").read_unlock();
+            if (indices.size() > 0) // get value
+            {
+                this->thread->rw_mutex("lightCache").read_lock();
+                result += this->lightCacheSamples[indices[0]].color;
+                this->thread->rw_mutex("lightCache").read_unlock();
+                return interInfo.color * result;
+            }
+        }
+
 
         embree::RTCRay rtcNextRay;
         Color4 color;
@@ -1192,10 +1234,10 @@ namespace MyEngine {
         {
             result = this->getLighting(rtcRay, interInfo)["DirectLight"] * pathMultiplier;
 
-            // calculate GI
-            const Vector3& dir = hemisphereSample(interInfo.normal);
-            rtcNextRay = RTCRay(interInfo.interPos, dir, (uint)rtcRay.align0 + 1);
-            color = interInfo.color * (1.0f / PI) * std::max(0.0f, dot(interInfo.normal, dir));
+            // GI
+            const Vector3& dir = hemisphereSample(interInfo.normal, 0, 0);
+            rtcNextRay = RTCRay(interInfo.interPos + dir * 0.01f, dir, (uint)rtcRay.align0 + 1);
+            color = interInfo.color * (1.0f / PI) * max(0.0f, dot(interInfo.normal, dir));
             pdf = (1.0f / (2.0f * PI)) * interInfo.diffuse;
         }
         else if (sample <= interInfo.diffuse) // non static objects
@@ -1204,7 +1246,7 @@ namespace MyEngine {
         // refraction
         if (interInfo.diffuse < sample && sample <= interInfo.diffuse + interInfo.refraction)
         {
-            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[interInfo.sceneElement->MaterialID].get();
             float glossiness = material ? material->Glossiness : 1.0f;
 
             Vector3 n = interInfo.normal;
@@ -1228,7 +1270,7 @@ namespace MyEngine {
         // reflection
         if (interInfo.diffuse + interInfo.refraction < sample)
         {
-            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[interInfo.sceneElement->MaterialID].get();
             float glossiness = material ? material->Glossiness : 1.0f;
 
             Vector3 n = interInfo.normal;
@@ -1241,11 +1283,23 @@ namespace MyEngine {
             pdf = interInfo.reflection;
         }
 
+
         // trace
         rtcNextRay.align1 = rtcRay.align1;
         embree::rtcIntersect(this->rtcScene, rtcNextRay);
         const InterInfo& interInfoNext = this->getInterInfo(rtcNextRay);
         result += this->getGILighting(rtcNextRay, interInfoNext, pathMultiplier * color * (1.0f / pdf));
+
+        if (this->LightCache)
+        {                
+            LightCacheSample sample;
+            sample.position = interInfo.interPos;
+            sample.color = result;
+            this->thread->rw_mutex("lightCache").write_lock();
+            this->lightCacheSamples.push_back(sample);
+            this->lightCacheKdTree.insert((int)this->lightCacheSamples.size() - 1, [&](int idx) { return this->lightCacheSamples[idx].position; });
+            this->thread->rw_mutex("lightCache").write_unlock();
+        }
 
 
         // fog
@@ -1253,18 +1307,18 @@ namespace MyEngine {
         if (fogDensity > 0.0f)
         {
             float fogFactor = pow(2.0f, -fogDensity * fogDensity * rtcRay.tfar * rtcRay.tfar * LOG2);
-            fogFactor = std::min(std::max(fogFactor, 0.0f), 1.0f);
+            fogFactor = min(max(fogFactor, 0.0f), 1.0f);
             result = this->Owner->SceneManager->FogColor * (1.0f - fogFactor) + result * fogFactor;
         }
 
         // inside of the object (in computeColor, getLighting.shadow, getGILighting too)
         if (getFlag(rtcRay.align1, RayFlags::RAY_INSIDE))
         {
-            Material* material = (Material*)this->contentElementCache[interInfo.sceneElement->MaterialID].get();
+            Material* material = (Material*)this->contentElements[interInfo.sceneElement->MaterialID].get();
             if (material && material->InnerColor.intensity() > 0.01f)
             {
                 float absFactor = exp(-rtcRay.tfar * material->Absorption);
-                absFactor = std::min(std::max(absFactor, 0.0f), 1.0f);
+                absFactor = min(max(absFactor, 0.0f), 1.0f);
                 result = material->InnerColor * (1.0f - absFactor) + result * absFactor;
             }
         }
@@ -1284,7 +1338,7 @@ namespace MyEngine {
         {
             for (uint i = 0; i < this->Width; i++)
             {
-                maxDepth = std::max(maxDepth, this->Buffers["Depth"].getElement(i, j).r);
+                maxDepth = max(maxDepth, this->Buffers["Depth"].getElement(i, j).r);
             }
         }
         for (uint j = 0; j < this->Height; j++)
@@ -1378,7 +1432,8 @@ namespace MyEngine {
         return ray_o;
     }
 
-    uint CPURayRenderer::adaptiveSampling(uint minSamples, uint maxSamples, float samplesThreshold, const function<Color4(int)>& func)
+    template <typename Func>
+    uint CPURayRenderer::adaptiveSampling(uint minSamples, uint maxSamples, float sampleThreshold, const Func& func)
     {
         Color4 color;
         uint sample = 0;
@@ -1391,12 +1446,12 @@ namespace MyEngine {
                 Color4 tempColor = color + c;
                 Color4 c1 = color * (1.0f / (sample - 1));
                 Color4 c2 = tempColor * (1.0f / sample);
-                if (absolute(c1 - c2) < samplesThreshold)
+                if (absolute(c1 - c2) < sampleThreshold)
                     break;
             }
             color += c;
         }
-        return std::min(sample, maxSamples);
+        return min(sample, maxSamples);
     }
 
 }

@@ -20,15 +20,17 @@ namespace MyEngine {
 	{
 	public:
         property String^ Group;
+        property String^ Name;
+        property String^ SortName;
         property String^ Description;
-		property String^ SortName;
 		property bool Choosable;
 
 		MPropertyAttribute()
 		{
             this->Group = String::Empty;
-            this->Description = String::Empty;
+            this->Name = String::Empty;
             this->SortName = String::Empty;
+            this->Description = String::Empty;
 			this->Choosable = false;
 		}
 	};

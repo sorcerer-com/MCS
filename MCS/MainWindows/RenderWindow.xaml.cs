@@ -176,10 +176,13 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.VolumetricFog = true;
             RenderWindow.renderSettings.MinSamples = 1;
             RenderWindow.renderSettings.MaxSamples = 4;
-            RenderWindow.renderSettings.SamplesThreshold = 0.01;
+            RenderWindow.renderSettings.SampleThreshold = 0.01;
             RenderWindow.renderSettings.MaxLights = 8;
             RenderWindow.renderSettings.MaxDepth = 4;
             RenderWindow.renderSettings.GI = true;
+            RenderWindow.renderSettings.GISamples = 4;
+            RenderWindow.renderSettings.LightCache = true;
+            RenderWindow.renderSettings.LightCacheSampleSize = 0.1;
         }
 
         public RenderWindow(MEngine engine)

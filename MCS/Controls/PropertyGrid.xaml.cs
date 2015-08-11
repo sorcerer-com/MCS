@@ -193,7 +193,8 @@ namespace MCS.Controls
 
                 object value = pi.GetValue(this.Object, null);
 
-                this.addPropery(pi.Name, value, pi.CanWrite, att.Description, att.Choosable);
+                string label = string.IsNullOrEmpty(att.Name) ? pi.Name : att.Name;
+                this.addPropery(pi.Name, label, value, pi.CanWrite, att.Description, att.Choosable);
             }
         }
 
@@ -279,7 +280,7 @@ namespace MCS.Controls
             Grid.SetRow(nameLabel, row);
         }
 
-        private void addPropery(string name, object value, bool canWrite, string desc, bool choosable)
+        private void addPropery(string name, string label, object value, bool canWrite, string desc, bool choosable)
         {
             int row = this.propertiesGrid.RowDefinitions.Count;
 
@@ -288,7 +289,7 @@ namespace MCS.Controls
             this.propertiesGrid.RowDefinitions.Add(rd);
 
             Label nameLabel = new Label();
-            nameLabel.Content = name;
+            nameLabel.Content = label;
             if (!string.IsNullOrEmpty(desc))
                 nameLabel.ToolTip = desc;
             nameLabel.Margin = new Thickness(3);

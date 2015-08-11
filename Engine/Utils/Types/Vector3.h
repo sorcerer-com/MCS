@@ -134,12 +134,22 @@ namespace MyEngine {
 	inline bool operator <(const Vector3& a, const Vector3& b)
 	{
 		return a.x < b.x && a.y < b.y && a.z < b.z;
-	}
+    }
+
+    inline bool operator <=(const Vector3& a, const Vector3& b)
+    {
+        return a.x <= b.x && a.y <= b.y && a.z <= b.z;
+    }
 
 	inline bool operator >(const Vector3& a, const Vector3& b)
 	{
 		return a.x > b.x && a.y > b.y && a.z > b.z;
 	}
+
+    inline bool operator >=(const Vector3& a, const Vector3& b)
+    {
+        return a.x >= b.x && a.y >= b.y && a.z >= b.z;
+    }
 
 
 	inline float dot(const Vector3& a, const Vector3& b)
@@ -159,24 +169,6 @@ namespace MyEngine {
 	inline Vector3 barycentric(const Vector3& a, const Vector3& b, const Vector3& c, float u, float v)
 	{
 		return a + (b - a) * u + (c - a) * v;
-	}
-
-	inline Vector3 min(const Vector3& a, const Vector3& b)
-	{
-		Vector3 c;
-		c.x = a.x < b.x ? a.x : b.x;
-		c.y = a.y < b.y ? a.y : b.y;
-		c.z = a.z < b.z ? a.z : b.z;
-		return c;
-	}
-
-	inline Vector3 max(const Vector3& a, const Vector3& b)
-	{
-		Vector3 c;
-		c.x = a.x > b.x ? a.x : b.x;
-		c.y = a.y > b.y ? a.y : b.y;
-		c.z = a.z > b.z ? a.z : b.z;
-		return c;
 	}
 
 }

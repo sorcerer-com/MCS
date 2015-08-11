@@ -7,6 +7,7 @@
 #include "..\Utils\Header.h"
 #include "..\Utils\RayUtils.h"
 #include "..\Utils\Types\Vector3.h"
+#include "..\Utils\Types\KdTree.h"
 
 namespace embree {
     enum RTCError;
@@ -35,10 +36,13 @@ namespace MyEngine {
         vector<Region> Regions;
         bool VolumetricFog;
         uint MinSamples, MaxSamples;
-        float SamplesThreshold;
+        float SampleThreshold;
         uint MaxLights;
         uint MaxDepth;
         bool GI;
+        uint GISamples;
+        bool LightCache;
+        float LightCacheSampleSize;
 
     protected:
         using ColorsMapType = map < string, Color4 >; // buffer name / color
@@ -55,13 +59,17 @@ namespace MyEngine {
         map<uint, embree::__RTCScene*> rtcGeometries; // mesh id / rtcScene(Geometry)
         map<int, SceneElementPtr> rtcInstances; // rtcInstance id / scene element
 
-        map<uint, ContentElementPtr> contentElementCache; // id / content element
-        vector<SceneElementPtr> lightsCache;
+        map<uint, ContentElementPtr> contentElements; // id / content element
+        vector<SceneElementPtr> lights;
+
+        vector<LightCacheSample> lightCacheSamples;
+        KdTree<Vector3> lightCacheKdTree;
 
         shared_ptr<Profiler> phasePofiler;
 
 	public:
         CPURayRenderer(Engine* owner);
+        CPURayRenderer& operator=(const CPURayRenderer&) { return *this; }
         ~CPURayRenderer();
 
         virtual vector<string> GetBufferNames() override;
@@ -97,7 +105,8 @@ namespace MyEngine {
         static embree::RTCRay RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near = 0.1f, float far = 10000.0f);
         static void setRTCRay4(embree::RTCRay4& ray_o, int i, const embree::RTCRay& ray_i);
         static embree::RTCRay getRTCRay(const embree::RTCRay4& ray_i, int i);
-        static uint adaptiveSampling(uint minSamples, uint maxSamples, float samplesThreshold, const function<Color4(int)>& func);
+        template <typename Func>
+        static uint adaptiveSampling(uint minSamples, uint maxSamples, float sampleThreshold, const Func& func);
 
 	};
 

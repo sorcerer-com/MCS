@@ -22,7 +22,7 @@ namespace MyEngine {
 	{
 		this->thread->defWorker(&ContentManager::doSerilization, this);
 		this->thread->defMutex("requests");
-		this->thread->defMutex("content", true);
+		this->thread->defMutex("content", mutex_type::recursive);
 
 		this->addRequest(ELoadDatabase, true);
     }

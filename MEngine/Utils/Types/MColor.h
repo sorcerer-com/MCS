@@ -43,10 +43,10 @@ namespace MyEngine {
 
 		System::Drawing::Color ToColor()
 		{
-			int r = (int)(std::max(std::min(R, 1.0), 0.0) * 255);
-			int g = (int)(std::max(std::min(G, 1.0), 0.0) * 255);
-			int b = (int)(std::max(std::min(B, 1.0), 0.0) * 255);
-			int a = (int)(std::max(std::min(A, 1.0), 0.0) * 255);
+			int r = (int)(max(min(R, 1.0), 0.0) * 255);
+			int g = (int)(max(min(G, 1.0), 0.0) * 255);
+			int b = (int)(max(min(B, 1.0), 0.0) * 255);
+			int a = (int)(max(min(A, 1.0), 0.0) * 255);
 			return System::Drawing::Color::FromArgb(a, r, g, b);
 		}
 

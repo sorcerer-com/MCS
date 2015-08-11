@@ -4,7 +4,7 @@
 
 namespace MyEngine {
 
-    template<class T>
+    template <typename T>
 	struct Buffer
     {
         uint width;

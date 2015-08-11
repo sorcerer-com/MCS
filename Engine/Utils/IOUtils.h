@@ -5,7 +5,7 @@ namespace MyEngine {
 
 #pragma region Write
 
-	template <class T>
+	template <typename T>
 	inline void Write(ostream& ofile, const T& value)
 	{
 		ofile.write((char*)&value, sizeof(value));
@@ -20,7 +20,7 @@ namespace MyEngine {
 		ofile.write((char*)str, size * sizeof(char));
 	}
 
-	template <class T>
+	template <typename T>
 	inline void Write(ostream& ofile, const vector<T>& value)
 	{
 		int size = (int)value.size();
@@ -34,7 +34,7 @@ namespace MyEngine {
 
 #pragma region Read
 
-	template <class T>
+	template <typename T>
 	inline void Read(istream& ifile, T& value)
 	{
 		ifile.read((char*)&value, sizeof(value));
@@ -52,7 +52,7 @@ namespace MyEngine {
 		delete[] str;
 	}
 
-	template <class T>
+	template <typename T>
 	inline void Read(istream& ifile, vector<T>& value)
 	{
 		int size = 0;
@@ -73,7 +73,7 @@ namespace MyEngine {
 
 #pragma region Size
 
-	template <class T>
+	template <typename T>
 	inline long long SizeOf(const T&)
 	{
 		return sizeof(T);
@@ -84,7 +84,7 @@ namespace MyEngine {
 		return sizeof(int) + value.size() * sizeof(char);
 	}
 
-	template <class T>
+	template <typename T>
 	inline long long SizeOf(const vector<T>& value)
 	{
 		return sizeof(int) + value.size() * sizeof(T);

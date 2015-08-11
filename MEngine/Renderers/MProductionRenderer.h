@@ -38,13 +38,19 @@ namespace MyEngine {
             [MPropertyAttribute(SortName = "02", Group = "02. Samples Settings")]
             property uint MaxSamples;
             [MPropertyAttribute(SortName = "03", Group = "02. Samples Settings")]
-            property double SamplesThreshold;
+            property double SampleThreshold;
             [MPropertyAttribute(SortName = "01", Group = "03. Limits")]
             property uint MaxLights;
             [MPropertyAttribute(SortName = "02", Group = "03. Limits")]
             property uint MaxDepth;
             [MPropertyAttribute(SortName = "01", Group = "04. Global Illumination")]
             property bool GI;
+            [MPropertyAttribute(SortName = "02", Group = "04. Global Illumination")]
+            property uint GISamples;
+            [MPropertyAttribute(SortName = "03", Group = "04. Global Illumination")]
+            property bool LightCache;
+            [MPropertyAttribute(SortName = "04", Group = "04. Global Illumination", Name = "SampleSize")]
+            property double LightCacheSampleSize;
         };
 
         property bool IsStarted
@@ -106,10 +112,13 @@ namespace MyEngine {
                 rayRenderer->VolumetricFog = settings->VolumetricFog;
                 rayRenderer->MinSamples = settings->MinSamples;
                 rayRenderer->MaxSamples = settings->MaxSamples;
-                rayRenderer->SamplesThreshold = (float)settings->SamplesThreshold;
+                rayRenderer->SampleThreshold = (float)settings->SampleThreshold;
                 rayRenderer->MaxLights = settings->MaxLights;
                 rayRenderer->MaxDepth = settings->MaxDepth;
                 rayRenderer->GI = settings->GI;
+                rayRenderer->GISamples = settings->GISamples;
+                rayRenderer->LightCache = settings->LightCache;
+                rayRenderer->LightCacheSampleSize = (float)settings->LightCacheSampleSize;
             }
             this->Renderer->Init(settings->Width, settings->Height);
 
@@ -139,10 +148,10 @@ namespace MyEngine {
             for (uint i = 0; i < buffer.width * buffer.height; i++)
             {
                 // from RGBA to BGRA
-                dataByte[i * 4 + 2] = (byte)(std::min(buffer.data[i].r, 1.0f) * 255);
-                dataByte[i * 4 + 1] = (byte)(std::min(buffer.data[i].g, 1.0f) * 255);
-                dataByte[i * 4 + 0] = (byte)(std::min(buffer.data[i].b, 1.0f) * 255);
-                dataByte[i * 4 + 3] = (byte)(std::min(buffer.data[i].a, 1.0f) * 255);
+                dataByte[i * 4 + 2] = (byte)(min(buffer.data[i].r, 1.0f) * 255);
+                dataByte[i * 4 + 1] = (byte)(min(buffer.data[i].g, 1.0f) * 255);
+                dataByte[i * 4 + 0] = (byte)(min(buffer.data[i].b, 1.0f) * 255);
+                dataByte[i * 4 + 3] = (byte)(min(buffer.data[i].a, 1.0f) * 255);
             }
             this->buffer->UnlockBits(data);
             return this->buffer;

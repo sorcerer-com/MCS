@@ -86,7 +86,7 @@ namespace MyEngine {
 
     public:
         // seed the whole array of random generators.
-        static inline void initRandom(unsigned seed, function<int()> _threadIdFunc)
+        static inline void initRandom(unsigned seed, const function<int()>& _threadIdFunc)
         {
             for (int i = 0; i < RGENS; i++)
                 rg_table[i].first = 0xffffffff;

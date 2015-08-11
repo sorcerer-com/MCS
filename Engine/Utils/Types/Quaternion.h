@@ -113,7 +113,7 @@ namespace MyEngine {
             {
                 result.z = atan2f(2.0f * (x * y + z * w), (sqx - sqy - sqz + sqw));
                 result.x = atan2f(2.0f * (y * z + x * w), (-sqx - sqy + sqz + sqw));
-                result.y = asinf(std::min(std::max(test, -1.0f), 1.0f));
+                result.y = asinf(min(max(test, -1.0f), 1.0f));
             }
 
             result *= 180.0f / 3.14159265359f; // from rad to deg
