@@ -255,7 +255,12 @@ namespace MyEngine {
                     out_indices.push_back(idx);
                     sort(out_indices.begin(), out_indices.end(), [&](const IndexType& a, const IndexType& b) -> bool
                     {
-                        return distance(getElement(a), element, this->dim) < distance(getElement(b), element, this->dim);
+                        const DistanceType& distA = distance(getElement(a), element, this->dim);
+                        const DistanceType& distB = distance(getElement(b), element, this->dim);
+                        if (abs(distA - distB) < 0.001f) // if they have same distance sort by index
+                            return a < b;
+                        else
+                            return distA < distB;
                     });
 
                     if (out_indices.size() > num_closest)

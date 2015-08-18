@@ -41,6 +41,10 @@ namespace MyEngine {
         uint MaxDepth;
         bool GI;
         uint GISamples;
+        bool IrradianceMap;
+        float IrradianceMapDistanceThreshold;
+        float IrradianceMapNormalThreshold;
+        float IrradianceMapColorThreshold;
         bool LightCache;
         float LightCacheSampleSize;
 
@@ -62,6 +66,9 @@ namespace MyEngine {
         map<uint, ContentElementPtr> contentElements; // id / content element
         vector<SceneElementPtr> lights;
 
+        vector<IrradianceMapSample> irradianceMapSamples;
+        vector<int> irradianceMapTriangles;
+        embree::__RTCScene* rtcIrradianceMapScene;
         vector<LightCacheSample> lightCacheSamples;
         KdTree<Vector3> lightCacheKdTree;
 
@@ -91,6 +98,9 @@ namespace MyEngine {
         void cacheContentElements(const SceneElementPtr sceneElement);
         InterInfo getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor = false);
 
+        bool generateIrradianceMap();
+        bool computeIrradianceMap();
+
         bool render(bool preview);
         Color4 renderPixel(int x, int y);
         ColorsMapType computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo);
@@ -102,7 +112,7 @@ namespace MyEngine {
         bool postProcessing();
 
         static void onRTCError(const embree::RTCError code, const char* str);
-        static embree::RTCRay RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near = 0.1f, float far = 10000.0f);
+        static embree::RTCRay RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near = 0.01f, float far = 10000.0f);
         static void setRTCRay4(embree::RTCRay4& ray_o, int i, const embree::RTCRay& ray_i);
         static embree::RTCRay getRTCRay(const embree::RTCRay4& ray_i, int i);
         template <typename Func>

@@ -91,6 +91,15 @@ namespace MyEngine {
         Color4 color;
     };
 
+    struct IrradianceMapSample
+    {
+        int x, y;
+        uint id;
+        Vector3 position;
+        Vector3 normal;
+        Color4 color;
+    };
+
 
     inline vector<float> getMatrix(const Vector3& pos, Quaternion rot, const Vector3& scl)
     {
@@ -183,17 +192,18 @@ namespace MyEngine {
     inline Vector3 hemisphereSample(const Vector3& normal, int numSamples, int sample)
     {
         Random& rand = Random::getRandomGen();
-        //float z = rand.randSample(/*20*/numSamples / 2, sample % 2) * 2.0f - 1.0f;
-        //float t = rand.randSample(/*36*/numSamples / 2, sample / 2) * 2.0f * PI;
-        /*float r = sqrt(1.0f - z * z);
+        int sqrtNumSamples = max((int)sqrt(numSamples), 1);
+        float z = rand.randSample(sqrtNumSamples, sample % sqrtNumSamples) * 2.0f - 1.0f;
+        float t = rand.randSample(sqrtNumSamples, sample / sqrtNumSamples) * 2.0f * PI;
+        float r = sqrt(1.0f - z * z);
         
         Vector3 res;
         res.x = r * cos(t);
         res.y = r * sin(t);
         res.z = z;
-        res.normalize();*/
+        res.normalize();
 
-        int sqrtNumSamples = max((int)sqrt(numSamples), 1);
+        /*int sqrtNumSamples = max((int)sqrt(numSamples), 1);
         float u = rand.randSample(sqrtNumSamples, sample % sqrtNumSamples);
         float v = rand.randSample(sqrtNumSamples, sample / sqrtNumSamples);
 
@@ -204,11 +214,10 @@ namespace MyEngine {
             cos(theta) * cos(phi),
             sin(phi),
             sin(theta) * cos(phi)
-            );
+            );*/
 
         if (dot(res, normal) < 0)
             res = -res;
         return res;
     }
-
 }

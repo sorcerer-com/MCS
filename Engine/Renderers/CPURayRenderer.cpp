@@ -47,6 +47,10 @@ namespace MyEngine {
         this->MaxDepth = 4;
         this->GI = true;
         this->GISamples = 4;
+        this->IrradianceMap = true;
+        this->IrradianceMapDistanceThreshold = 1.0f;    
+        this->IrradianceMapNormalThreshold = 0.1f;      
+        this->IrradianceMapColorThreshold = 0.3f;       
         this->LightCache = true;
         this->LightCacheSampleSize = 0.1f;
 
@@ -58,6 +62,7 @@ namespace MyEngine {
         this->phasePofiler = make_shared<Profiler>();
         
         this->rtcScene = NULL;
+        this->rtcIrradianceMapScene = NULL;
     }
 
     CPURayRenderer::~CPURayRenderer()
@@ -86,7 +91,7 @@ namespace MyEngine {
 
     vector<string> CPURayRenderer::GetBufferNames()
     {
-        return { "Diffuse", "Specular", "DirectLight", "IndirectLight", "TotalLight", "Lighted", "Reflection", "Refraction", "Samples", "Depth", "Final" };
+        return{ "Diffuse", "Specular", "DirectLight", "IndirectLight", "TotalLight", "Lighted", "Reflection", "Refraction", "Samples", "Depth", "Normals", "Final" };
     }
     
     vector<Region> CPURayRenderer::GetActiveRegions()
@@ -143,12 +148,19 @@ namespace MyEngine {
     {
         ProfileLog;
         ProductionRenderer::Start();
-
+        // TODO: progressive rendering
         // clear previous scene
         if (this->rtcScene != NULL)
         {
             this->lights.clear();
             this->contentElements.clear();
+            this->irradianceMapSamples.clear();
+            this->irradianceMapTriangles.clear();
+            if (this->rtcIrradianceMapScene)
+            {
+                embree::rtcDeleteScene(this->rtcIrradianceMapScene);
+                this->rtcIrradianceMapScene = NULL;
+            }
             this->lightCacheSamples.clear();
             this->lightCacheKdTree.clear();
 
@@ -172,6 +184,15 @@ namespace MyEngine {
         this->thread->addTask([&](int) { return this->sortRegions(); });
         this->thread->addWaitTask();
         this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Preview phase time"); return true; });
+        // irradiance map phase
+        if (this->GI && this->IrradianceMap)
+        {
+            this->thread->addTask([&](int) { return this->generateIrradianceMap(); });
+            this->thread->addWaitTask();
+            this->thread->addNTasks([&](int) { while (this->computeIrradianceMap()); return true; });
+            this->thread->addWaitTask();
+            this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Irradiance Map phase time"); return true; });
+        }
         // render phase
         this->thread->addNTasks([&](int) { return this->render(false); }, (int)(this->Regions.size() + this->thread->workersCount() * 3 * 2));
         this->thread->addWaitTask();
@@ -196,6 +217,7 @@ namespace MyEngine {
 
     void CPURayRenderer::generateRegions()
     {
+        Profile;
         lock lck(this->thread->mutex("regions"));
 
         this->Regions.clear();
@@ -220,6 +242,7 @@ namespace MyEngine {
 
     bool CPURayRenderer::sortRegions()
     {
+        Profile;
         lock lck(this->thread->mutex("regions"));
 
         if (!this->IsStarted)
@@ -382,6 +405,8 @@ namespace MyEngine {
 
     void CPURayRenderer::createRTCScene()
     {
+        Profile;
+
         // Create Scene
         embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
         embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1 | embree::RTCAlgorithmFlags::RTC_INTERSECT4;
@@ -546,6 +571,7 @@ namespace MyEngine {
 
     InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor/* = false*/)
     {
+        Profile;
         Vector3 rayDir(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
 
         InterInfo result;
@@ -680,6 +706,263 @@ namespace MyEngine {
     }
 
 
+    atomic_int nextSample;
+    bool CPURayRenderer::generateIrradianceMap()
+    {
+        Profile;
+
+        const int delta = this->RegionSize / 4;
+        if (!this->IsStarted)
+            return false;
+
+        // generate initial samples
+        Random& rand = Random::getRandomGen();
+        const int w = (this->Width / delta) + 1;
+        for (uint j = 0; j <= this->Height; j += delta)
+        {
+            for (uint i = 0; i <= this->Width; i += delta)
+            {
+                IrradianceMapSample sample;
+                sample.x = min(i, this->Width - 1);
+                if (sample.x > 0 && sample.x < (int)this->Width - 1) sample.x += rand.randInt(0, delta - 1);
+                sample.y = min(j, this->Height - 1);
+                if (sample.y > 0 && sample.y < (int)this->Width - 1) sample.y += rand.randInt(0, delta - 1);
+
+                embree::RTCRay rtcRay = this->getRTCScreenRay((float)sample.x, (float)sample.y);
+                embree::rtcIntersect(this->rtcScene, rtcRay);
+                if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
+                {
+                    const InterInfo& interInfo = this->getInterInfo(rtcRay);
+                    sample.id = interInfo.sceneElement->ID;
+                    sample.position = interInfo.interPos - Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * 0.1f;
+                    sample.normal = interInfo.normal;
+                    sample.color = this->Buffers["DirectLight"].getElement(sample.x, sample.y);
+                }
+                this->irradianceMapSamples.push_back(sample);
+
+                if (j > 0 && i > 0) // create triangles
+                {
+                    int curr = (int)this->irradianceMapSamples.size() - 1;
+                    if ((i / delta + j / delta) % 2 == 0)
+                    {
+                        // first triangle
+                        this->irradianceMapTriangles.push_back(curr);
+                        this->irradianceMapTriangles.push_back(curr - 1 - w);
+                        this->irradianceMapTriangles.push_back(curr - 1);
+                        // second triangle
+                        this->irradianceMapTriangles.push_back(curr);
+                        this->irradianceMapTriangles.push_back(curr - w);
+                        this->irradianceMapTriangles.push_back(curr - 1 - w);
+                    }
+                    else
+                    {
+                        // first triangle
+                        this->irradianceMapTriangles.push_back(curr);
+                        this->irradianceMapTriangles.push_back(curr - w);
+                        this->irradianceMapTriangles.push_back(curr - 1);
+                        // second triangle
+                        this->irradianceMapTriangles.push_back(curr - 1);
+                        this->irradianceMapTriangles.push_back(curr - w);
+                        this->irradianceMapTriangles.push_back(curr - 1 - w);
+                    }
+                }
+            }
+        }
+
+        // generate more samples if it's needed
+        for (int i = 0; i < this->irradianceMapTriangles.size(); i += 3)
+        {
+            int t0 = -1, t1 = -1, t2 = -1, t3 = -1; // spit between t1 and t2
+            // find edge to spilt
+            for (int j = 0; j < 3; j++)
+            {
+                const IrradianceMapSample& sample1 = this->irradianceMapSamples[this->irradianceMapTriangles[i + (j + 0) % 3]];
+                const IrradianceMapSample& sample2 = this->irradianceMapSamples[this->irradianceMapTriangles[i + (j + 1) % 3]];
+                
+                // if samples didn't good enought add more
+                if (sample1.id != sample2.id ||
+                    (sample1.position - sample2.position).length() > this->IrradianceMapDistanceThreshold ||
+                    (sample1.normal - sample2.normal).length() > this->IrradianceMapNormalThreshold ||
+                    (sample1.color - sample2.color).intensity() > this->IrradianceMapColorThreshold)
+                {
+                    t1 = this->irradianceMapTriangles[i + (j + 0) % 3];
+                    t2 = this->irradianceMapTriangles[i + (j + 1) % 3];
+                    t0 = this->irradianceMapTriangles[i + (j + 2) % 3];
+                    break;
+                }
+            }
+
+            if (t1 != -1 && t2 != -1)
+            {
+                // find mirror triangle
+                int trgl2 = -1;
+                for (int k = 0; k < this->irradianceMapTriangles.size(); k += 3)
+                {
+                    int i1 = -1, i2 = -1, i3 = -1;
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (this->irradianceMapTriangles[k + j] == t1)
+                            i1 = k + j;
+                        else if (this->irradianceMapTriangles[k + j] == t2)
+                            i2 = k + j;
+                        else if(this->irradianceMapTriangles[k + j] != t0)
+                            i3 = k + j;
+                    }
+                    if (i1 != -1 && i2 != -1 && i3 != -1)
+                    {
+                        t3 = this->irradianceMapTriangles[i3];
+                        trgl2 = k;
+                        break;
+                    }
+                }
+
+                // split
+                if (t3 != -1 && trgl2 != -1)
+                {
+                    const IrradianceMapSample& sample1 = this->irradianceMapSamples[t1];
+                    const IrradianceMapSample& sample2 = this->irradianceMapSamples[t2];
+                    IrradianceMapSample newSample;
+                    newSample.x = (sample1.x + sample2.x) / 2;
+                    newSample.y = (sample1.y + sample2.y) / 2;
+                    const int dist = 0;
+                    if ((abs(newSample.x - sample1.x) <= dist && abs(newSample.y - sample1.y) <= dist) ||
+                        (abs(newSample.x - sample2.x) <= dist && abs(newSample.y - sample2.y) <= dist))
+                        continue;
+
+                    bool b = false; // TODO: problem: find if there is the same sample
+                    for (int p = 0; p < this->irradianceMapSamples.size(); p++)
+                    {
+                        const IrradianceMapSample& sample = this->irradianceMapSamples[p];
+                        if (sample.x == newSample.x && sample.y == newSample.y)
+                        {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (b) continue;
+
+                    embree::RTCRay rtcRay = this->getRTCScreenRay((float)newSample.x, (float)newSample.y);
+                    embree::rtcIntersect(this->rtcScene, rtcRay);
+                    if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
+                    {
+                        const InterInfo& interInfo = this->getInterInfo(rtcRay);
+                        newSample.id = interInfo.sceneElement->ID;
+                        newSample.position = interInfo.interPos - Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * 0.1f;
+                        newSample.normal = interInfo.normal;
+                        newSample.color = this->Buffers["DirectLight"].getElement(newSample.x, newSample.y);
+                    }
+                    this->irradianceMapSamples.push_back(newSample);
+
+                    int currSample = (int)this->irradianceMapSamples.size() - 1;
+                    // split current triangle and mirror one also to 2 new triangles
+                    this->irradianceMapTriangles.push_back(t0);
+                    this->irradianceMapTriangles.push_back(t1);
+                    this->irradianceMapTriangles.push_back(currSample);
+                    // second
+                    this->irradianceMapTriangles.push_back(t0);
+                    this->irradianceMapTriangles.push_back(currSample);
+                    this->irradianceMapTriangles.push_back(t2);
+                    // third
+                    this->irradianceMapTriangles.push_back(t3);
+                    this->irradianceMapTriangles.push_back(currSample);
+                    this->irradianceMapTriangles.push_back(t1);
+                    // fourth
+                    this->irradianceMapTriangles.push_back(t3);
+                    this->irradianceMapTriangles.push_back(t2);
+                    this->irradianceMapTriangles.push_back(currSample);
+                    // remove current and mirror triangle
+                    if (trgl2 > i)
+                    {
+                        this->irradianceMapTriangles.erase(this->irradianceMapTriangles.begin() + trgl2, this->irradianceMapTriangles.begin() + trgl2 + 3);
+                        this->irradianceMapTriangles.erase(this->irradianceMapTriangles.begin() + i, this->irradianceMapTriangles.begin() + i + 3);
+                    }
+                    else
+                    {
+                        this->irradianceMapTriangles.erase(this->irradianceMapTriangles.begin() + i, this->irradianceMapTriangles.begin() + i + 3);
+                        this->irradianceMapTriangles.erase(this->irradianceMapTriangles.begin() + trgl2, this->irradianceMapTriangles.begin() + trgl2 + 3);
+                    }
+                    i -= 3;
+                }
+            }
+        }
+
+        /* TODO: Save to OBJ file
+        ofstream ofile("1.obj");
+        for (int i = 0; i < this->irradianceMapSamples.size(); i++)
+            ofile << "v " << this->irradianceMapSamples[i].position.x << " " << this->irradianceMapSamples[i].position.y << " " << this->irradianceMapSamples[i].position.z << endl;
+        for (int i = 0; i < this->irradianceMapTriangles.size(); i += 3)
+            ofile << "f " << (this->irradianceMapTriangles[i + 0] + 1) << " " << (this->irradianceMapTriangles[i + 1] + 1) << " " << (this->irradianceMapTriangles[i + 2] + 1) << endl;
+        ofile.close();*/
+        
+        // create rtcScene
+        embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
+        embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1;
+        this->rtcIrradianceMapScene = embree::rtcNewScene(sflags, aflags);
+
+        // create rtcMesh
+        uint meshID = embree::rtcNewTriangleMesh(this->rtcIrradianceMapScene, embree::RTCGeometryFlags::RTC_GEOMETRY_STATIC, this->irradianceMapTriangles.size() / 3, this->irradianceMapSamples.size());
+        float* vertices = (float*)embree::rtcMapBuffer(this->rtcIrradianceMapScene, meshID, embree::RTCBufferType::RTC_VERTEX_BUFFER);
+        int* triangles = (int*)embree::rtcMapBuffer(this->rtcIrradianceMapScene, meshID, embree::RTCBufferType::RTC_INDEX_BUFFER);
+        for (int i = 0; i < this->irradianceMapSamples.size(); i++)
+        {
+            vertices[i * 4 + 0] = this->irradianceMapSamples[i].position.x;
+            vertices[i * 4 + 1] = this->irradianceMapSamples[i].position.y;
+            vertices[i * 4 + 2] = this->irradianceMapSamples[i].position.z;
+        }
+        for (int i = 0; i < this->irradianceMapTriangles.size(); i += 3)
+        {
+            triangles[i + 0] = this->irradianceMapTriangles[i + 0];
+            triangles[i + 1] = this->irradianceMapTriangles[i + 1];
+            triangles[i + 2] = this->irradianceMapTriangles[i + 2];
+        }
+        embree::rtcUnmapBuffer(this->rtcIrradianceMapScene, meshID, embree::RTCBufferType::RTC_VERTEX_BUFFER);
+        embree::rtcUnmapBuffer(this->rtcIrradianceMapScene, meshID, embree::RTCBufferType::RTC_INDEX_BUFFER);
+
+        embree::rtcCommit(this->rtcIrradianceMapScene);
+
+        nextSample = 0;
+        return true;
+    }
+
+    bool CPURayRenderer::computeIrradianceMap()
+    {
+        Profile;
+
+        if (!this->IsStarted)
+            return false;
+
+        int sampleIdx = nextSample;
+        nextSample++;
+        if (sampleIdx >= this->irradianceMapSamples.size())
+            return false;
+
+        IrradianceMapSample& sample = this->irradianceMapSamples[sampleIdx];
+        sample.color = Color4();
+        if (sample.normal.length() == 0) // if sample is nowhere
+            return true;
+        uint samples = adaptiveSampling(this->MinSamples, this->GISamples, this->SampleThreshold, [&](int sampleNum) -> Color4
+        {
+            const Vector3& dir = hemisphereSample(sample.normal, this->GISamples, sampleNum);
+            embree::RTCRay rtcGIRay = RTCRay(sample.position + sample.normal * 0.01f, dir, 1);
+            setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
+            embree::rtcIntersect(this->rtcScene, rtcGIRay);
+
+            const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
+            const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4(1.0f, 1.0f, 1.0f, 1.0f));
+            sample.color += lighting;
+            return lighting;
+        });
+        sample.color *= (1.0f / samples);
+        this->Buffers["IndirectLight"].setElement((uint)sample.x, (uint)sample.y, sample.color);
+        
+        Color4 temp = this->Buffers["Samples"].getElement((uint)sample.x, (uint)sample.y);
+        temp.g = (float)(samples - 2) / (this->GISamples - 2);
+        this->Buffers["Samples"].setElement((uint)sample.x, (uint)sample.y, temp);
+
+        return true;
+    }
+
+
     bool CPURayRenderer::render(bool preview)
     {
         const int delta = preview ? this->RegionSize / 8 : 1;
@@ -802,27 +1085,40 @@ namespace MyEngine {
                 result[color.first] = color.second;
 
             // calculate GI
-            if (this->GI)
+            if (this->GI && this->IrradianceMap && this->irradianceMapSamples.size() > 0) // if irradiance map is enabled
             {
-                uint samples = adaptiveSampling(1, this->GISamples, 0.01f, [&](int sample) -> Color4
-                {
-                    const int tries = 3;
-                    for (int i = 0; i < tries; i++)
-                    {
-                        const Vector3& dir = hemisphereSample(interInfo.normal, this->GISamples, sample);
-                        embree::RTCRay rtcGIRay = RTCRay(interInfo.interPos + dir * 0.01f, dir, (uint)rtcRay.align0 + 1);
-                        rtcGIRay.align1 = rtcRay.align1; // flags
-                        setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
-                        embree::rtcIntersect(this->rtcScene, rtcGIRay);
+                result["IndirectLight"] = Color4();
 
-                        const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
-                        const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4(1.0f, 1.0f, 1.0f, 1.0f));
-                        if (lighting.intensity() > 20.0f && i < tries - 1)
-                            continue;
-                        result["IndirectLight"] += lighting;
-                        return lighting;
-                    }
-                    return Color4();
+                embree::RTCRay rtcIrrRay = rtcRay;
+                rtcIrrRay.tfar = 10000.0f;
+                rtcIrrRay.geomID = RTC_INVALID_GEOMETRY_ID;
+                rtcIrrRay.primID = RTC_INVALID_GEOMETRY_ID;
+                rtcIrrRay.instID = RTC_INVALID_GEOMETRY_ID;
+                embree::rtcIntersect(this->rtcIrradianceMapScene, rtcIrrRay);
+                int triangle = rtcIrrRay.primID * 3;
+
+                if (triangle >= 0)
+                {
+                    const IrradianceMapSample& sample1 = this->irradianceMapSamples[this->irradianceMapTriangles[triangle + 0]];
+                    const IrradianceMapSample& sample2 = this->irradianceMapSamples[this->irradianceMapTriangles[triangle + 1]];
+                    const IrradianceMapSample& sample3 = this->irradianceMapSamples[this->irradianceMapTriangles[triangle + 2]];
+                    result["IndirectLight"] = linearFilter(sample1.color, sample2.color, sample3.color, rtcIrrRay.u, rtcIrrRay.v);
+                }
+            }
+            else if (this->GI && !this->IrradianceMap)
+            {
+                uint samples = adaptiveSampling(this->MinSamples, this->GISamples, this->SampleThreshold, [&](int sample) -> Color4
+                {
+                    const Vector3& dir = hemisphereSample(interInfo.normal, this->GISamples, sample);
+                    embree::RTCRay rtcGIRay = RTCRay(interInfo.interPos + interInfo.normal * 0.01f, dir, (uint)rtcRay.align0 + 1);
+                    rtcGIRay.align1 = rtcRay.align1; // flags
+                    setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
+                    embree::rtcIntersect(this->rtcScene, rtcGIRay);
+
+                    const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
+                    const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4(1.0f, 1.0f, 1.0f, 1.0f));
+                    result["IndirectLight"] += lighting;
+                    return lighting;
                 });
                 result["IndirectLight"] *= (1.0f / samples);
                 result["Samples"] += Color4(0, (float)(samples - 2) / (this->GISamples - 2), 0);
@@ -830,7 +1126,7 @@ namespace MyEngine {
             else
                 result["IndirectLight"] = this->Owner->SceneManager->AmbientLight;
         }
-        else // non static objects
+        else if (interInfo.sceneElement->Type != SceneElementType::EStaticObject) // non static objects
             result["DirectLight"] = Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
         result["TotalLight"] = result["DirectLight"] + result["IndirectLight"];
@@ -889,9 +1185,11 @@ namespace MyEngine {
             result["Reflection"].a = 1.0f;
         }
 
+        result["Final"] = result["Lighted"] + result["Refraction"] + result["Reflection"];
+
         float depth = rtcRay.tfar;
         result["Depth"] = Color4(depth, depth, depth);
-        result["Final"] = result["Lighted"] + result["Refraction"] + result["Reflection"];
+        result["Normals"] = (Color4(interInfo.normal.x, interInfo.normal.y, interInfo.normal.z) + Color4(1.0f, 1.0f, 1.0f)) * 0.5f; // from range [-1:1] to [0:1]
 
 
         // fog
@@ -1204,7 +1502,7 @@ namespace MyEngine {
         if (!interInfo.sceneElement)
             return result;
 
-        // light cache
+        // get from light cache
         if (this->LightCache && this->lightCacheSamples.size() > 0)
         {
             vector<int> indices;
@@ -1214,8 +1512,10 @@ namespace MyEngine {
             if (indices.size() > 0) // get value
             {
                 this->thread->rw_mutex("lightCache").read_lock();
-                result += this->lightCacheSamples[indices[0]].color;
+                for (int idx : indices)
+                    result += this->lightCacheSamples[idx].color;
                 this->thread->rw_mutex("lightCache").read_unlock();
+                result *= (1.0f / indices.size());
                 return interInfo.color * result;
             }
         }
@@ -1236,7 +1536,7 @@ namespace MyEngine {
 
             // GI
             const Vector3& dir = hemisphereSample(interInfo.normal, 0, 0);
-            rtcNextRay = RTCRay(interInfo.interPos + dir * 0.01f, dir, (uint)rtcRay.align0 + 1);
+            rtcNextRay = RTCRay(interInfo.interPos + interInfo.normal * 0.01f, dir, (uint)rtcRay.align0 + 1);
             color = interInfo.color * (1.0f / PI) * max(0.0f, dot(interInfo.normal, dir));
             pdf = (1.0f / (2.0f * PI)) * interInfo.diffuse;
         }
@@ -1290,17 +1590,6 @@ namespace MyEngine {
         const InterInfo& interInfoNext = this->getInterInfo(rtcNextRay);
         result += this->getGILighting(rtcNextRay, interInfoNext, pathMultiplier * color * (1.0f / pdf));
 
-        if (this->LightCache)
-        {                
-            LightCacheSample sample;
-            sample.position = interInfo.interPos;
-            sample.color = result;
-            this->thread->rw_mutex("lightCache").write_lock();
-            this->lightCacheSamples.push_back(sample);
-            this->lightCacheKdTree.insert((int)this->lightCacheSamples.size() - 1, [&](int idx) { return this->lightCacheSamples[idx].position; });
-            this->thread->rw_mutex("lightCache").write_unlock();
-        }
-
 
         // fog
         float fogDensity = this->Owner->SceneManager->FogDensity;
@@ -1323,8 +1612,34 @@ namespace MyEngine {
             }
         }
 
+
+        result = interInfo.color * result;
+        const int tries = 3;
+        for (int i = 0; i < tries - 1; i++)
+        {
+            if (result.intensity() < 20.0f)
+                break;
+            result = this->getGILighting(rtcRay, interInfo, pathMultiplier);
+        }
+        if (result.intensity() > 20.0f) 
+            result = interInfo.color * this->Owner->SceneManager->AmbientLight;
         result.a = 1.0f;
-        return interInfo.color * result;
+
+        // TODO: may be save LightCache and IrradianceMap to file?
+        // TODO: in scene element add option "moving object" and if it's true don't add light cache sample
+        // set to light cache
+        if (this->LightCache && (interInfo.color * result).intensity() < 20.0f)
+        {
+            LightCacheSample sample;
+            sample.position = interInfo.interPos;
+            sample.color = result;
+            this->thread->rw_mutex("lightCache").write_lock();
+            this->lightCacheSamples.push_back(sample);
+            this->lightCacheKdTree.insert((int)this->lightCacheSamples.size() - 1, [&](int idx) { return this->lightCacheSamples[idx].position; });
+            this->thread->rw_mutex("lightCache").write_unlock();
+        }
+
+        return result;
     }
 
     bool CPURayRenderer::postProcessing()
@@ -1360,7 +1675,7 @@ namespace MyEngine {
         Engine::Log(LogType::EError, "CPURayRenderer", "Embree: " +  string(str));
     }
 
-    embree::RTCRay CPURayRenderer::RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near /* = 0.1f */, float far /* = 10000.0f */)
+    embree::RTCRay CPURayRenderer::RTCRay(const Vector3& start, const Vector3& dir, uint depth, float near /* = 0.01f */, float far /* = 10000.0f */)
     {
         embree::RTCRay result;
         for (int i = 0; i < 3; i++)

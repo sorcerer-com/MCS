@@ -109,6 +109,11 @@ namespace MyEngine {
     }
 
 
+    inline Color4 linearFilter(const Color4& a, const Color4& b, const Color4& c, float u, float v)
+    {
+        return a + (b - a) * u + (c - a) * v;
+    }
+
 	inline Color4 linearFilter(const Color4& a, const Color4& b, const Color4& c, const Color4& d, float u, float v)
 	{
 		return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;

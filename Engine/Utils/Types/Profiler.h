@@ -46,7 +46,7 @@ namespace MyEngine {
         ~Profiler()
         {
             lock_guard<mutex> lck(this->dataMutex);
-            if (Engine::Mode == EngineMode::EEngine)
+            if (Engine::Mode == EngineMode::EEngine || this->name == "")
                 return;
 
             chrono::system_clock::duration delta = this->stop();

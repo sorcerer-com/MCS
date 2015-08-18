@@ -48,8 +48,16 @@ namespace MyEngine {
             [MPropertyAttribute(SortName = "02", Group = "04. Global Illumination")]
             property uint GISamples;
             [MPropertyAttribute(SortName = "03", Group = "04. Global Illumination")]
+            property bool IrradianceMap;
+            [MPropertyAttribute(SortName = "04", Group = "04. Global Illumination", Name = "DistanceThreshold")]
+            property double IrradianceMapDistanceThreshold;
+            [MPropertyAttribute(SortName = "05", Group = "04. Global Illumination", Name = "NormalThreshold")]
+            property double IrradianceMapNormalThreshold;
+            [MPropertyAttribute(SortName = "06", Group = "04. Global Illumination", Name = "ColorThreshold")]
+            property double IrradianceMapColorThreshold;
+            [MPropertyAttribute(SortName = "07", Group = "04. Global Illumination")]
             property bool LightCache;
-            [MPropertyAttribute(SortName = "04", Group = "04. Global Illumination", Name = "SampleSize")]
+            [MPropertyAttribute(SortName = "08", Group = "04. Global Illumination", Name = "SampleSize")]
             property double LightCacheSampleSize;
         };
 
@@ -57,6 +65,8 @@ namespace MyEngine {
         {
             bool get() { return this->Renderer->IsStarted; }
         }
+
+        property double Exposure;
 
         property List<String^>^ BuffersNames
         {
@@ -100,6 +110,7 @@ namespace MyEngine {
         MProductionRenderer(ProductionRenderer* renderer) :
             MRenderer(renderer)
 		{
+            this->Exposure = 1.0;
         }
 
 
@@ -117,6 +128,10 @@ namespace MyEngine {
                 rayRenderer->MaxDepth = settings->MaxDepth;
                 rayRenderer->GI = settings->GI;
                 rayRenderer->GISamples = settings->GISamples;
+                rayRenderer->IrradianceMap = settings->IrradianceMap;
+                rayRenderer->IrradianceMapDistanceThreshold = (float)settings->IrradianceMapDistanceThreshold;
+                rayRenderer->IrradianceMapNormalThreshold = (float)settings->IrradianceMapNormalThreshold;
+                rayRenderer->IrradianceMapColorThreshold = (float)settings->IrradianceMapColorThreshold;
                 rayRenderer->LightCache = settings->LightCache;
                 rayRenderer->LightCacheSampleSize = (float)settings->LightCacheSampleSize;
             }
@@ -148,10 +163,10 @@ namespace MyEngine {
             for (uint i = 0; i < buffer.width * buffer.height; i++)
             {
                 // from RGBA to BGRA
-                dataByte[i * 4 + 2] = (byte)(min(buffer.data[i].r, 1.0f) * 255);
-                dataByte[i * 4 + 1] = (byte)(min(buffer.data[i].g, 1.0f) * 255);
-                dataByte[i * 4 + 0] = (byte)(min(buffer.data[i].b, 1.0f) * 255);
-                dataByte[i * 4 + 3] = (byte)(min(buffer.data[i].a, 1.0f) * 255);
+                dataByte[i * 4 + 2] = (byte)(min(buffer.data[i].r * (float)this->Exposure, 1.0f) * 255);
+                dataByte[i * 4 + 1] = (byte)(min(buffer.data[i].g * (float)this->Exposure, 1.0f) * 255);
+                dataByte[i * 4 + 0] = (byte)(min(buffer.data[i].b * (float)this->Exposure, 1.0f) * 255);
+                dataByte[i * 4 + 3] = (byte)(min(buffer.data[i].a * (float)this->Exposure, 1.0f) * 255);
             }
             this->buffer->UnlockBits(data);
             return this->buffer;

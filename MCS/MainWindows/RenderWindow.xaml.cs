@@ -50,6 +50,7 @@ namespace MCS.MainWindows
                     return;
 
                 this.selectedBufferName = value;
+                this.OnPropertyChanged("SelectedBufferName");
                 this.OnPropertyChanged("Buffer");
             }
         }
@@ -57,6 +58,17 @@ namespace MCS.MainWindows
         public string RenderProgress
         {
             get { return this.engine.ProductionRenderer.RenderTime.ToString(@"hh\:mm\:ss") + " (" + this.engine.ProductionRenderer.Progress.ToString("00") + "%)"; }
+        }
+
+        public double Exposure
+        {
+            get { return this.engine.ProductionRenderer.Exposure; }
+            set
+            {
+                this.engine.ProductionRenderer.Exposure = value;
+                this.OnPropertyChanged("Exposure");
+                this.OnPropertyChanged("Buffer");
+            }
         }
 
         public ImageSource Buffer
@@ -146,6 +158,9 @@ namespace MCS.MainWindows
                         sceneName = "Scene";
 
                     System.Drawing.Bitmap bmp = this.engine.ProductionRenderer.GetBuffer(this.SelectedBufferName);
+                    if (bmp == null)
+                        return;
+
                     if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                     {
                         string name = "ScreenShots\\" + sceneName;
@@ -181,6 +196,10 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.MaxDepth = 4;
             RenderWindow.renderSettings.GI = true;
             RenderWindow.renderSettings.GISamples = 4;
+            RenderWindow.renderSettings.IrradianceMap = false;                      // TODO: implement it nice
+            RenderWindow.renderSettings.IrradianceMapDistanceThreshold = 1.0f;      // 0.1 - all
+            RenderWindow.renderSettings.IrradianceMapNormalThreshold = 0.1f;        // 0.1 high // 0.2 medium // 0.3 low
+            RenderWindow.renderSettings.IrradianceMapColorThreshold = 0.3f;         // 0.3 high // 0.4 medium low
             RenderWindow.renderSettings.LightCache = true;
             RenderWindow.renderSettings.LightCacheSampleSize = 0.1;
         }
@@ -201,6 +220,21 @@ namespace MCS.MainWindows
             this.timer = new DispatcherTimer();
             this.timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             this.timer.Tick += new EventHandler(this.timer_Tick);
+            if (this.engine.ProductionRenderer.IsStarted)
+                this.timer.Start();
+
+            this.KeyDown += RenderWindow_KeyDown;
+        }
+
+        void RenderWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.O)
+                this.engine.ProductionRenderer.Exposure *= 1.1;
+            if (e.Key == Key.P)
+                this.engine.ProductionRenderer.Exposure /= 1.1;
+
+            if (!this.engine.ProductionRenderer.IsStarted)
+                this.OnPropertyChanged("Buffer");
         }
 
         private void timer_Tick(object sender, EventArgs e)
