@@ -45,17 +45,19 @@ namespace MyEngine {
             property uint MaxDepth;
             [MPropertyAttribute(SortName = "01", Group = "04. Global Illumination")]
             property bool GI;
-            [MPropertyAttribute(SortName = "02", Group = "04. Global Illumination")]
+            [MPropertyAttribute(SortName = "02", Group = "04. Global Illumination", Name = "Samples")]
             property uint GISamples;
             [MPropertyAttribute(SortName = "03", Group = "04. Global Illumination")]
             property bool IrradianceMap;
-            [MPropertyAttribute(SortName = "04", Group = "04. Global Illumination", Name = "DistanceThreshold")]
+            [MPropertyAttribute(SortName = "04", Group = "04. Global Illumination", Name = "Samples")]
+            property uint IrradianceMapSamples;
+            [MPropertyAttribute(SortName = "05", Group = "04. Global Illumination", Name = "DistanceThreshold")]
             property double IrradianceMapDistanceThreshold;
-            [MPropertyAttribute(SortName = "05", Group = "04. Global Illumination", Name = "NormalThreshold")]
+            [MPropertyAttribute(SortName = "06", Group = "04. Global Illumination", Name = "NormalThreshold")]
             property double IrradianceMapNormalThreshold;
-            [MPropertyAttribute(SortName = "06", Group = "04. Global Illumination", Name = "ColorThreshold")]
+            [MPropertyAttribute(SortName = "07", Group = "04. Global Illumination", Name = "ColorThreshold")]
             property double IrradianceMapColorThreshold;
-            [MPropertyAttribute(SortName = "07", Group = "04. Global Illumination")]
+            [MPropertyAttribute(SortName = "08", Group = "04. Global Illumination")]
             property bool LightCache;
             [MPropertyAttribute(SortName = "08", Group = "04. Global Illumination", Name = "SampleSize")]
             property double LightCacheSampleSize;
@@ -129,6 +131,7 @@ namespace MyEngine {
                 rayRenderer->GI = settings->GI;
                 rayRenderer->GISamples = settings->GISamples;
                 rayRenderer->IrradianceMap = settings->IrradianceMap;
+                rayRenderer->IrradianceMapSamples = settings->IrradianceMapSamples;
                 rayRenderer->IrradianceMapDistanceThreshold = (float)settings->IrradianceMapDistanceThreshold;
                 rayRenderer->IrradianceMapNormalThreshold = (float)settings->IrradianceMapNormalThreshold;
                 rayRenderer->IrradianceMapColorThreshold = (float)settings->IrradianceMapColorThreshold;

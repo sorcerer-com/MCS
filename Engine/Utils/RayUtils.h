@@ -93,7 +93,7 @@ namespace MyEngine {
 
     struct IrradianceMapSample
     {
-        int x, y;
+        float x, y;
         uint id;
         Vector3 position;
         Vector3 normal;
@@ -189,12 +189,11 @@ namespace MyEngine {
         c.normalize();
     }
 
-    inline Vector3 hemisphereSample(const Vector3& normal, int numSamples, int sample)
+    inline Vector3 hemisphereSample(const Vector3& normal, int numSamples)
     {
         Random& rand = Random::getRandomGen();
-        int sqrtNumSamples = max((int)sqrt(numSamples), 1);
-        float z = rand.randSample(sqrtNumSamples, sample % sqrtNumSamples) * 2.0f - 1.0f;
-        float t = rand.randSample(sqrtNumSamples, sample / sqrtNumSamples) * 2.0f * PI;
+        float z = rand.randSample(numSamples) * 2.0f - 1.0f;
+        float t = rand.randSample(numSamples) * 2.0f * PI;
         float r = sqrt(1.0f - z * z);
         
         Vector3 res;
@@ -203,9 +202,8 @@ namespace MyEngine {
         res.z = z;
         res.normalize();
 
-        /*int sqrtNumSamples = max((int)sqrt(numSamples), 1);
-        float u = rand.randSample(sqrtNumSamples, sample % sqrtNumSamples);
-        float v = rand.randSample(sqrtNumSamples, sample / sqrtNumSamples);
+        /*float u = rand.randSample(numSamples);
+        float v = rand.randSample(numSamples);
 
         float theta = 2 * PI * u;
         float phi = acos(2 * v - 1) - PI / 2;

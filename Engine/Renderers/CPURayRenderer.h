@@ -42,6 +42,7 @@ namespace MyEngine {
         bool GI;
         uint GISamples;
         bool IrradianceMap;
+        uint IrradianceMapSamples;
         float IrradianceMapDistanceThreshold;
         float IrradianceMapNormalThreshold;
         float IrradianceMapColorThreshold;
@@ -66,9 +67,9 @@ namespace MyEngine {
         map<uint, ContentElementPtr> contentElements; // id / content element
         vector<SceneElementPtr> lights;
 
-        vector<IrradianceMapSample> irradianceMapSamples;
-        vector<int> irradianceMapTriangles;
-        embree::__RTCScene* rtcIrradianceMapScene;
+        vector<IrradianceMapSample> irrMapSamples;
+        vector<int> irrMapTriangles;
+        embree::__RTCScene* rtcIrrMapScene;
         vector<LightCacheSample> lightCacheSamples;
         KdTree<Vector3> lightCacheKdTree;
 
@@ -99,6 +100,8 @@ namespace MyEngine {
         InterInfo getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor = false);
 
         bool generateIrradianceMap();
+        bool addIrradianceMapSample(float x, float y, KdTree<Vector3>& irrKdTree, float minDist);
+        void addIrradianceMapTriangle(int v1, int v2, int v3);
         bool computeIrradianceMap();
 
         bool render(bool preview);
