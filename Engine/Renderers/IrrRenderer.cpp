@@ -576,6 +576,12 @@ namespace MyEngine {
                     irrMaterial.setTexture(1, irrTexture);
             }
         }
+        else
+        {
+            irrMaterial.DiffuseColor = irr::video::SColorf(1.0f, 1.0f, 1.0f, 1.0f).toSColor();
+            irrMaterial.SpecularColor = irr::video::SColorf(0.0f, 0.0f, 0.0f, 1.0f).toSColor();
+            irrMaterial.Shininess = 0.0f;
+        }
 
         irrMaterial.FogEnable = true;
         irrMaterial.BackfaceCulling = false;

@@ -70,6 +70,16 @@ namespace MyEngine {
 		{
 			return (this->r + this->g + this->b) / 3;
 		}
+
+        inline static Color4 Black()
+        {
+            return Color4(0.0f, 0.0f, 0.0f);
+        }
+
+        inline static Color4 White()
+        {
+            return Color4(1.0f, 1.0f, 1.0f);
+        }
 	};
 
 	inline Color4 operator *(const Color4& a, float f)

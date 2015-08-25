@@ -145,7 +145,7 @@ namespace MyEngine {
         float NdotI = dot(i, n);
         float k = 1.0f - (ior * ior) * (1.0f - NdotI * NdotI);
         if (k < 0.0f) // Check for total inner reflection
-            return Vector3(0.0f, 0.0f, 0.0f);
+            return Vector3();
         Vector3 result = i * ior - n * (ior * NdotI + sqrt(k));
         result.normalize();
         return result;

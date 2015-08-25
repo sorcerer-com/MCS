@@ -96,7 +96,7 @@ namespace MyEngine {
 	Color4 Texture::GetColor(uint x, uint y) const
     {
 		if (x >= this->Width || y >= this->Height)
-			return Color4();
+			return Color4::Black();
 
 		Color4 c;
 		c.r = (float)this->Pixels[(y * this->Width + x) * 4 + 0] / 255.0f;
