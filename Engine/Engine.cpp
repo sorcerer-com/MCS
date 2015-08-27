@@ -49,7 +49,7 @@ namespace MyEngine {
 		this->SceneManager = make_shared<MyEngine::SceneManager>(this);
 
 		this->ViewPortRenderer = make_shared<IrrRenderer>(this);
-        this->ProductionRenderer = make_shared<CPURayRenderer>(this);;
+        this->ProductionRenderer = make_shared<CPURayRenderer>(this);
 	}
 
 	Engine::~Engine()

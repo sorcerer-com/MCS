@@ -813,7 +813,7 @@ namespace MyEngine {
                     float x = (sample1.x + sample2.x) / 2.0f;
                     float y = (sample1.y + sample2.y) / 2.0f;
                     // if we split because of different scene elements find best split point
-                    if (sample1.id != sample2.id) 
+                    if (sample1.id != sample2.id)
                     {
                         for (float f = 0.1f; f < 1.0f; f += 0.1f)
                         {
@@ -879,9 +879,9 @@ namespace MyEngine {
         //    ofile << "# " << i << endl  << "v " << (this->irrMapSamples[i].position.x - this->pos.x) << " " << (this->irrMapSamples[i].position.y - this->pos.y) << " " << (this->irrMapSamples[i].position.z - this->pos.z) << endl;
         // 2d samples
         for (int i = 0; i < this->irrMapSamples.size(); i++)
-            ofile << "# " << i << endl << "v " << this->irrMapSamples[i].x << " " << -this->irrMapSamples[i].y << " " << -this->irrMapSamples[i].position.length() << endl;
+        ofile << "# " << i << endl << "v " << this->irrMapSamples[i].x << " " << -this->irrMapSamples[i].y << " " << -this->irrMapSamples[i].position.length() << endl;
         for (int i = 0; i < this->irrMapTriangles.size(); i += 3)
-            ofile << "# " << i << endl << "f " << (this->irrMapTriangles[i + 0] + 1) << " " << (this->irrMapTriangles[i + 1] + 1) << " " << (this->irrMapTriangles[i + 2] + 1) << endl;
+        ofile << "# " << i << endl << "f " << (this->irrMapTriangles[i + 0] + 1) << " " << (this->irrMapTriangles[i + 1] + 1) << " " << (this->irrMapTriangles[i + 2] + 1) << endl;
         ofile.close();//*/
 
         // create rtcScene
@@ -936,7 +936,7 @@ namespace MyEngine {
         {
             const InterInfo& interInfo = this->getInterInfo(rtcRay);
             newSample.id = interInfo.sceneElement->ID;
-            newSample.position = interInfo.interPos;
+            newSample.position = interInfo.interPos - Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * 0.01f;
             newSample.normal = interInfo.normal;
             if (interInfo.sceneElement->Type == SceneElementType::EStaticObject)
                 newSample.color = this->getLighting(rtcRay, interInfo)["DirectLight"];
@@ -984,7 +984,7 @@ namespace MyEngine {
         sample.color = Color4();
         uint samples = adaptiveSampling(this->IrradianceMapSamples, this->IrradianceMapSamples * 4, this->SampleThreshold, [&](int) -> Color4
         {
-            const Vector3& dir = hemisphereSample(sample.normal, this->IrradianceMapSamples);
+            const Vector3& dir = hemisphereSample(sample.normal);
             embree::RTCRay rtcGIRay = RTCRay(sample.position + sample.normal * 0.01f, dir, 1);
             setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
             embree::rtcIntersect(this->rtcScene, rtcGIRay);
@@ -1037,7 +1037,7 @@ namespace MyEngine {
                 int y = region.y + j;
 
                 for (auto& buffer : this->Buffers)
-                    buffer.second.setElement(x, y, Color4::Black());
+                    buffer.second.setElement(x, y, Color4());
 
                 uint minSamples = preview ? min(1u, this->MinSamples) : this->MinSamples;
                 uint maxSamples = preview ? min(4u, this->MaxSamples) : this->MaxSamples;
@@ -1108,7 +1108,7 @@ namespace MyEngine {
         return colors["Final"] * div;
     }
 
-    using ColorsMapType = map < string, Color4 >; // buffer name / color
+    using ColorsMapType = map < string, Color4 > ; // buffer name / color
     ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
     {
         Profile;
@@ -1121,6 +1121,7 @@ namespace MyEngine {
             return result;
 
         result["Diffuse"] = interInfo.color;
+        result["Diffuse"].a = 1.0f;
 
         // calculate lighting
         if (interInfo.sceneElement->Type == SceneElementType::EStaticObject &&
@@ -1131,6 +1132,7 @@ namespace MyEngine {
                 result[color.first] = color.second;
 
             // calculate GI
+            bool bruteForce = true;
             if (this->GI && this->IrradianceMap && this->irrMapSamples.size() > 0 && rtcRay.align0 == 0) // if irradiance map is enabled
             {
                 result["IndirectLight"] = Color4::Black();
@@ -1149,37 +1151,41 @@ namespace MyEngine {
                     const IrradianceMapSample& sample2 = this->irrMapSamples[this->irrMapTriangles[triangle + 1]];
                     const IrradianceMapSample& sample3 = this->irrMapSamples[this->irrMapTriangles[triangle + 2]];
                     result["IndirectLight"] = linearFilter(sample1.color, sample2.color, sample3.color, rtcIrrRay.u, rtcIrrRay.v);
+                    bruteForce = false;
                 }
             }
-            else if (this->GI && (!this->IrradianceMap || (this->irrMapSamples.size() > 0 && rtcRay.align0 != 0)))
+            if (bruteForce)
             {
-                uint samples = adaptiveSampling(this->GISamples, this->GISamples * 4, this->SampleThreshold, [&](int) -> Color4
+                if (this->GI && (!this->IrradianceMap || (this->irrMapSamples.size() > 0 && rtcRay.align0 != 0)))
                 {
-                    const Vector3& dir = hemisphereSample(interInfo.normal, this->GISamples);
-                    embree::RTCRay rtcGIRay = RTCRay(interInfo.interPos + interInfo.normal * 0.01f, dir, (uint)rtcRay.align0 + 1);
-                    rtcGIRay.align1 = rtcRay.align1; // flags
-                    setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
-                    embree::rtcIntersect(this->rtcScene, rtcGIRay);
+                    uint samples = adaptiveSampling(this->GISamples, this->GISamples * 4, this->SampleThreshold, [&](int) -> Color4
+                    {
+                        const Vector3& dir = hemisphereSample(interInfo.normal);
+                        embree::RTCRay rtcGIRay = RTCRay(interInfo.interPos + interInfo.normal * 0.01f, dir, (uint)rtcRay.align0 + 1);
+                        rtcGIRay.align1 = rtcRay.align1; // flags
+                        setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
+                        embree::rtcIntersect(this->rtcScene, rtcGIRay);
 
-                    const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
-                    const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4::White());
-                    result["IndirectLight"] += lighting;
-                    return lighting;
-                });
-                result["IndirectLight"] *= (1.0f / samples);
-                result["Samples"] += Color4(0, (float)(samples - 2) / (this->GISamples * 4 - 2), 0);
-                result["Samples"].a = 1.0f;
+                        const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
+                        const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4::White());
+                        result["IndirectLight"] += lighting;
+                        return lighting;
+                    });
+                    result["IndirectLight"] *= (1.0f / samples);
+                    result["Samples"] += Color4(0, (float)(samples - 2) / (this->GISamples * 4 - 2), 0);
+                    result["Samples"].a = 1.0f;
+                }
+                else
+                    result["IndirectLight"] = this->Owner->SceneManager->AmbientLight;
             }
-            else
-                result["IndirectLight"] = this->Owner->SceneManager->AmbientLight;
         }
         else if (interInfo.sceneElement->Type != SceneElementType::EStaticObject) // non static objects
             result["DirectLight"] = Color4::White();
 
         result["TotalLight"] = (result["DirectLight"] + result["IndirectLight"]);
-        result["TotalLight"].a /= 2.0f;
+        result["TotalLight"].a = 1.0f;
         result["Lighted"] = (result["Diffuse"] * result["TotalLight"] + result["Specular"]) * interInfo.diffuse;
-        result["Lighted"].a /= 2.0f;
+        result["Lighted"].a = 1.0f;
 
 
         // calculate refraction
@@ -1239,7 +1245,7 @@ namespace MyEngine {
             result["Reflection"] = Color4::Black();
 
         result["Final"] = result["Lighted"] + result["Refraction"] + result["Reflection"];
-        result["Final"].a /= 3;
+        result["Final"].a = 1.0f;
 
         float depth = rtcRay.tfar;
         result["Depth"] = Color4(depth, depth, depth);
@@ -1561,7 +1567,7 @@ namespace MyEngine {
 
         if (!interInfo.sceneElement)
             return result;
-        
+
         // get from light cache
         if (this->LightCache && this->lightCacheSamples.size() > 0)
         {
@@ -1596,7 +1602,7 @@ namespace MyEngine {
             result = this->getLighting(rtcRay, interInfo)["DirectLight"] * pathMultiplier;
 
             // GI
-            const Vector3& dir = hemisphereSample(interInfo.normal, 0);
+            const Vector3& dir = hemisphereSample(interInfo.normal);
             rtcNextRay = RTCRay(interInfo.interPos + interInfo.normal * 0.01f, dir, (uint)rtcRay.align0 + 1);
             color = interInfo.color * (1.0f / PI) * max(0.0f, dot(interInfo.normal, dir));
             pdf = (1.0f / (2.0f * PI)) * interInfo.diffuse;
@@ -1684,7 +1690,9 @@ namespace MyEngine {
         {
             if (result.intensity() < 20.0f)
                 break;
-            result = this->getGILighting(rtcRay, interInfo, pathMultiplier);
+            embree::RTCRay rtcNextRay = rtcRay;
+            rtcNextRay.align0++;
+            result = this->getGILighting(rtcNextRay, interInfo, pathMultiplier);
         }
         if (result.intensity() > 20.0f)
             result = interInfo.color * this->Owner->SceneManager->AmbientLight;

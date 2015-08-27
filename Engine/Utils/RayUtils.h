@@ -189,11 +189,11 @@ namespace MyEngine {
         c.normalize();
     }
 
-    inline Vector3 hemisphereSample(const Vector3& normal, int numSamples)
+    inline Vector3 hemisphereSample(const Vector3& normal)
     {
         Random& rand = Random::getRandomGen();
-        float z = rand.randSample(numSamples) * 2.0f - 1.0f;
-        float t = rand.randSample(numSamples) * 2.0f * PI;
+        float z = rand.randFloat() * 2.0f - 1.0f;
+        float t = rand.randFloat() * 2.0f * PI;
         float r = sqrt(1.0f - z * z);
         
         Vector3 res;
