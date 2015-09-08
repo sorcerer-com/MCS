@@ -25,29 +25,33 @@ namespace MyEngine {
 	{
 		this->init();
 		if (this->Version >= 1)
-		{
-			Read(file, this->DiffuseColor);
-            Read(file, this->SpecularColor);
-            Read(file, this->InnerColor);
-			Read(file, this->Shininess);
-            Read(file, this->Glossiness);
-            Read(file, this->IOR);
-            Read(file, this->Absorption);
-			Read(file, this->Textures);
+        {
+#pragma region Material Read
+	        Read(file, this->DiffuseColor);
+	        Read(file, this->SpecularColor);
+	        Read(file, this->InnerColor);
+	        Read(file, this->Shininess);
+	        Read(file, this->Glossiness);
+	        Read(file, this->IOR);
+	        Read(file, this->Absorption);
+	        Read(file, this->Textures);
+#pragma endregion
 		}
 		this->IsLoaded = true;
 	}
 
 	void Material::init()
-	{
-		this->DiffuseColor = Color4(0.8f, 0.8f, 0.8f, 1.0f);
-        this->SpecularColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
-        this->InnerColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
-		this->Shininess = 10.0f;
-		this->Glossiness = 1.0f;
-        this->IOR = 1.5f;
-        this->Absorption = 0.1f;
-		this->Textures.DiffuseMapID = INVALID_ID;
+    {
+#pragma region Material Init
+    	this->DiffuseColor = Color4(0.8f, 0.8f, 0.8f, 1.0f);
+    	this->SpecularColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
+    	this->InnerColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
+    	this->Shininess = 10.0f;
+    	this->Glossiness = 1.0f;
+    	this->IOR = 1.5f;
+    	this->Absorption = 0.1f;
+#pragma endregion
+        this->Textures.DiffuseMapID = INVALID_ID;
         this->Textures.NormalMapID = INVALID_ID;
 	}
 
@@ -69,15 +73,17 @@ namespace MyEngine {
 
 	long long Material::Size() const
 	{
-		long long size = ContentElement::Size();
-		size += SizeOf(this->DiffuseColor);
+        long long size = ContentElement::Size();
+#pragma region Material Size
+        size += SizeOf(this->DiffuseColor);
         size += SizeOf(this->SpecularColor);
         size += SizeOf(this->InnerColor);
-		size += SizeOf(this->Shininess);
+        size += SizeOf(this->Shininess);
         size += SizeOf(this->Glossiness);
         size += SizeOf(this->IOR);
         size += SizeOf(this->Absorption);
-		size += SizeOf(this->Textures);
+        size += SizeOf(this->Textures);
+#pragma endregion
 		return size;
 	}
 
@@ -85,14 +91,16 @@ namespace MyEngine {
 	{
 		ContentElement::WriteToFile(file);
 
+#pragma region Material Write
 		Write(file, this->DiffuseColor);
-        Write(file, this->SpecularColor);
-        Write(file, this->InnerColor);
+		Write(file, this->SpecularColor);
+		Write(file, this->InnerColor);
 		Write(file, this->Shininess);
-        Write(file, this->Glossiness);
-        Write(file, this->IOR);
-        Write(file, this->Absorption);
-        Write(file, this->Textures);
+		Write(file, this->Glossiness);
+		Write(file, this->IOR);
+		Write(file, this->Absorption);
+		Write(file, this->Textures);
+#pragma endregion
 		file.flush();
 	}
 

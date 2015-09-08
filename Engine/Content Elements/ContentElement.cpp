@@ -34,13 +34,15 @@ namespace MyEngine {
         Read(file, this->Version);
         if (this->Version >= 1)
         {
-            Read(file, this->Type);
-            Read(file, this->ID);
-            Read(file, this->Name);
-            Read(file, this->Package);
-            Read(file, this->Path);
-            Read(file, this->PackageOffset);
-            Read(file, this->SavedSize);
+#pragma region ContentElement Read
+        	Read(file, this->Type);
+        	Read(file, this->ID);
+        	Read(file, this->Name);
+        	Read(file, this->Package);
+        	Read(file, this->Path);
+        	Read(file, this->PackageOffset);
+        	Read(file, this->SavedSize);
+#pragma endregion
         }
         this->IsLoaded = false;
     }
@@ -50,17 +52,18 @@ namespace MyEngine {
     }
 
 	void ContentElement::init()
-	{
-		this->Version = CURRENT_VERSION;
-		this->Type = ContentElementType::EMesh;
-		this->ID = INVALID_ID;
-		this->Name = "";
-		this->Package = "";
-		this->Path = "";
-
-		this->PackageOffset = 0;
-		this->SavedSize = 0;
-		this->IsLoaded = false;
+    {
+#pragma region ContentElement Init
+    	this->Version = CURRENT_VERSION;
+    	this->Type = ContentElementType::EMesh;
+    	this->ID = INVALID_ID;
+    	this->Name = "";
+    	this->Package = "";
+    	this->Path = "";
+    	this->PackageOffset = 0;
+    	this->SavedSize = 0;
+    	this->IsLoaded = false;
+#pragma endregion
 	}
 
 
@@ -81,28 +84,32 @@ namespace MyEngine {
 	long long ContentElement::Size() const
 	{
 		long long size = 0;
-		size += SizeOf(CURRENT_VERSION);
-		size += SizeOf(this->Type);
-		size += SizeOf(this->ID);
-		size += SizeOf(this->Name);
-		size += SizeOf(this->Package);
-		size += SizeOf(this->Path);
+        size += SizeOf(CURRENT_VERSION);
+#pragma region ContentElement Size
+        size += SizeOf(this->Type);
+        size += SizeOf(this->ID);
+        size += SizeOf(this->Name);
+        size += SizeOf(this->Package);
+        size += SizeOf(this->Path);
         size += SizeOf(this->PackageOffset);
         size += SizeOf(this->SavedSize);
+#pragma endregion
 		return size;
 	}
 
 	void ContentElement::WriteToFile(ostream& file)
-	{
-		Write(file, CURRENT_VERSION);
-		Write(file, this->Type);
-		Write(file, this->ID);
-		Write(file, this->Name);
-		Write(file, this->Package);
-		Write(file, this->Path);
-		Write(file, this->PackageOffset);
-		this->SavedSize = this->Size();
-		Write(file, this->SavedSize);
+    {
+        this->SavedSize = this->Size();
+        Write(file, CURRENT_VERSION);
+#pragma region ContentElement Write
+        Write(file, this->Type);
+        Write(file, this->ID);
+        Write(file, this->Name);
+        Write(file, this->Package);
+        Write(file, this->Path);
+        Write(file, this->PackageOffset);
+        Write(file, this->SavedSize);
+#pragma endregion
 		file.flush();
 	}
 

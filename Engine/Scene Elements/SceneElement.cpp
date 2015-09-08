@@ -36,18 +36,20 @@ namespace MyEngine {
 		this->init();
 		Read(file, this->Version);
 		if (this->Version >= 1)
-		{
-			Read(file, this->Type);
-			Read(file, this->ID);
-			Read(file, this->Name);
-			Read(file, this->Layer);
-			Read(file, this->ContentID);
-            Read(file, this->MaterialID);
-            Read(file, this->Textures);
-			Read(file, this->Visible);
-			Read(file, this->Position);
-			Read(file, this->Rotation);
-			Read(file, this->Scale);
+        {
+#pragma region SceneElement Read
+        	Read(file, this->Type);
+        	Read(file, this->ID);
+        	Read(file, this->Name);
+        	Read(file, this->Layer);
+        	Read(file, this->ContentID);
+        	Read(file, this->MaterialID);
+        	Read(file, this->Textures);
+        	Read(file, this->Visible);
+        	Read(file, this->Position);
+        	Read(file, this->Rotation);
+        	Read(file, this->Scale);
+#pragma endregion
 		}
 	}
 
@@ -56,18 +58,20 @@ namespace MyEngine {
     }
 
 	void SceneElement::init()
-	{
-		this->Version = CURRENT_VERSION;
-		this->Type = SceneElementType::ECamera;
-		this->ID = INVALID_ID;
-		this->Name = "";
-		this->Layer = DEFAULT_LAYER_NAME;
-		this->ContentID = INVALID_ID;
-		this->MaterialID = INVALID_ID;
-		this->Visible = true;
-		this->Position = Vector3();
-		this->Rotation = Quaternion();
-		this->Scale = Vector3(1.0, 1.0, 1.0);
+    {
+#pragma region SceneElement Init
+    	this->Version = CURRENT_VERSION;
+    	this->Type = SceneElementType::ECamera;
+    	this->ID = INVALID_ID;
+    	this->Name = "";
+    	this->Layer = DEFAULT_LAYER_NAME;
+    	this->ContentID = INVALID_ID;
+    	this->MaterialID = INVALID_ID;
+    	this->Visible = true;
+    	this->Position = Vector3();
+    	this->Rotation = Quaternion();
+    	this->Scale = Vector3(1.0, 1.0, 1.0);
+#pragma endregion
 	}
 
 
@@ -102,18 +106,20 @@ namespace MyEngine {
 
 	void SceneElement::WriteToFile(ostream& file) const
 	{
-		Write(file, CURRENT_VERSION);
-		Write(file, this->Type);
-		Write(file, this->ID);
-		Write(file, this->Name);
-		Write(file, this->Layer);
-		Write(file, this->ContentID);
+        Write(file, CURRENT_VERSION);
+#pragma region SceneElement Write
+        Write(file, this->Type);
+        Write(file, this->ID);
+        Write(file, this->Name);
+        Write(file, this->Layer);
+        Write(file, this->ContentID);
         Write(file, this->MaterialID);
         Write(file, this->Textures);
-		Write(file, this->Visible);
-		Write(file, this->Position);
-		Write(file, this->Rotation);
-		Write(file, this->Scale);
+        Write(file, this->Visible);
+        Write(file, this->Position);
+        Write(file, this->Rotation);
+        Write(file, this->Scale);
+#pragma endregion
 		file.flush();
 	}
 

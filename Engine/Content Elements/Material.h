@@ -20,16 +20,16 @@ namespace MyEngine {
 	class Material : public ContentElement
 	{
 	public:
-		Color4 DiffuseColor; // alpha - refraction
-		Color4 SpecularColor; // alpha - reflection
-        Color4 InnerColor;
+		Color4 DiffuseColor;                //* default[Color4(0.8f, 0.8f, 0.8f, 1.0f)]     // alpha - refraction
+		Color4 SpecularColor;               //* default[Color4(0.0f, 0.0f, 0.0f, 1.0f)] 	// alpha - reflection
+        Color4 InnerColor;                  //* default[Color4(0.0f, 0.0f, 0.0f, 1.0f)]
 
-		float Shininess;
-		float Glossiness;
-        float IOR;
-        float Absorption;
+		float Shininess;                    //* default[10.0f]
+		float Glossiness;                   //* default[1.0f]
+        float IOR;                          //* default[1.5f]
+        float Absorption;                   //* default[0.1f]
 
-        TextureSet Textures;
+        TextureSet Textures;                //* noinit
 
 	public:
 		Material(ContentManager* owner, const string& name, const string& package, const string& path);

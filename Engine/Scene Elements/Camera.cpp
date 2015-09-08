@@ -20,18 +20,22 @@ namespace MyEngine {
 	{
 		this->init();
 		if (this->Version >= 1)
-		{
+        {
+#pragma region Camera Read
 			Read(file, this->FOV);
 			Read(file, this->FocalPlaneDist);
-			Read(file, this->FNumber);
+            Read(file, this->FNumber);
+#pragma endregion
 		}
 	}
 
 	void Camera::init()
-	{
-		this->FOV = 72.0f;
-		this->FocalPlaneDist = 0.0f;
-		this->FNumber = 2.0f;
+    {
+#pragma region Camera Init
+    	this->FOV = 72.0f;
+    	this->FocalPlaneDist = 0.0f;
+    	this->FNumber = 2.0f;
+#pragma endregion
 	}
 
 
@@ -58,9 +62,11 @@ namespace MyEngine {
 	{
 		SceneElement::WriteToFile(file);
 
+#pragma region Camera Write
 		Write(file, this->FOV);
 		Write(file, this->FocalPlaneDist);
-		Write(file, this->FNumber);
+        Write(file, this->FNumber);
+#pragma endregion
 		file.flush();
 	}
 

@@ -17,12 +17,12 @@ namespace MyEngine {
 	class Light : public SceneElement
 	{
 	public:
-		LightType LType;
-		float Radius;
-		Color4 Color;
-		float SpotExponent;
-		float SpotCutoff;
-		float Intensity; // 0 - light is off, else on
+		LightType LType;                    //* default[LightType::ESun]
+		float Radius;                       //* default[128.0f]
+		Color4 Color;                       //* default[Color4(0.8f, 0.8f, 0.8f, 1.0f)]
+		float SpotExponent;                 //* default[0.5f]
+		float SpotCutoff;                   //* default[180.0f]
+		float Intensity;                    //* default[128.0f]     // 0 - light is off, else on
 
 	public:
 		Light(SceneManager* owner, const string& name, uint contentID, LightType lightType);

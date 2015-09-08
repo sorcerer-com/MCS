@@ -23,21 +23,25 @@ namespace MyEngine {
 	{
 		this->init();
 		if (this->Version >= 1)
-		{
-			Read(file, this->Vertices);
-			Read(file, this->Normals);
-			Read(file, this->TexCoords);
-			Read(file, this->Triangles);
+        {
+#pragma region Mesh Read
+        	Read(file, this->Vertices);
+        	Read(file, this->Normals);
+        	Read(file, this->TexCoords);
+        	Read(file, this->Triangles);
+#pragma endregion
 		}
 		this->IsLoaded = true;
 	}
 
 	void Mesh::init()
-	{
-		this->Vertices.clear();
-		this->Normals.clear();
-		this->TexCoords.clear();
-		this->Triangles.clear();
+    {
+#pragma region Mesh Init
+    	this->Vertices = vector<Vector3>();
+    	this->Normals = vector<Vector3>();
+    	this->TexCoords = vector<Vector3>();
+    	this->Triangles = vector<Triangle>();
+#pragma endregion
 	}
 
 
@@ -179,11 +183,13 @@ namespace MyEngine {
 
 	long long Mesh::Size() const
 	{
-		long long size = ContentElement::Size();
-		size += SizeOf(this->Vertices);
-		size += SizeOf(this->Normals);
-		size += SizeOf(this->TexCoords);
-		size += SizeOf(this->Triangles);
+        long long size = ContentElement::Size();
+#pragma region Mesh Size
+        size += SizeOf(this->Vertices);
+        size += SizeOf(this->Normals);
+        size += SizeOf(this->TexCoords);
+        size += SizeOf(this->Triangles);
+#pragma endregion
 		return size;
 	}
 
@@ -191,10 +197,12 @@ namespace MyEngine {
 	{
 		ContentElement::WriteToFile(file);
 
+#pragma region Mesh Write
 		Write(file, this->Vertices);
 		Write(file, this->Normals);
 		Write(file, this->TexCoords);
 		Write(file, this->Triangles);
+#pragma endregion
 		file.flush();
 	}
 

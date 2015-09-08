@@ -10,9 +10,9 @@ namespace MyEngine {
 	class Camera : public SceneElement
 	{
 	public:
-		float FOV;
-		float FocalPlaneDist;
-		float FNumber;
+		float FOV;                          //* default[72.0f]
+		float FocalPlaneDist;               //* default[0.0f]
+		float FNumber;                      //* default[2.0f]
 		// TODO: exposure, near/far plane?
 
 	public:

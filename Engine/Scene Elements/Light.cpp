@@ -21,24 +21,28 @@ namespace MyEngine {
 	{
 		this->init();
 		if (this->Version >= 1)
-		{
+        {
+#pragma region Light Read
 			Read(file, this->LType);
 			Read(file, this->Radius);
 			Read(file, this->Color);
 			Read(file, this->SpotExponent);
 			Read(file, this->SpotCutoff);
-			Read(file, this->Intensity);
+            Read(file, this->Intensity);
+#pragma endregion
 		}
 	}
 
 	void Light::init()
-	{
-		this->LType = LightType::ESun;
-		this->Radius = 128.0f;
-		this->Color = Color4(0.8f, 0.8f, 0.8f, 1.0f);
-		this->SpotExponent = 0.5f;
-		this->SpotCutoff = 180.0f;
-		this->Intensity = 128.0f;
+    {
+#pragma region Light Init
+    	this->LType = LightType::ESun;
+    	this->Radius = 128.0f;
+    	this->Color = Color4(0.8f, 0.8f, 0.8f, 1.0f);
+    	this->SpotExponent = 0.5f;
+    	this->SpotCutoff = 180.0f;
+    	this->Intensity = 128.0f;
+#pragma endregion
 	}
 
 
@@ -46,12 +50,14 @@ namespace MyEngine {
 	{
 		SceneElement::WriteToFile(file);
 
+#pragma region Light Write
 		Write(file, this->LType);
 		Write(file, this->Radius);
 		Write(file, this->Color);
 		Write(file, this->SpotExponent);
 		Write(file, this->SpotCutoff);
-		Write(file, this->Intensity);
+        Write(file, this->Intensity);
+#pragma endregion
 		file.flush();
 	}
 

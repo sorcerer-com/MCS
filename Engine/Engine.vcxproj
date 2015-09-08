@@ -99,6 +99,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
+    <PreBuildEvent>
+      <Command>:: "$(DevEnvDir)\devenv.com" "$(SolutionDir)External\CodeGenerator\CodeGenerator.sln" /Build Release
+
+"$(SolutionDir)External\CodeGenerator\CodeGenerator\bin\CodeGenerator.exe" "$(ProjectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -117,6 +122,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
+    <PreBuildEvent>
+      <Command>:: "$(DevEnvDir)\devenv.com" "$(SolutionDir)External\CodeGenerator\CodeGenerator.sln" /Build Release
+
+"$(SolutionDir)External\CodeGenerator\CodeGenerator\bin\CodeGenerator.exe" "$(ProjectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -143,6 +153,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
+    <PreBuildEvent>
+      <Command>:: "$(DevEnvDir)\devenv.com" "$(SolutionDir)External\CodeGenerator\CodeGenerator.sln" /Build Release
+
+"$(SolutionDir)External\CodeGenerator\CodeGenerator\bin\CodeGenerator.exe" "$(ProjectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -169,6 +184,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Includes;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
+    <PreBuildEvent>
+      <Command>:: "$(DevEnvDir)\devenv.com" "$(SolutionDir)External\CodeGenerator\CodeGenerator.sln" /Build Release
+
+"$(SolutionDir)External\CodeGenerator\CodeGenerator\bin\CodeGenerator.exe" "$(ProjectDir)"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Content Elements\ContentElement.cpp" />

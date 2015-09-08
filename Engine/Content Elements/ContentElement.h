@@ -17,18 +17,18 @@ namespace MyEngine {
 	class ContentElement
 	{
 	public:
-		ContentManager* Owner;
+		ContentManager* Owner;              //* noinit
 
-		uint Version;
-		ContentElementType Type;
-		uint ID;
-		string Name;
-		string Package;
-		string Path;
+		uint Version;                       //* default[CURRENT_VERSION] nosave
+		ContentElementType Type;            //* default[ContentElementType::EMesh]
+		uint ID;                            //* default[INVALID_ID]
+		string Name;                        //*
+		string Package;                     //*
+		string Path;                        //*
 
-		long long PackageOffset;
-		long long SavedSize;
-		bool IsLoaded;
+		long long PackageOffset;            //*
+		long long SavedSize;                //*
+		bool IsLoaded;                      //* nosave
 
 	public:
 		ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path);

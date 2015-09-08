@@ -18,10 +18,10 @@ namespace MyEngine {
 	class Mesh : public ContentElement
 	{
 	public:
-		vector<Vector3>  Vertices;
-		vector<Vector3>  Normals;
-		vector<Vector3>	 TexCoords;
-		vector<Triangle> Triangles;
+		vector<Vector3>  Vertices;          //* 
+		vector<Vector3>  Normals;           //* 
+		vector<Vector3>	 TexCoords;         //* 
+		vector<Triangle> Triangles;         //* 
 
 	public:
 		Mesh(ContentManager* owner, const string& name, const string& package, const string& path);

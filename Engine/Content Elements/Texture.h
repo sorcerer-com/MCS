@@ -11,11 +11,11 @@ namespace MyEngine {
 	class Texture : public ContentElement
 	{
 	public:
-		uint Width;
-		uint Height;
-		byte* Pixels;
+		uint Width;                         //*
+		uint Height;                        //*
+		byte* Pixels;                       //* nosave
 
-		bool Changed;
+		bool Changed;                       //* default[true] nosave
 
 	public:
 		Texture(ContentManager* owner, const string& name, const string& package, const string& path);

@@ -24,22 +24,22 @@ namespace MyEngine {
 
 	class SceneElement
 	{
-	public:
-		uint Version;
-		SceneElementType Type;
-		uint ID;
-		string Name;
-		string Layer;
-		uint ContentID;
-		uint MaterialID;
-        TextureSet Textures;
-		// TODO: attach?
-		bool Visible;
-		Vector3 Position;
-		Quaternion Rotation;
-		Vector3 Scale;
+    public:
+        SceneManager* Owner;                //* noinit
 
-		SceneManager* Owner;
+		uint Version;                       //* default[CURRENT_VERSION] nosave
+		SceneElementType Type;              //* default[SceneElementType::ECamera]
+		uint ID;                            //* default[INVALID_ID]
+		string Name;                        //*
+		string Layer;                       //* default[DEFAULT_LAYER_NAME]
+		uint ContentID;                     //* default[INVALID_ID]
+		uint MaterialID;                    //* default[INVALID_ID]
+        TextureSet Textures;                //* noinit
+		// TODO: attach?
+		bool Visible;                       //* default[true]
+		Vector3 Position;                   //*
+		Quaternion Rotation;                //*
+		Vector3 Scale;                      //* default[Vector3(1.0, 1.0, 1.0)]
 
 	public:
 		SceneElement(SceneManager* owner, SceneElementType type, const string& name, uint contentID);

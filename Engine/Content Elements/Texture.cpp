@@ -24,9 +24,11 @@ namespace MyEngine {
 	{
         this->init();
 		if (this->Version >= 1)
-		{
-			Read(file, this->Width);
-			Read(file, this->Height);
+        {
+#pragma region Texture Read
+        	Read(file, this->Width);
+        	Read(file, this->Height);
+#pragma endregion
 
 			// read PNG data
             Read(file, this->rawDataSize);
@@ -67,14 +69,15 @@ namespace MyEngine {
     }
 
 	void Texture::init()
-	{
-		this->Width = 0;
-		this->Height = 0;
-		this->Pixels = NULL;
-        this->Changed = true;
-
-        this->rawDataSize = 0;
-        this->rawData = NULL;
+    {
+#pragma region Texture Init
+    	this->Width = 0;
+    	this->Height = 0;
+    	this->Pixels = NULL;
+    	this->Changed = true;
+    	this->rawDataSize = 0;
+    	this->rawData = NULL;
+#pragma endregion
 	}
 
 
@@ -159,9 +162,11 @@ namespace MyEngine {
 
 	long long Texture::Size() const
     {
-		long long size = ContentElement::Size();
-		size += SizeOf(this->Width);
+        long long size = ContentElement::Size();
+#pragma region Texture Size
+        size += SizeOf(this->Width);
         size += SizeOf(this->Height);
+#pragma endregion
         size += SizeOf(this->rawDataSize);
         size += this->rawDataSize;
 		return size;
@@ -171,8 +176,10 @@ namespace MyEngine {
     {
 		ContentElement::WriteToFile(file);
 
+#pragma region Texture Write
 		Write(file, this->Width);
 		Write(file, this->Height);
+#pragma endregion
 
         Write(file, this->rawDataSize);
         for (long long i = 0; i < this->rawDataSize; i++)
