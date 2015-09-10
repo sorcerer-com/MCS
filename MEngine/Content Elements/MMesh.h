@@ -21,53 +21,49 @@ namespace MyEngine {
 	public ref class MMesh : MContentElement
 	{
 	private:
-		property Mesh* mesh
+        property Mesh* mesh
 		{
-			Mesh* get() { return (Mesh*)this->element; }
+            Mesh* get() { return (Mesh*)this->contentElement; }
 		}
 
-	public:
-		[MPropertyAttribute(Group = "Shape")]
-		property List<MPoint>^ Vertices
-		{
-			List<MPoint>^ get()
-			{
-				List<MPoint>^ collection = gcnew List<MPoint>();
-
-				const auto vertices = mesh->Vertices;
-				for (const auto& vertex : vertices)
-					collection->Add(MPoint(vertex));
-				return collection;
-			}
-		}
-
-		[MPropertyAttribute(Group = "Shape")]
-		property List<MPoint>^ Normals
-		{
-			List<MPoint>^ get()
-			{
-				List<MPoint>^ collection = gcnew List<MPoint>();
-
-				const auto normals = mesh->Normals;
-				for (const auto& normal : normals)
-					collection->Add(MPoint(normal));
-				return collection;
-			}
-		}
-
-		[MPropertyAttribute(Group = "Shape")]
-		property List<MPoint>^ TexCoords
-		{
-			List<MPoint>^ get()
-			{
-				List<MPoint>^ collection = gcnew List<MPoint>();
-
-				const auto texCoords = mesh->TexCoords;
-				for (const auto& texCoord : texCoords)
-					collection->Add(MPoint(texCoord));
-				return collection;
-			}
-		}
+    public:
+#pragma region Mesh Properties
+        [MPropertyAttribute(Group = "Shape")]
+        property List<MPoint>^ Vertices
+        {
+            List<MPoint>^ get()
+            {
+            List<MPoint>^ collection = gcnew List<MPoint>();
+            for (const auto& value : this->mesh->Vertices)
+                collection->Add(MPoint(value));
+            return collection;
+            }
+        }
+        
+        [MPropertyAttribute(Group = "Shape")]
+        property List<MPoint>^ Normals
+        {
+            List<MPoint>^ get()
+            {
+            List<MPoint>^ collection = gcnew List<MPoint>();
+            for (const auto& value : this->mesh->Normals)
+                collection->Add(MPoint(value));
+            return collection;
+            }
+        }
+        
+        [MPropertyAttribute(Group = "Shape")]
+        property List<MPoint>^ TexCoords
+        {
+            List<MPoint>^ get()
+            {
+            List<MPoint>^ collection = gcnew List<MPoint>();
+            for (const auto& value : this->mesh->TexCoords)
+                collection->Add(MPoint(value));
+            return collection;
+            }
+        }
+#pragma endregion
 
 		[MPropertyAttribute(Group = "Shape")]
 		property List<MTriangle>^ Triangles
@@ -75,9 +71,7 @@ namespace MyEngine {
 			List<MTriangle>^ get()
 			{
 				List<MTriangle>^ collection = gcnew List<MTriangle>();
-
-				const auto triangles = mesh->Triangles;
-				for (const auto& triangle : triangles)
+                for (const auto& triangle : this->mesh->Triangles)
 				{
 					MTriangle mt;
 					mt.Vertices = gcnew array<int>(3);
@@ -104,12 +98,12 @@ namespace MyEngine {
 
 		bool LoadFromFile(String^ filePath) override
 		{
-			return this->mesh->LoadFromOBJFile(to_string(filePath));
+            return this->mesh->LoadFromOBJFile(to_string(filePath));
 		}
 
 		bool SaveToFile(String^ filePath) override
 		{
-			return this->mesh->SaveToOBJFile(to_string(filePath));
+            return this->mesh->SaveToOBJFile(to_string(filePath));
 		}
 	
 	};

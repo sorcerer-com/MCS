@@ -56,38 +56,40 @@ namespace MyEngine {
 		}
 	}
 
+#pragma region SceneManager Properties_cpp
 	MColor MSceneManager::AmbientLight::get()
 	{
-		return MColor(this->sceneManager->AmbientLight);
+	     return MColor(this->sceneManager->AmbientLight);
 	}
-
+	
 	void MSceneManager::AmbientLight::set(MColor value)
 	{
-		this->sceneManager->AmbientLight = value.ToColor4();
-		OnChanged(nullptr);
+	    this->sceneManager->AmbientLight = value.ToColor4();
+	    OnChanged(nullptr);
 	}
-
+	
 	MColor MSceneManager::FogColor::get()
 	{
-		return MColor(this->sceneManager->FogColor);
+	     return MColor(this->sceneManager->FogColor);
 	}
-
+	
 	void MSceneManager::FogColor::set(MColor value)
 	{
-		this->sceneManager->FogColor = value.ToColor4();
-		OnChanged(nullptr);
+	    this->sceneManager->FogColor = value.ToColor4();
+	    OnChanged(nullptr);
 	}
-
+	
 	double MSceneManager::FogDensity::get()
 	{
-		return this->sceneManager->FogDensity;
+	     return this->sceneManager->FogDensity;
 	}
-
+	
 	void MSceneManager::FogDensity::set(double value)
 	{
-		this->sceneManager->FogDensity = (float)value;
-		OnChanged(nullptr);
-    }
+	    this->sceneManager->FogDensity = (float)value;
+	    OnChanged(nullptr);
+	}
+#pragma endregion
 
     double MSceneManager::TimeOfDay::get()
     {
@@ -102,7 +104,7 @@ namespace MyEngine {
 
     MContentElement^ MSceneManager::SkyBox::get()
     {
-        return this->owner->ContentManager->GetElement(this->sceneManager->SkyBox);
+        return this->owner->ContentManager->GetElement(this->sceneManager->SkyBoxID);
     }
 
     void MSceneManager::SkyBox::set(MContentElement^ value)

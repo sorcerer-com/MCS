@@ -25,10 +25,10 @@ namespace MyEngine {
 		if (this->Version >= 1)
         {
 #pragma region Mesh Read
-        	Read(file, this->Vertices);
-        	Read(file, this->Normals);
-        	Read(file, this->TexCoords);
-        	Read(file, this->Triangles);
+            Read(file, this->Vertices);
+            Read(file, this->Normals);
+            Read(file, this->TexCoords);
+            Read(file, this->Triangles);
 #pragma endregion
 		}
 		this->IsLoaded = true;
@@ -37,10 +37,10 @@ namespace MyEngine {
 	void Mesh::init()
     {
 #pragma region Mesh Init
-    	this->Vertices = vector<Vector3>();
-    	this->Normals = vector<Vector3>();
-    	this->TexCoords = vector<Vector3>();
-    	this->Triangles = vector<Triangle>();
+        this->Vertices = vector<Vector3>();
+        this->Normals = vector<Vector3>();
+        this->TexCoords = vector<Vector3>();
+        this->Triangles = vector<Triangle>();
 #pragma endregion
 	}
 
@@ -180,6 +180,21 @@ namespace MyEngine {
 		return true;
 	}
 
+    
+    void* Mesh::get(const string& name)
+    {
+#pragma region Mesh Get
+        if (name == "Vertices")
+            return &this->Vertices;
+        else if (name == "Normals")
+            return &this->Normals;
+        else if (name == "TexCoords")
+            return &this->TexCoords;
+        else if (name == "Triangles")
+            return &this->Triangles;
+#pragma endregion
+        return ContentElement::get(name);
+    }
 
 	long long Mesh::Size() const
 	{

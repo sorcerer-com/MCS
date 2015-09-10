@@ -19,16 +19,16 @@ namespace MyEngine {
 	public:
 		ContentManager* Owner;              //* noinit
 
-		uint Version;                       //* default[CURRENT_VERSION] nosave
-		ContentElementType Type;            //* default[ContentElementType::EMesh]
-		uint ID;                            //* default[INVALID_ID]
-		string Name;                        //*
-		string Package;                     //*
-		string Path;                        //*
+		uint Version;                       //* default[CURRENT_VERSION] nosave noget readonly
+		ContentElementType Type;            //* default[ContentElementType::EMesh] group["Base"] readonly
+		uint ID;                            //* default[INVALID_ID] group["Base"] readonly
+		string Name;                        //* group["Base"] readonly
+		string Package;                     //* readonly
+		string Path;                        //* readonly
 
-		long long PackageOffset;            //*
-		long long SavedSize;                //*
-		bool IsLoaded;                      //* nosave
+		long long PackageOffset;            //* noget noproperty
+		long long SavedSize;                //* noget noproperty
+		bool IsLoaded;                      //* nosave noget group["Base"] readonly
 
 	public:
 		ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path);
@@ -38,12 +38,15 @@ namespace MyEngine {
 		string GetFullPath() const;
 		string GetFullName() const;
 
+        template <typename T>
+        T& Get(const string& name) { return *((T*)this->get(name)); }
 		virtual long long Size() const;
 		virtual void WriteToFile(ostream& file);
 		virtual ContentElement* Clone() const;
 
-	private:
-		void init();
+	protected:
+        void init();
+        virtual void* get(const string& name);
 	};
 
 }

@@ -41,7 +41,7 @@ namespace MyEngine {
 		this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
 		this->FogDensity = 0.0f;
         this->TimeOfDay = 0.0f;
-        this->SkyBox = INVALID_ID;
+        this->SkyBoxID = INVALID_ID;
 	}
 
 	bool SceneManager::Save(const string& filePath)
@@ -103,7 +103,7 @@ namespace MyEngine {
         Write(ofile, this->TimeOfDay);
 
         // skybox
-        Write(ofile, this->SkyBox);
+        Write(ofile, this->SkyBoxID);
 
 		ofile.close();
 
@@ -189,7 +189,7 @@ namespace MyEngine {
             Read(ifile, this->TimeOfDay);
 
             // skybox
-            Read(ifile, this->SkyBox);
+            Read(ifile, this->SkyBoxID);
 		}
 
 		ifile.close();
@@ -359,7 +359,7 @@ namespace MyEngine {
             skyBox->Textures.DiffuseMapID = textureID;
             Engine::Log(LogType::ELog, "Scene", "Skybox is set (" + to_string(textureID) + ")");
         }
-        this->SkyBox = textureID;
+        this->SkyBoxID = textureID;
         return true;
     }
 

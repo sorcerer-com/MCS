@@ -26,8 +26,8 @@ namespace MyEngine {
 		if (this->Version >= 1)
         {
 #pragma region Texture Read
-        	Read(file, this->Width);
-        	Read(file, this->Height);
+            Read(file, this->Width);
+            Read(file, this->Height);
 #pragma endregion
 
 			// read PNG data
@@ -71,12 +71,12 @@ namespace MyEngine {
 	void Texture::init()
     {
 #pragma region Texture Init
-    	this->Width = 0;
-    	this->Height = 0;
-    	this->Pixels = NULL;
-    	this->Changed = true;
-    	this->rawDataSize = 0;
-    	this->rawData = NULL;
+        this->Width = 0;
+        this->Height = 0;
+        this->Pixels = NULL;
+        this->Changed = true;
+        this->rawDataSize = 0;
+        this->rawData = NULL;
 #pragma endregion
 	}
 
@@ -159,6 +159,17 @@ namespace MyEngine {
         lodepng_encode_memory(&this->rawData, (size_t*)&this->rawDataSize, (byte*)this->Pixels, this->Width, this->Height, LCT_RGBA, 8);
     }
 
+
+    void* Texture::get(const string& name)
+    {
+#pragma region Texture Get
+        if (name == "Width")
+            return &this->Width;
+        else if (name == "Height")
+            return &this->Height;
+#pragma endregion
+        return ContentElement::get(name);
+    }
 
 	long long Texture::Size() const
     {

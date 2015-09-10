@@ -16,25 +16,27 @@ namespace MyEngine {
 	public ref class MTexture : MContentElement
 	{
 	private:
-		property Texture* texture
+        property Texture* texture
 		{
-			Texture* get() { return (Texture*)this->element; }
+            Texture* get() { return (Texture*)this->contentElement; }
 		}
 
 		static Dictionary<uint, Bitmap^>^ imagesCache = gcnew Dictionary<uint, Bitmap^>();
 
-	public:
-		[MPropertyAttribute(Group = "Image")]
-		property uint Width
-		{
-			uint get() { return texture->Width; }
-		}
-
-		[MPropertyAttribute(Group = "Image")]
-		property uint Height
-		{
-			uint get() { return texture->Height; }
-		}
+    public:
+#pragma region Texture Properties
+        [MPropertyAttribute(Group = "Image")]
+        property uint Width
+        {
+            uint get() { return this->texture->Width; }
+        }
+        
+        [MPropertyAttribute(Group = "Image")]
+        property uint Height
+        {
+            uint get() { return this->texture->Height; }
+        }
+#pragma endregion
 
 		[MPropertyAttribute(Group = "Image")]
 		property Bitmap^ Image
@@ -44,7 +46,7 @@ namespace MyEngine {
 				if (imagesCache->ContainsKey(this->id))
 					return this->imagesCache[this->id];
 
-				Bitmap^ bmp = gcnew Bitmap(texture->Width, texture->Height);
+                Bitmap^ bmp = gcnew Bitmap(this->texture->Width, this->texture->Height);
 
                 Imaging::BitmapData^ data =
                     bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
@@ -77,7 +79,7 @@ namespace MyEngine {
 					bmp = bmp2;
 				}
 
-				this->texture->Init(bmp->Width, bmp->Height);
+                this->texture->Init(bmp->Width, bmp->Height);
                 Imaging::BitmapData^ data =
                     bmp->LockBits(System::Drawing::Rectangle(0, 0, bmp->Width, bmp->Height),
                     Imaging::ImageLockMode::ReadOnly, Imaging::PixelFormat::Format32bppArgb);
@@ -102,18 +104,18 @@ namespace MyEngine {
 		{
 			width = power_of_two(width);
 			height = power_of_two(height);
-			this->texture->Init(width, height);
+            this->texture->Init(width, height);
 			this->imagesCache->Remove(this->id);
 		}
 
 		MColor GetColor(uint x, uint y)
 		{
-			return MColor(this->texture->GetColor(x, this->Height - y - 1)); // flip by y
+            return MColor(this->texture->GetColor(x, this->Height - y - 1)); // flip by y
 		}
 
 		void SetColor(uint x, uint y, MColor color)
 		{
-			this->texture->SetColor(x, this->Height - y - 1, color.ToColor4()); // flip by y
+            this->texture->SetColor(x, this->Height - y - 1, color.ToColor4()); // flip by y
 			this->imagesCache->Remove(this->id);
 		}
 

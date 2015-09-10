@@ -19,11 +19,15 @@ namespace CodeGenerator
 
     public class CodeGenerator
     {
+        public const string Indent = "    ";
+
         public string HeaderFileName { get; set; }
         public string CodeFileName { get; set; }
         public string WrapperHeaderFileName { get; set; }
+        public string WrapperCodeFileName { get; set; }
 
         public List<Member> Members { get; private set; }
+        public List<Function> Functions { get; private set; }
 
         private Dictionary<string, BaseGenerator> generators;
 
@@ -35,8 +39,10 @@ namespace CodeGenerator
             string fileName = Path.GetFileNameWithoutExtension(headerFileName);
             this.CodeFileName = Path.Combine(dir, fileName) + ".cpp";
             this.WrapperHeaderFileName = Path.Combine(dir.Replace(@"\Engine\", @"\MEngine\"), "M" + fileName) + ".h";
+            this.WrapperCodeFileName = Path.Combine(dir.Replace(@"\Engine\", @"\MEngine\"), "M" + fileName) + ".cpp";
 
             this.Members = new List<Member>();
+            this.Functions = new List<Function>();
 
             this.generators = new Dictionary<string, BaseGenerator>();
             // Serialization
@@ -45,8 +51,15 @@ namespace CodeGenerator
             this.generators.Add("Size", new SizeGenerator(this));
             // Initialization
             this.generators.Add("Init", new InitGenerator(this));
+            // Get
+            this.generators.Add("Get", new GetGenerator(this));
             // Wrappers
-            // TODO: this.generators.Add("Property", new PropertyGenerator(this));
+            this.generators.Add("Properties", new PropertyGenerator(this, PropertyGenerator.PropertyGeneratorType.Header_Only));
+            this.generators.Add("Properties_h", new PropertyGenerator(this, PropertyGenerator.PropertyGeneratorType.Header));
+            this.generators.Add("Properties_cpp", new PropertyGenerator(this, PropertyGenerator.PropertyGeneratorType.Code));
+            this.generators.Add("Functions", new FunctionGenerator(this, FunctionGenerator.FunctionGeneratorType.Header_Only));
+            this.generators.Add("Functions_h", new FunctionGenerator(this, FunctionGenerator.FunctionGeneratorType.Header));
+            this.generators.Add("Functions_cpp", new FunctionGenerator(this, FunctionGenerator.FunctionGeneratorType.Code));
         }
 
 
@@ -59,7 +72,8 @@ namespace CodeGenerator
             if (result[0] == EResult.Success)
             {
                 result.Add(this.generateCode(this.CodeFileName));
-                // TODO: result.Add(this.generateCode(this.WrapperHeaderFileName));
+                result.Add(this.generateCode(this.WrapperHeaderFileName));
+                result.Add(this.generateCode(this.WrapperCodeFileName));
             }
 
             return result;
@@ -102,6 +116,13 @@ namespace CodeGenerator
                     this.Members.Add(member);
                     continue;
                 }
+
+                Function func = Function.Read(_class, _access, line);
+                if (func != null)
+                {
+                    this.Functions.Add(func);
+                    continue;
+                }
             }
             return EResult.Success;
         }
@@ -137,7 +158,7 @@ namespace CodeGenerator
                             indent += lines[i - k][j];
                         }
                         if (lines[i - k].EndsWith("{"))
-                            indent += "\t";
+                            indent += CodeGenerator.Indent;
                         break;
                     }
 
@@ -151,7 +172,7 @@ namespace CodeGenerator
                         bool regenerate = false;
                         for (int j = 0; j < code.Count; j++)
                         {
-                            if (lines[i + 1 + j].Trim() != code[j])
+                            if (lines[i + 1 + j].Trim() != code[j].Trim())
                             {
                                 regenerate = true;
                                 break;
@@ -188,7 +209,7 @@ namespace CodeGenerator
             }
 
             if (Program.IsDebugging)
-                file = "1" + Path.GetFileNameWithoutExtension(file) + ".txt";
+                file = "1" + Path.GetFileName(file) + ".txt";
 
             if (result == EResult.Success)
                 File.WriteAllLines(file, lines.ToArray());

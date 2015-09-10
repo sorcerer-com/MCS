@@ -27,19 +27,19 @@ namespace MyEngine {
     public:
         SceneManager* Owner;                //* noinit
 
-		uint Version;                       //* default[CURRENT_VERSION] nosave
-		SceneElementType Type;              //* default[SceneElementType::ECamera]
-		uint ID;                            //* default[INVALID_ID]
-		string Name;                        //*
-		string Layer;                       //* default[DEFAULT_LAYER_NAME]
-		uint ContentID;                     //* default[INVALID_ID]
-		uint MaterialID;                    //* default[INVALID_ID]
-        TextureSet Textures;                //* noinit
+		uint Version;                       //* default[CURRENT_VERSION] nosave noget readonly
+		SceneElementType Type;              //* default[SceneElementType::ECamera] group["Base"] readonly
+		uint ID;                            //* default[INVALID_ID] group["Base"] readonly
+		string Name;                        //* group["Base"] readonly
+		string Layer;                       //* default[DEFAULT_LAYER_NAME] group["Base"] readonly
+		uint ContentID;                     //* default[INVALID_ID] group["Content"] choosable[true]
+		uint MaterialID;                    //* default[INVALID_ID] group["Content"] choosable[true]
+        TextureSet Textures;                //* noinit noproperty
 		// TODO: attach?
-		bool Visible;                       //* default[true]
-		Vector3 Position;                   //*
-		Quaternion Rotation;                //*
-		Vector3 Scale;                      //* default[Vector3(1.0, 1.0, 1.0)]
+		bool Visible;                       //* default[true] group["Base"]
+		Vector3 Position;                   //* group["Transform"]
+		Quaternion Rotation;                //* group["Transform"]
+		Vector3 Scale;                      //* default[Vector3(1.0, 1.0, 1.0)] group["Transform"]
 
 	public:
 		SceneElement(SceneManager* owner, SceneElementType type, const string& name, uint contentID);
@@ -51,11 +51,14 @@ namespace MyEngine {
         ContentElementPtr GetDiffuseMap() const;
         ContentElementPtr GetNormalMap() const;
 
+        template <typename T>
+        T& Get(const string& name) { return *((T*)this->get(name)); }
 		virtual void WriteToFile(ostream& file) const;
 		virtual SceneElement* Clone() const;
 
-	private:
+    protected:
 		void init();
+        virtual void* get(const string& name);
 	};
 
 }

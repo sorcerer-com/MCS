@@ -1,16 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 
 namespace CodeGenerator
 {
     public class Program
     {
-        // TODO: try to generate wrappers too
-        // TODO: get generator - void* dynamic_cast to T*
-
-        // TODO: add generator for access function for animations
-
+        // TODO: try to generate wrapper functions too
+        
         public static bool IsDebugging
         {
             get { return !Console.IsInputRedirected; }

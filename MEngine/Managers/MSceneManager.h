@@ -38,23 +38,25 @@ namespace MyEngine {
 			void set(MCamera^ value);
 		}
 
+#pragma region SceneManager Properties_h
 		property MColor AmbientLight
 		{
-			MColor get();
-			void set(MColor value);
+		    MColor get();
+		    void set(MColor value);
 		}
-
+		
 		property MColor FogColor
 		{
-			MColor get();
-			void set(MColor value);
+		    MColor get();
+		    void set(MColor value);
 		}
-
+		
 		property double FogDensity
 		{
-			double get();
-			void set(double value);
-        }
+		    double get();
+		    void set(double value);
+		}
+#pragma endregion
 
         property double TimeOfDay
         {

@@ -38,17 +38,17 @@ namespace MyEngine {
 		if (this->Version >= 1)
         {
 #pragma region SceneElement Read
-        	Read(file, this->Type);
-        	Read(file, this->ID);
-        	Read(file, this->Name);
-        	Read(file, this->Layer);
-        	Read(file, this->ContentID);
-        	Read(file, this->MaterialID);
-        	Read(file, this->Textures);
-        	Read(file, this->Visible);
-        	Read(file, this->Position);
-        	Read(file, this->Rotation);
-        	Read(file, this->Scale);
+            Read(file, this->Type);
+            Read(file, this->ID);
+            Read(file, this->Name);
+            Read(file, this->Layer);
+            Read(file, this->ContentID);
+            Read(file, this->MaterialID);
+            Read(file, this->Textures);
+            Read(file, this->Visible);
+            Read(file, this->Position);
+            Read(file, this->Rotation);
+            Read(file, this->Scale);
 #pragma endregion
 		}
 	}
@@ -60,17 +60,17 @@ namespace MyEngine {
 	void SceneElement::init()
     {
 #pragma region SceneElement Init
-    	this->Version = CURRENT_VERSION;
-    	this->Type = SceneElementType::ECamera;
-    	this->ID = INVALID_ID;
-    	this->Name = "";
-    	this->Layer = DEFAULT_LAYER_NAME;
-    	this->ContentID = INVALID_ID;
-    	this->MaterialID = INVALID_ID;
-    	this->Visible = true;
-    	this->Position = Vector3();
-    	this->Rotation = Quaternion();
-    	this->Scale = Vector3(1.0, 1.0, 1.0);
+        this->Version = CURRENT_VERSION;
+        this->Type = SceneElementType::ECamera;
+        this->ID = INVALID_ID;
+        this->Name = "";
+        this->Layer = DEFAULT_LAYER_NAME;
+        this->ContentID = INVALID_ID;
+        this->MaterialID = INVALID_ID;
+        this->Visible = true;
+        this->Position = Vector3();
+        this->Rotation = Quaternion();
+        this->Scale = Vector3(1.0, 1.0, 1.0);
 #pragma endregion
 	}
 
@@ -102,7 +102,36 @@ namespace MyEngine {
             return this->Owner->Owner->ContentManager->GetElement(this->Textures.NormalMapID, true, true);
         return ContentElementPtr();
     }
-
+    
+    
+    void* SceneElement::get(const string& name)
+    {
+#pragma region SceneElement Get
+        if (name == "Type")
+            return &this->Type;
+        else if (name == "ID")
+            return &this->ID;
+        else if (name == "Name")
+            return &this->Name;
+        else if (name == "Layer")
+            return &this->Layer;
+        else if (name == "ContentID")
+            return &this->ContentID;
+        else if (name == "MaterialID")
+            return &this->MaterialID;
+        else if (name == "Textures")
+            return &this->Textures;
+        else if (name == "Visible")
+            return &this->Visible;
+        else if (name == "Position")
+            return &this->Position;
+        else if (name == "Rotation")
+            return &this->Rotation;
+        else if (name == "Scale")
+            return &this->Scale;
+#pragma endregion
+        return NULL;
+    }
 
 	void SceneElement::WriteToFile(ostream& file) const
 	{

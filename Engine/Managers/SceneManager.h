@@ -19,12 +19,12 @@ namespace MyEngine {
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
 		using LayerVectorType = vector < string > ; // layer name
 
-		Camera* ActiveCamera;
-		Color4 AmbientLight;
-		Color4 FogColor;
-        float FogDensity;
-        float TimeOfDay;
-        uint SkyBox;
+		Camera* ActiveCamera;               //* 
+		Color4 AmbientLight;                //* 
+		Color4 FogColor;                    //* 
+        float FogDensity;                   //* 
+        float TimeOfDay;                    //* noproperty
+        uint SkyBoxID;                      //* noproperty
 
     private:
 		SceneMapType sceneElements;

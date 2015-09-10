@@ -8,7 +8,10 @@ namespace CodeGenerator.Infos
     {
         public const string NoSave = "nosave";
         public const string NoInit = "noinit";
+        public const string NoGet = "noget";
         public const string NoProperty = "noproperty";
+
+        public const string ReadOnly = "readonly";
         public const string Default = "default";
     }
 
@@ -22,8 +25,8 @@ namespace CodeGenerator.Infos
 
         public bool Pointer { get { return this.Type.EndsWith("*"); } }
 
-        public static Regex RegEx = new Regex(@"^\s*(?<type>[\w\d_<>\s]+\**)\s(?<name>[\w\d_]+);", RegexOptions.IgnoreCase);
-        public static Regex AttributesRegEx = new Regex(@"//\*(\s*(?<attribute>[\w\d_]+(\[.*\])*)\s*)+(//)*", RegexOptions.IgnoreCase);
+        public static Regex RegEx = new Regex(@"^\s*(?<type>[\w\d_<>\s]+\**)\s(?<name>[\w\d_]+);", RegexOptions.IgnoreCase); // [\w\d_<>\s] - type (all letter, digits, <, > and whitespace), \* - Pointer, 
+        public static Regex AttributesRegEx = new Regex(@"//\*(\s*(?<attribute>([\w\d_]+)(\[[^\]^\[]*\])*)\s*)+(//)*", RegexOptions.IgnoreCase); // [\w\d_] - attribute name, \[[^\]^\[]*\] - all characters except [ and ] between []
 
 
         private Member()

@@ -29,95 +29,97 @@ namespace MyEngine {
 		SceneManager* owner;
 		uint id;
 
-		property SceneElement* element
+        property SceneElement* sceneElement
 		{
 			SceneElement* get() { return this->owner->GetElement(this->id).get(); }
 		}
 
-	public:
-		property uint Version
-		{
-			uint get() { return element->Version; }
-		}
-
-		[MPropertyAttribute(Group = "Base")]
-		property ESceneElementType Type
-		{
-			ESceneElementType get() { return (ESceneElementType)element->Type; }
-		}
-
-		[MPropertyAttribute(Group = "Base")]
-		property uint ID
-		{
-			uint get() { return element->ID; }
-		}
-
-		[MPropertyAttribute(Group = "Base")]
-		property String^ Name
-		{
-			String^ get() { return gcnew String(element->Name.c_str()); }
-		}
-
-		[MPropertyAttribute(Group = "Base")]
-		property String^ Layer
-		{
-			String^ get() { return gcnew String(element->Layer.c_str()); }
-		}
-
-		[MPropertyAttribute(Group = "Content", Choosable = true)]
-		property MContentElement^ Content
-		{
-			MContentElement^ get() { return MContentManager::GetMContentElement(this->element->GetContent()); }
-            void set(MContentElement^ value) { element->ContentID = (value != nullptr ? value->ID : 0); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Content", Choosable = true)]
-		property MContentElement^ Material
-		{
-			MContentElement^ get() { return MContentManager::GetMContentElement(this->element->GetMaterial()); }
-            void set(MContentElement^ value) { element->MaterialID = (value != nullptr ? value->ID : 0); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Base")]
-		property bool Visible
-		{
-			bool get() { return element->Visible; }
-			void set(bool value) { element->Visible = value; OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Transform")]
-		property MPoint Position
-		{
-			MPoint get() { return MPoint(element->Position); }
-			void set(MPoint value) { element->Position = value.ToVector3(); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Transform")]
-		property MPoint Rotation
-		{
-			MPoint get() { return MPoint(element->Rotation.toEulerAngle()); }
-            void set(MPoint value) { element->Rotation = Quaternion(value.ToVector3()); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Transform")]
-		property MPoint Scale
-		{
-			MPoint get() { return MPoint(element->Scale); }
-			void set(MPoint value) { element->Scale = value.ToVector3(); OnChanged(); }
+    public:
+#pragma region SceneElement Properties
+        property uint Version
+        {
+            uint get() { return this->sceneElement->Version; }
         }
+        
+        [MPropertyAttribute(Group = "Base")]
+        property ESceneElementType Type
+        {
+            ESceneElementType get() { return (ESceneElementType)this->sceneElement->Type; }
+        }
+        
+        [MPropertyAttribute(Group = "Base")]
+        property uint ID
+        {
+            uint get() { return this->sceneElement->ID; }
+        }
+        
+        [MPropertyAttribute(Group = "Base")]
+        property String^ Name
+        {
+            String^ get() { return gcnew String(this->sceneElement->Name.c_str()); }
+        }
+        
+        [MPropertyAttribute(Group = "Base")]
+        property String^ Layer
+        {
+            String^ get() { return gcnew String(this->sceneElement->Layer.c_str()); }
+        }
+        
+        [MPropertyAttribute(Group = "Content", Choosable = true)]
+        property MContentElement^ Content
+        {
+            MContentElement^ get() { return MContentManager::GetMContentElement(this->sceneElement->GetContent()); }
+            void set(MContentElement^ value) { this->sceneElement->ContentID = (value != nullptr ? value->ID : 0); OnChanged(); }
+        }
+        
+        [MPropertyAttribute(Group = "Content", Choosable = true)]
+        property MContentElement^ Material
+        {
+            MContentElement^ get() { return MContentManager::GetMContentElement(this->sceneElement->GetMaterial()); }
+            void set(MContentElement^ value) { this->sceneElement->MaterialID = (value != nullptr ? value->ID : 0); OnChanged(); }
+        }
+        
+        [MPropertyAttribute(Group = "Base")]
+        property bool Visible
+        {
+            bool get() { return this->sceneElement->Visible; }
+            void set(bool value) { this->sceneElement->Visible = value; OnChanged(); }
+        }
+        
+        [MPropertyAttribute(Group = "Transform")]
+        property MPoint Position
+        {
+            MPoint get() { return MPoint(this->sceneElement->Position); }
+            void set(MPoint value) { this->sceneElement->Position = value.ToVector3(); OnChanged(); }
+        }
+        
+        [MPropertyAttribute(Group = "Transform")]
+        property MPoint Rotation
+        {
+            MPoint get() { return MPoint(this->sceneElement->Rotation.toEulerAngle()); }
+            void set(MPoint value) { this->sceneElement->Rotation = Quaternion(value.ToVector3()); OnChanged(); }
+        }
+        
+        [MPropertyAttribute(Group = "Transform")]
+        property MPoint Scale
+        {
+            MPoint get() { return MPoint(this->sceneElement->Scale); }
+            void set(MPoint value) { this->sceneElement->Scale = value.ToVector3(); OnChanged(); }
+        }
+#pragma endregion
 
         [MPropertyAttribute(Group = "Textures", Choosable = true)]
         property MContentElement^ DiffuseMap
         {
-            MContentElement^ get() { return MContentManager::GetMContentElement(element->GetDiffuseMap()); }
-            void set(MContentElement^ value) { element->Textures.DiffuseMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
+            MContentElement^ get() { return MContentManager::GetMContentElement(this->sceneElement->GetDiffuseMap()); }
+            void set(MContentElement^ value) { this->sceneElement->Textures.DiffuseMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
         }
 
         [MPropertyAttribute(Group = "Textures", Choosable = true)]
         property MContentElement^ NormalMap
         {
-            MContentElement^ get() { return MContentManager::GetMContentElement(element->GetNormalMap()); }
-            void set(MContentElement^ value) { element->Textures.NormalMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
+            MContentElement^ get() { return MContentManager::GetMContentElement(this->sceneElement->GetNormalMap()); }
+            void set(MContentElement^ value) { this->sceneElement->Textures.NormalMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
         }
 
 
@@ -140,7 +142,7 @@ namespace MyEngine {
 
 		virtual String^ ToString() override
 		{
-			if (!this->owner->ContainsElement(this->id) || !this->element)
+            if (!this->owner->ContainsElement(this->id) || !this->sceneElement)
 				return nullptr;
 
 			return this->Type.ToString() + ": " + this->Name + " (" + this->ID + ")";
@@ -148,12 +150,12 @@ namespace MyEngine {
 
 		virtual bool Equals(Object^ obj) override
 		{
-			if (!this->owner->ContainsElement(this->id) || !this->element)
+            if (!this->owner->ContainsElement(this->id) || !this->sceneElement)
 				return false;
 
 			MSceneElement^ mse = dynamic_cast<MSceneElement^>(obj);
 			if (mse == nullptr ||
-				!this->owner->ContainsElement(mse->id) || !mse->element)
+                !this->owner->ContainsElement(mse->id) || !mse->sceneElement)
 				return false;
 			return this->ID.Equals(mse->ID);
 		}

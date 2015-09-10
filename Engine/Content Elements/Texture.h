@@ -11,11 +11,11 @@ namespace MyEngine {
 	class Texture : public ContentElement
 	{
 	public:
-		uint Width;                         //*
-		uint Height;                        //*
+		uint Width;                         //* group["Image"] readonly
+		uint Height;                        //* group["Image"] readonly
 		byte* Pixels;                       //* nosave
 
-		bool Changed;                       //* default[true] nosave
+		bool Changed;                       //* default[true] nosave noget noproperty
 
 	public:
 		Texture(ContentManager* owner, const string& name, const string& package, const string& path);
@@ -33,12 +33,13 @@ namespace MyEngine {
 		virtual void WriteToFile(ostream& file) override;
 		virtual ContentElement* Clone() const override;
 
-    private:
+    protected:
         long long rawDataSize;
         byte* rawData;
 
         void init();
         void updateRawData();
+        virtual void* get(const string& name);
 	};
 
 }

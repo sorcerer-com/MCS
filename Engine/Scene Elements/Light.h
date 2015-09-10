@@ -17,12 +17,12 @@ namespace MyEngine {
 	class Light : public SceneElement
 	{
 	public:
-		LightType LType;                    //* default[LightType::ESun]
-		float Radius;                       //* default[128.0f]
-		Color4 Color;                       //* default[Color4(0.8f, 0.8f, 0.8f, 1.0f)]
-		float SpotExponent;                 //* default[0.5f]
-		float SpotCutoff;                   //* default[180.0f]
-		float Intensity;                    //* default[128.0f]     // 0 - light is off, else on
+		LightType LType;                    //* default[LightType::ESun] group["Light"]
+		float Radius;                       //* default[128.0f] group["Light"]
+		Color4 Color;                       //* default[Color4(0.8f, 0.8f, 0.8f, 1.0f)] group["Light"]
+		float SpotExponent;                 //* default[0.5f] group["Light"]
+		float SpotCutoff;                   //* default[180.0f] group["Light"]
+		float Intensity;                    //* default[128.0f] group["Light"]    // 0 - light is off, else on
 
 	public:
 		Light(SceneManager* owner, const string& name, uint contentID, LightType lightType);
@@ -31,8 +31,9 @@ namespace MyEngine {
 		virtual void WriteToFile(ostream& file) const override;
 		virtual SceneElement* Clone() const override;
 
-	private:
-		void init();
+    protected:
+        void init();
+        virtual void* get(const string& name);
 	};
 
 }

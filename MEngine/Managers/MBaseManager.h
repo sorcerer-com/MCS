@@ -21,6 +21,10 @@ namespace MyEngine {
             MEngine^ get() { return this->owner;  }
         }
 
+#pragma region BaseManager Properties
+#pragma endregion
+
+
     public:
         MBaseManager(MEngine^ owner)
         {

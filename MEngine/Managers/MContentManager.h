@@ -27,7 +27,10 @@ namespace MyEngine {
 		property List<MContentElement^>^ Content
 		{
 			List<MContentElement^>^ get();
-		}
+        }
+
+#pragma region ContentManager Properties_h
+#pragma endregion
 
 
 		delegate void ChangedEventHandler(MContentManager^ sender, MContentElement^ element);

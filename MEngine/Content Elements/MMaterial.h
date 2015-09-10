@@ -18,72 +18,74 @@ namespace MyEngine {
 	private:
 		property Material* material
 		{
-			Material* get() { return (Material*)this->element; }
+            Material* get() { return (Material*)this->contentElement; }
 		}
 
-	public:
-		[MPropertyAttribute(Group = "Colors")]
-		property MColor DiffuseColor
-		{
-			MColor get() { return MColor(material->DiffuseColor); }
-			void set(MColor value) { material->DiffuseColor = value.ToColor4(); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Colors")]
-		property MColor SpecularColor
-		{
-			MColor get() { return MColor(material->SpecularColor); }
-			void set(MColor value) { material->SpecularColor = value.ToColor4(); OnChanged(); }
+    public:
+#pragma region Material Properties
+        [MPropertyAttribute(Group = "Colors")]
+        property MColor DiffuseColor
+        {
+            MColor get() { return MColor(this->material->DiffuseColor); }
+            void set(MColor value) { this->material->DiffuseColor = value.ToColor4(); OnChanged(); }
         }
-
+        
+        [MPropertyAttribute(Group = "Colors")]
+        property MColor SpecularColor
+        {
+            MColor get() { return MColor(this->material->SpecularColor); }
+            void set(MColor value) { this->material->SpecularColor = value.ToColor4(); OnChanged(); }
+        }
+        
         [MPropertyAttribute(Group = "Colors")]
         property MColor InnerColor
         {
-            MColor get() { return MColor(material->InnerColor); }
-            void set(MColor value) { material->InnerColor = value.ToColor4(); OnChanged(); }
+            MColor get() { return MColor(this->material->InnerColor); }
+            void set(MColor value) { this->material->InnerColor = value.ToColor4(); OnChanged(); }
         }
-
-		[MPropertyAttribute(Group = "Material")]
-		property double Shininess
-		{
-			double get() { return material->Shininess; }
-			void set(double value) { material->Shininess = (float)value; OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Material")]
-		property double Glossiness
-		{
-			double get() { return material->Glossiness; }
-			void set(double value) { material->Glossiness = (float)value; OnChanged(); }
+        
+        [MPropertyAttribute(Group = "Material")]
+        property double Shininess
+        {
+            double get() { return this->material->Shininess; }
+            void set(double value) { this->material->Shininess = (float)value; OnChanged(); }
         }
-
+        
+        [MPropertyAttribute(Group = "Material")]
+        property double Glossiness
+        {
+            double get() { return this->material->Glossiness; }
+            void set(double value) { this->material->Glossiness = (float)value; OnChanged(); }
+        }
+        
         [MPropertyAttribute(Group = "Material")]
         property double IOR
         {
-            double get() { return material->IOR; }
-            void set(double value) { material->IOR = (float)value; OnChanged(); }
+            double get() { return this->material->IOR; }
+            void set(double value) { this->material->IOR = (float)value; OnChanged(); }
         }
-
+        
         [MPropertyAttribute(Group = "Material")]
         property double Absorption
         {
-            double get() { return material->Absorption; }
-            void set(double value) { material->Absorption = (float)value; OnChanged(); }
+            double get() { return this->material->Absorption; }
+            void set(double value) { this->material->Absorption = (float)value; OnChanged(); }
+        }
+#pragma endregion
+
+        [MPropertyAttribute(Group = "Textures", Choosable = true)]
+        property MContentElement^ DiffuseMap
+        {
+            MContentElement^ get() { return MContentManager::GetMContentElement(this->material->GetDiffuseMap()); }
+            void set(MContentElement^ value) { this->material->Textures.DiffuseMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
         }
 
-		[MPropertyAttribute(Group = "Textures", Choosable = true)]
-		property MContentElement^ DiffuseMap
-		{
-            MContentElement^ get() { return MContentManager::GetMContentElement(material->GetDiffuseMap()); }
-            void set(MContentElement^ value) { material->Textures.DiffuseMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
-		}
-
-		[MPropertyAttribute(Group = "Textures", Choosable = true)]
-		property MContentElement^ NormalMap
-		{
-            MContentElement^ get() { return MContentManager::GetMContentElement(material->GetNormalMap()); }
-            void set(MContentElement^ value) { material->Textures.NormalMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
-		}
+        [MPropertyAttribute(Group = "Textures", Choosable = true)]
+        property MContentElement^ NormalMap
+        {
+            MContentElement^ get() { return MContentManager::GetMContentElement(this->material->GetNormalMap()); }
+            void set(MContentElement^ value) { this->material->Textures.NormalMapID = (value != nullptr ? value->ID : 0); OnChanged(); }
+        }
 
 	public:
 		MMaterial(ContentManager* owner, uint id) :

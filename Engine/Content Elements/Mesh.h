@@ -18,10 +18,10 @@ namespace MyEngine {
 	class Mesh : public ContentElement
 	{
 	public:
-		vector<Vector3>  Vertices;          //* 
-		vector<Vector3>  Normals;           //* 
-		vector<Vector3>	 TexCoords;         //* 
-		vector<Triangle> Triangles;         //* 
+		vector<Vector3>  Vertices;          //* group["Shape"] readonly
+		vector<Vector3>  Normals;           //* group["Shape"] readonly
+		vector<Vector3>	 TexCoords;         //* group["Shape"] readonly
+		vector<Triangle> Triangles;         //* noproperty
 
 	public:
 		Mesh(ContentManager* owner, const string& name, const string& package, const string& path);
@@ -34,8 +34,9 @@ namespace MyEngine {
 		virtual void WriteToFile(ostream& file) override;
 		virtual ContentElement* Clone() const override;
 
-	private:
-		void init();
+	protected:
+        void init();
+        virtual void* get(const string& name);
 	};
 
 }

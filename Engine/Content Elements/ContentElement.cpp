@@ -35,13 +35,13 @@ namespace MyEngine {
         if (this->Version >= 1)
         {
 #pragma region ContentElement Read
-        	Read(file, this->Type);
-        	Read(file, this->ID);
-        	Read(file, this->Name);
-        	Read(file, this->Package);
-        	Read(file, this->Path);
-        	Read(file, this->PackageOffset);
-        	Read(file, this->SavedSize);
+            Read(file, this->Type);
+            Read(file, this->ID);
+            Read(file, this->Name);
+            Read(file, this->Package);
+            Read(file, this->Path);
+            Read(file, this->PackageOffset);
+            Read(file, this->SavedSize);
 #pragma endregion
         }
         this->IsLoaded = false;
@@ -54,15 +54,15 @@ namespace MyEngine {
 	void ContentElement::init()
     {
 #pragma region ContentElement Init
-    	this->Version = CURRENT_VERSION;
-    	this->Type = ContentElementType::EMesh;
-    	this->ID = INVALID_ID;
-    	this->Name = "";
-    	this->Package = "";
-    	this->Path = "";
-    	this->PackageOffset = 0;
-    	this->SavedSize = 0;
-    	this->IsLoaded = false;
+        this->Version = CURRENT_VERSION;
+        this->Type = ContentElementType::EMesh;
+        this->ID = INVALID_ID;
+        this->Name = "";
+        this->Package = "";
+        this->Path = "";
+        this->PackageOffset = 0;
+        this->SavedSize = 0;
+        this->IsLoaded = false;
 #pragma endregion
 	}
 
@@ -80,6 +80,23 @@ namespace MyEngine {
 		return this->GetFullPath() + this->Name;
 	}
 
+
+    void* ContentElement::get(const string& name)
+    {
+#pragma region ContentElement Get
+        if (name == "Type")
+            return &this->Type;
+        else if (name == "ID")
+            return &this->ID;
+        else if (name == "Name")
+            return &this->Name;
+        else if (name == "Package")
+            return &this->Package;
+        else if (name == "Path")
+            return &this->Path;
+#pragma endregion
+        return NULL;
+    }
 
 	long long ContentElement::Size() const
 	{

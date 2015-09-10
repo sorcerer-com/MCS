@@ -27,14 +27,14 @@ namespace MyEngine {
 		if (this->Version >= 1)
         {
 #pragma region Material Read
-	        Read(file, this->DiffuseColor);
-	        Read(file, this->SpecularColor);
-	        Read(file, this->InnerColor);
-	        Read(file, this->Shininess);
-	        Read(file, this->Glossiness);
-	        Read(file, this->IOR);
-	        Read(file, this->Absorption);
-	        Read(file, this->Textures);
+            Read(file, this->DiffuseColor);
+            Read(file, this->SpecularColor);
+            Read(file, this->InnerColor);
+            Read(file, this->Shininess);
+            Read(file, this->Glossiness);
+            Read(file, this->IOR);
+            Read(file, this->Absorption);
+            Read(file, this->Textures);
 #pragma endregion
 		}
 		this->IsLoaded = true;
@@ -43,13 +43,13 @@ namespace MyEngine {
 	void Material::init()
     {
 #pragma region Material Init
-    	this->DiffuseColor = Color4(0.8f, 0.8f, 0.8f, 1.0f);
-    	this->SpecularColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
-    	this->InnerColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
-    	this->Shininess = 10.0f;
-    	this->Glossiness = 1.0f;
-    	this->IOR = 1.5f;
-    	this->Absorption = 0.1f;
+        this->DiffuseColor = Color4(0.8f, 0.8f, 0.8f, 1.0f);
+        this->SpecularColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
+        this->InnerColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
+        this->Shininess = 10.0f;
+        this->Glossiness = 1.0f;
+        this->IOR = 1.5f;
+        this->Absorption = 0.1f;
 #pragma endregion
         this->Textures.DiffuseMapID = INVALID_ID;
         this->Textures.NormalMapID = INVALID_ID;
@@ -70,6 +70,29 @@ namespace MyEngine {
 		return ContentElementPtr();
 	}
 
+
+    void* Material::get(const string& name)
+    {
+#pragma region Material Get
+        if (name == "DiffuseColor")
+            return &this->DiffuseColor;
+        else if (name == "SpecularColor")
+            return &this->SpecularColor;
+        else if (name == "InnerColor")
+            return &this->InnerColor;
+        else if (name == "Shininess")
+            return &this->Shininess;
+        else if (name == "Glossiness")
+            return &this->Glossiness;
+        else if (name == "IOR")
+            return &this->IOR;
+        else if (name == "Absorption")
+            return &this->Absorption;
+        else if (name == "Textures")
+            return &this->Textures;
+#pragma endregion
+        return ContentElement::get(name);
+    }
 
 	long long Material::Size() const
 	{

@@ -31,7 +31,10 @@ namespace MyEngine {
 			collection->Add(this->getMContentElement(element));
 
 		return collection;
-	}
+    }
+
+#pragma region ContentManager Properties_cpp
+#pragma endregion
 
 
     MContentManager::MContentManager(MEngine^ owner, ContentManager* contentManager) :
