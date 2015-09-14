@@ -91,7 +91,11 @@ namespace MyEngine {
 		MMaterial(ContentManager* owner, uint id) :
 			MContentElement(owner, id)
 		{
-		}
+        }
+
+
+#pragma region Material Functions
+#pragma endregion
 
 
 		bool LoadFromFile(String^ filePath) override

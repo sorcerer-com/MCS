@@ -131,7 +131,11 @@ namespace MyEngine {
 		{
 			this->owner = owner;
 			this->id = id;
-		}
+        }
+
+
+#pragma region SceneElement Functions
+#pragma endregion
 
 
 		void OnChanged()

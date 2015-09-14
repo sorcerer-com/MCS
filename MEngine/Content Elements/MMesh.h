@@ -33,10 +33,11 @@ namespace MyEngine {
         {
             List<MPoint>^ get()
             {
-            List<MPoint>^ collection = gcnew List<MPoint>();
-            for (const auto& value : this->mesh->Vertices)
-                collection->Add(MPoint(value));
-            return collection;
+                List<MPoint>^ collection = gcnew List<MPoint>();
+                const auto& res = this->mesh->Vertices;
+                for (const auto& value : res)
+                    collection->Add(MPoint(value));
+                return collection;
             }
         }
         
@@ -45,10 +46,11 @@ namespace MyEngine {
         {
             List<MPoint>^ get()
             {
-            List<MPoint>^ collection = gcnew List<MPoint>();
-            for (const auto& value : this->mesh->Normals)
-                collection->Add(MPoint(value));
-            return collection;
+                List<MPoint>^ collection = gcnew List<MPoint>();
+                const auto& res = this->mesh->Normals;
+                for (const auto& value : res)
+                    collection->Add(MPoint(value));
+                return collection;
             }
         }
         
@@ -57,10 +59,11 @@ namespace MyEngine {
         {
             List<MPoint>^ get()
             {
-            List<MPoint>^ collection = gcnew List<MPoint>();
-            for (const auto& value : this->mesh->TexCoords)
-                collection->Add(MPoint(value));
-            return collection;
+                List<MPoint>^ collection = gcnew List<MPoint>();
+                const auto& res = this->mesh->TexCoords;
+                for (const auto& value : res)
+                    collection->Add(MPoint(value));
+                return collection;
             }
         }
 #pragma endregion
@@ -93,7 +96,11 @@ namespace MyEngine {
 		MMesh(ContentManager* owner, uint id) : 
 			MContentElement(owner, id)
 		{
-		}
+        }
+
+
+#pragma region Mesh Functions
+#pragma endregion
 
 
 		bool LoadFromFile(String^ filePath) override

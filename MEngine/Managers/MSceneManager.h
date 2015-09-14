@@ -77,27 +77,29 @@ namespace MyEngine {
 	public:
 		MSceneManager(MEngine^ owner, SceneManager* sceneManager);
 
+#pragma region SceneManager Functions_h
 		void New();
-		bool Load(String^ filePath);
 		bool Save(String^ filePath);
-
-		MSceneElement^ AddElement(ESceneElementType type, String^ name, uint contentID);
-		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName);
-		MSceneElement^ CloneElement(uint id, String^ newName);
+		bool Load(String^ filePath);
+		
+		MSceneElement^ AddElement(ESceneElementType type, String^ name, uint contentID, uint id);
+		MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName, uint id);
 		bool ContainsElement(uint id);
 		bool ContainsElement(String^ name);
-		bool RenameElement(String^ oldName, String^ newName);
-		bool SetElementLayer(uint id, String^ layer);
 		bool DeleteElement(uint id);
 		MSceneElement^ GetElement(uint id);
 		MSceneElement^ GetElement(String^ name);
-        List<MSceneElement^>^ GetElements(ESceneElementType type);
-        
+		List<MSceneElement^>^ GetElements(ESceneElementType type);
+		
 		bool CreateLayer(String^ layer);
 		bool RenameLayer(String^ oldLayer, String^ newLayer);
 		bool ContainsLayer(String^ layer);
 		bool DeleteLayer(String^ layer);
 		List<MSceneElement^>^ GetLayerElements(String^ layer);
+#pragma endregion
+        MSceneElement^ CloneElement(uint id, String^ newName);
+        bool RenameElement(String^ oldName, String^ newName);
+        bool SetElementLayer(uint id, String^ layer);
 
 	private:
 		void OnChanged(MSceneElement^ element);

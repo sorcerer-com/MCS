@@ -38,8 +38,8 @@ namespace CodeGenerator
             string dir = Path.GetDirectoryName(headerFileName);
             string fileName = Path.GetFileNameWithoutExtension(headerFileName);
             this.CodeFileName = Path.Combine(dir, fileName) + ".cpp";
-            this.WrapperHeaderFileName = Path.Combine(dir.Replace(@"\Engine\", @"\MEngine\"), "M" + fileName) + ".h";
-            this.WrapperCodeFileName = Path.Combine(dir.Replace(@"\Engine\", @"\MEngine\"), "M" + fileName) + ".cpp";
+            this.WrapperHeaderFileName = Path.Combine(dir.Replace(@"\Engine", @"\MEngine"), "M" + fileName) + ".h";
+            this.WrapperCodeFileName = Path.Combine(dir.Replace(@"\Engine", @"\MEngine"), "M" + fileName) + ".cpp";
 
             this.Members = new List<Member>();
             this.Functions = new List<Function>();

@@ -42,8 +42,12 @@ namespace CodeGenerator.Generators.Wrappers
                     string args = string.Empty;
                     int i = 0;
                     foreach (var pair in func.Parameters)
-                        if (!pair.Key.Contains("="))
-                            args += string.Format("{0} {1}, ", wrapperParamsTypes[i++], pair.Key);
+                    {
+                        string param = pair.Key;
+                        if (param.Contains("="))
+                            param = param.Remove(param.IndexOf("=")).Trim();
+                        args += string.Format("{0} {1}, ", wrapperParamsTypes[i++], param);
+                    }
                     if (args.Length > 2)
                         args = args.Remove(args.Length - 2);
 
@@ -58,7 +62,12 @@ namespace CodeGenerator.Generators.Wrappers
                         args = string.Empty;
                         i = 0;
                         foreach (var pair in func.Parameters)
-                            args += WrapperTypesUtils.ConvertFromWrapperType(pair.Key, FunctionGenerator.GetClearParameterType(pair.Value), wrapperParamsTypes[i++]) + ", ";
+                        {
+                            string param = pair.Key;
+                            if (param.Contains("="))
+                                param = param.Remove(param.IndexOf("=")).Trim();
+                            args += WrapperTypesUtils.ConvertFromWrapperType(param, FunctionGenerator.GetClearParameterType(pair.Value), wrapperParamsTypes[i++]) + ", ";
+                        }
                         if (args.Length > 2)
                             args = args.Remove(args.Length - 2);
 
@@ -66,17 +75,46 @@ namespace CodeGenerator.Generators.Wrappers
 
                         result.Add("{");
                         if (wrapperReturnType == "void")
+                        {
                             result.Add("{0}{1};", CodeGenerator.Indent, call);
+                            if (!func.Constant && !func.ContainsAttribute(FunctionAttributes.Const)) // function should call onChanged
+                                result.Add("{0}{1}", CodeGenerator.Indent, FunctionGenerator.GetOnChangedCall(func, wrapperReturnType));
+                        }
+                        else if (wrapperReturnType.StartsWith("List<"))
+                        {
+                            result.AddRange(WrapperTypesUtils.ConvertToWrapperListType(call, func.ReturnType, wrapperReturnType, func.Name, 1));
+                            if (!func.Constant && !func.ContainsAttribute(FunctionAttributes.Const)) // function should call onChanged
+                                result.Add("{0}{1}", CodeGenerator.Indent, FunctionGenerator.GetOnChangedCall(func, wrapperReturnType));
+                            result.Add("{0}return collection;", CodeGenerator.Indent);
+                        }
                         else
                         {
                             string converted = WrapperTypesUtils.ConvertToWrapperType(call, func.ReturnType, wrapperReturnType, null);
-                            result.Add("{0}return {1};", CodeGenerator.Indent, converted);
+                            if (!func.Constant && !func.ContainsAttribute(FunctionAttributes.Const)) // function should call onChanged
+                            {
+                                if (wrapperReturnType == "bool")
+                                {
+                                    result.Add("{0}bool res = {1};", CodeGenerator.Indent, converted);
+                                    result.Add("{0}if (res)", CodeGenerator.Indent);
+                                    result.Add("{0}{0}{1}", CodeGenerator.Indent, FunctionGenerator.GetOnChangedCall(func, wrapperReturnType));
+                                    result.Add("{0}return res;", CodeGenerator.Indent);
+                                }
+                                else if (wrapperReturnType == "MSceneElement^" || wrapperReturnType == "MContentElement^")
+                                {
+                                    result.Add("{0}{1} res = {2};", CodeGenerator.Indent, wrapperReturnType, converted);
+                                    result.Add("{0}if (res != nullptr)", CodeGenerator.Indent);
+                                    result.Add("{0}{0}{1}", CodeGenerator.Indent, FunctionGenerator.GetOnChangedCall(func, wrapperReturnType));
+                                    result.Add("{0}return res;", CodeGenerator.Indent);
+                                }
+                            }
+                            else
+                                result.Add("{0}return {1};", CodeGenerator.Indent, converted);
                         }
                         result.Add("}");
                         result.Add("");
                     }
-                    else if (func.ContainsAttribute(FunctionAttributes.EndGroup))
-                            result.Add("");
+                    if (func.ContainsAttribute(FunctionAttributes.EndGroup))
+                        result.Add("");
                 }
             }
             if (result.Count > 0 && string.IsNullOrWhiteSpace(result[result.Count - 1]))
@@ -98,6 +136,15 @@ namespace CodeGenerator.Generators.Wrappers
             if (type.EndsWith("&") || type.EndsWith("*"))
                 type = type.Remove(type.Length - 1);
             return type;
+        }
+
+        public static string GetOnChangedCall(Function func, string wrapperReturnType)
+        {
+            if (func.Class.EndsWith("Manager") && (wrapperReturnType == "MSceneElement^" || wrapperReturnType == "MContentElement^"))
+                return "this->OnChanged(res);";
+            else if (func.Class.EndsWith("Manager"))
+                return "this->OnChanged(nullptr);";
+            return "this->OnChanged();";
         }
 
     }

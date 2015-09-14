@@ -74,7 +74,12 @@ namespace MyEngine {
 		MLight(SceneManager* owner, uint id) :
 			MSceneElement(owner, id)
 		{
-		}
+        }
+
+
+#pragma region Light Functions
+#pragma endregion
+
 	};
 
 }

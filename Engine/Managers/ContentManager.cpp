@@ -447,7 +447,7 @@ namespace MyEngine {
 		return ContentElementPtr();
 	}
 	
-	vector<ContentElementPtr> ContentManager::GetElements()
+	vector<ContentElementPtr> ContentManager::GetElements() const
 	{
 		vector<ContentElementPtr> result;
 		for (const auto& pair : this->content)

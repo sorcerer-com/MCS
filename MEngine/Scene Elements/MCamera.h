@@ -46,10 +46,10 @@ namespace MyEngine {
 		MCamera(SceneManager* owner, uint id) : 
 			MSceneElement(owner, id)
 		{
-		}
+        }
 
 
-		void Move(double x, double y, double z)
+        void Move(double x, double y, double z)
         {
             this->camera->Move(Vector3(x, y, z));
         }
@@ -58,11 +58,25 @@ namespace MyEngine {
         {
             this->camera->Rotate(Quaternion(Vector3(x, y, z)));
         }
-        
+
+#pragma region Camera Functions
+        void Move(MPoint v)
+        {
+            this->camera->Move(v.ToVector3());
+            this->OnChanged();
+        }
+
+        void Rotate(MPoint q)
+        {
+            this->camera->Rotate(Quaternion(q.ToVector3()));
+            this->OnChanged();
+        }
+
         MPoint GetDirection()
         {
             return MPoint(this->camera->GetDirection());
         }
+#pragma endregion
 
 	};
 

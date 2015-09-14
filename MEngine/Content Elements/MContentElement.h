@@ -118,6 +118,10 @@ namespace MyEngine {
 		}
 
 
+#pragma region ContentElement Functions
+#pragma endregion
+
+
 		virtual bool LoadFromFile(String^)
 		{
 			return false;

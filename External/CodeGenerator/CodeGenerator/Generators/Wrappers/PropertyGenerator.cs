@@ -73,7 +73,8 @@ namespace CodeGenerator.Generators.Wrappers
             {
                 result.Add("{0}{1} get()", CodeGenerator.Indent, wrapperType);
                 result.Add("{0}{{", CodeGenerator.Indent);
-                result.AddRange(this.getListGetter(member, wrapperType, wrapperName));
+                result.AddRange(WrapperTypesUtils.ConvertToWrapperListType(PropertyGenerator.GetAccessMember(member) + "->" + member.Name, member.Type, wrapperType, wrapperName, 2));
+                result.Add("{0}{0}return collection;", CodeGenerator.Indent);
                 result.Add("{0}}}", CodeGenerator.Indent);
             }
             else
@@ -136,7 +137,8 @@ namespace CodeGenerator.Generators.Wrappers
             {
                 result.Add("{0} M{1}::{2}::get()", wrapperType, member.Class, wrapperName);
                 result.Add("{");
-                result.AddRange(this.getListGetter(member, wrapperType, wrapperName));
+                result.AddRange(WrapperTypesUtils.ConvertToWrapperListType(PropertyGenerator.GetAccessMember(member) + "->" + member.Name, member.Type, wrapperType, wrapperName, 1));
+                result.Add("{0}return collection;", CodeGenerator.Indent);
                 result.Add("}");
             }
             else
@@ -165,24 +167,6 @@ namespace CodeGenerator.Generators.Wrappers
                     result.Add("");
                 }
             }
-
-            return result;
-        }
-            
-        private List<string> getListGetter(Member member, string wrapperType, string wrapperName) // TODO: may be in converter
-        {
-            List<string> result = new List<string>();
-            
-            string innerMemeberType = member.Type.Replace("vector<", "");
-            innerMemeberType = innerMemeberType.Remove(innerMemeberType.Length - 1);
-            string innerWrapperType = wrapperType.Replace("List<", "");
-            innerWrapperType = innerWrapperType.Remove(innerWrapperType.Length - 2);
-            string converted = WrapperTypesUtils.ConvertToWrapperType("value", innerMemeberType, innerWrapperType, wrapperName);
-
-            result.Add("{0}{1} collection = gcnew {2}();", CodeGenerator.Indent, wrapperType, wrapperType.Remove(wrapperType.Length - 1));
-            result.Add("{0}for (const auto& value : {1}->{2})", CodeGenerator.Indent, PropertyGenerator.GetAccessMember(member), member.Name);
-            result.Add("{0}{0}collection->Add({1});", CodeGenerator.Indent, converted);
-            result.Add("{0}return collection;", CodeGenerator.Indent);
 
             return result;
         }

@@ -21,7 +21,7 @@ namespace MyEngine {
 
 		void Move(const Vector3& v);        //* wrap
         void Rotate(const Quaternion& q);   //* wrap
-		Vector3 GetDirection();             //* wrap
+		Vector3 GetDirection() const;       //* wrap
 
 		virtual void WriteToFile(ostream& file) const override;
 		virtual SceneElement* Clone() const override;

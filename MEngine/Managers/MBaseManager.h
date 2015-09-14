@@ -31,6 +31,10 @@ namespace MyEngine {
             this->owner = owner;
         }
 
+
+#pragma region BaseManager Functions
+#pragma endregion
+
     };
 
 };

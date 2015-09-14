@@ -4,9 +4,7 @@ using System.IO;
 namespace CodeGenerator
 {
     public class Program
-    {
-        // TODO: try to generate wrapper functions too
-        
+    {        
         public static bool IsDebugging
         {
             get { return !Console.IsInputRedirected; }
@@ -16,8 +14,8 @@ namespace CodeGenerator
         public static void Main(string[] args)
         {
             if (args.Length == 0)
-                args = new string[] { Directory.GetCurrentDirectory() };
-                //args = new string[] { Path.Combine(Directory.GetCurrentDirectory(), "Mesh.h") };
+                args = new string[] { Path.Combine(Directory.GetCurrentDirectory(), "Engine") };
+                //args = new string[] { Path.Combine(Directory.GetCurrentDirectory(), "Engine", "Mesh.h") };
 
             if (args.Length != 1)
             {

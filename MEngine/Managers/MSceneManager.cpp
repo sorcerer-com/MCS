@@ -121,175 +121,167 @@ namespace MyEngine {
 	}
 
 
+#pragma region SceneManager Functions_cpp
 	void MSceneManager::New()
 	{
-		this->sceneManager->New();
-	}
-
-	bool MSceneManager::Load(String^ filePath)
-	{
-		return this->sceneManager->Load(to_string(filePath));
-	}
-
-	bool MSceneManager::Save(String^ filePath)
-	{
-		return this->sceneManager->Save(to_string(filePath));
-	}
-
-
-	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, uint contentID)
-	{
-		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), contentID);
-		MSceneElement^ mse = this->getMSceneElement(elem);
-		if (mse != nullptr)
-			this->OnChanged(mse);
-		return mse;
-	}
-
-	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, String^ contentFullName)
-	{
-		SceneElementPtr elem = this->sceneManager->AddElement((SceneElementType)type, to_string(name), to_string(contentFullName));
-		MSceneElement^ mse = this->getMSceneElement(elem);
-		if (mse != nullptr)
-			this->OnChanged(mse);
-		return mse;
-	}
-
-	MSceneElement^ MSceneManager::CloneElement(uint id, String^ newName)
-	{
-		SceneElementPtr elem = this->sceneManager->GetElement(id);
-		if (!elem)
-			return nullptr;
-
-		SceneElement* newElem = elem->Clone();
-		newElem->ID = 0;
-		newElem->Name = to_string(newName);
-
-		if (this->sceneManager->AddElement(newElem))
-		{
-			MSceneElement^ mse = this->getMSceneElement(this->sceneManager->GetElement(newElem->ID));
-			this->OnChanged(mse);
-			return mse;
-		}
-		return nullptr;
-	}
-
-	bool MSceneManager::ContainsElement(uint id)
-	{
-		return this->sceneManager->ContainsElement(id);
-	}
-
-	bool MSceneManager::ContainsElement(String^ name)
-	{
-		return this->sceneManager->ContainsElement(to_string(name));
-	}
-
-	bool MSceneManager::RenameElement(String^ oldName, String^ newName)
-	{
-		if (this->sceneManager->GetElement(to_string(newName)))
-			return false;
-
-		SceneElementPtr elem = this->sceneManager->GetElement(to_string(oldName));
-		if (!elem)
-			return false;
-
-		elem->Name = to_string(newName);
-
-		this->OnChanged(this->getMSceneElement(elem));
-		return true;
+	    this->sceneManager->New();
+	    this->OnChanged(nullptr);
 	}
 	
-	bool MSceneManager::SetElementLayer(uint id, String^ layer)
+	bool MSceneManager::Save(String^ filePath)
 	{
-		SceneElementPtr elem = this->sceneManager->GetElement(id);
-		if (!elem)
-			return false;
-
-		if (!this->sceneManager->ContainsLayer(to_string(layer)))
-			return false;
-
-		elem->Layer = to_string(layer);
-		this->OnChanged(this->getMSceneElement(elem));
-		return true;
+	    return this->sceneManager->Save(to_string(filePath));
 	}
-
+	
+	bool MSceneManager::Load(String^ filePath)
+	{
+	    bool res = this->sceneManager->Load(to_string(filePath));
+	    if (res)
+	        this->OnChanged(nullptr);
+	    return res;
+	}
+	
+	
+	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, uint contentID, uint id)
+	{
+	    MSceneElement^ res = this->getMSceneElement(this->sceneManager->AddElement((SceneElementType)type, to_string(name), contentID, id));
+	    if (res != nullptr)
+	        this->OnChanged(res);
+	    return res;
+	}
+	
+	MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, String^ contentFullName, uint id)
+	{
+	    MSceneElement^ res = this->getMSceneElement(this->sceneManager->AddElement((SceneElementType)type, to_string(name), to_string(contentFullName), id));
+	    if (res != nullptr)
+	        this->OnChanged(res);
+	    return res;
+	}
+	
+	bool MSceneManager::ContainsElement(uint id)
+	{
+	    return this->sceneManager->ContainsElement(id);
+	}
+	
+	bool MSceneManager::ContainsElement(String^ name)
+	{
+	    return this->sceneManager->ContainsElement(to_string(name));
+	}
+	
 	bool MSceneManager::DeleteElement(uint id)
 	{
-		bool res = this->sceneManager->DeleteElement(id);
-		if (res)
-			this->OnChanged(nullptr);
-		return res;
+	    bool res = this->sceneManager->DeleteElement(id);
+	    if (res)
+	        this->OnChanged(nullptr);
+	    return res;
 	}
-
+	
 	MSceneElement^ MSceneManager::GetElement(uint id)
 	{
-		if (!this->sceneManager->ContainsElement(id))
-			return nullptr;
-
-		SceneElementPtr elem = this->sceneManager->GetElement(id);
-		return this->getMSceneElement(elem);
+	    return this->getMSceneElement(this->sceneManager->GetElement(id));
 	}
-
+	
 	MSceneElement^ MSceneManager::GetElement(String^ name)
 	{
-		SceneElementPtr elem = this->sceneManager->GetElement(to_string(name));
-		if (!elem)
-			return nullptr;
-
-		return this->getMSceneElement(elem);
+	    return this->getMSceneElement(this->sceneManager->GetElement(to_string(name)));
 	}
-
-    List<MSceneElement^>^ MSceneManager::GetElements(ESceneElementType type)
-    {
-        List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
-
-        const auto elements = this->sceneManager->GetElements((SceneElementType)type);
-        for (const auto& element : elements)
-            collection->Add(this->getMSceneElement(element));
-
-        return collection;
-    }
-
-
+	
+	List<MSceneElement^>^ MSceneManager::GetElements(ESceneElementType type)
+	{
+	    List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
+	    const auto& res = this->sceneManager->GetElements((SceneElementType)type);
+	    for (const auto& value : res)
+	        collection->Add(this->getMSceneElement(value));
+	    return collection;
+	}
+	
+	
 	bool MSceneManager::CreateLayer(String^ layer)
 	{
-		bool res = this->sceneManager->CreateLayer(to_string(layer));
-		if (res)
-			this->OnChanged(nullptr);
-		return res;
+	    bool res = this->sceneManager->CreateLayer(to_string(layer));
+	    if (res)
+	        this->OnChanged(nullptr);
+	    return res;
 	}
-
+	
 	bool MSceneManager::RenameLayer(String^ oldLayer, String^ newLayer)
 	{
-		bool res = this->sceneManager->RenameLayer(to_string(oldLayer), to_string(newLayer));
-		if (res)
-			this->OnChanged(nullptr);
-		return res;
+	    bool res = this->sceneManager->RenameLayer(to_string(oldLayer), to_string(newLayer));
+	    if (res)
+	        this->OnChanged(nullptr);
+	    return res;
 	}
-
+	
 	bool MSceneManager::ContainsLayer(String^ layer)
 	{
-		return this->sceneManager->ContainsLayer(to_string(layer));
+	    return this->sceneManager->ContainsLayer(to_string(layer));
 	}
-
+	
 	bool MSceneManager::DeleteLayer(String^ layer)
 	{
-		bool res = this->sceneManager->DeleteLayer(to_string(layer));
-		if (res)
-			this->OnChanged(nullptr);
-		return res;
+	    bool res = this->sceneManager->DeleteLayer(to_string(layer));
+	    if (res)
+	        this->OnChanged(nullptr);
+	    return res;
 	}
 	
 	List<MSceneElement^>^ MSceneManager::GetLayerElements(String^ layer)
 	{
-		List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
-
-		const auto elements = this->sceneManager->GetLayerElements(to_string(layer));
-		for (const auto& element : elements)
-			collection->Add(this->getMSceneElement(element));
-
-		return collection;
+	    List<MSceneElement^>^ collection = gcnew List<MSceneElement^>();
+	    const auto& res = this->sceneManager->GetLayerElements(to_string(layer));
+	    for (const auto& value : res)
+	        collection->Add(this->getMSceneElement(value));
+	    return collection;
 	}
+#pragma endregion
+
+    MSceneElement^ MSceneManager::CloneElement(uint id, String^ newName)
+    {
+        SceneElementPtr elem = this->sceneManager->GetElement(id);
+        if (!elem)
+            return nullptr;
+
+        SceneElement* newElem = elem->Clone();
+        newElem->ID = 0;
+        newElem->Name = to_string(newName);
+
+        if (this->sceneManager->AddElement(newElem))
+        {
+            MSceneElement^ mse = this->getMSceneElement(this->sceneManager->GetElement(newElem->ID));
+            this->OnChanged(mse);
+            return mse;
+        }
+        return nullptr;
+    }
+
+    bool MSceneManager::RenameElement(String^ oldName, String^ newName)
+    {
+        if (this->sceneManager->GetElement(to_string(newName)))
+            return false;
+
+        SceneElementPtr elem = this->sceneManager->GetElement(to_string(oldName));
+        if (!elem)
+            return false;
+
+        elem->Name = to_string(newName);
+
+        this->OnChanged(this->getMSceneElement(elem));
+        return true;
+    }
+
+    bool MSceneManager::SetElementLayer(uint id, String^ layer)
+    {
+        SceneElementPtr elem = this->sceneManager->GetElement(id);
+        if (!elem)
+            return false;
+
+        if (!this->sceneManager->ContainsLayer(to_string(layer)))
+            return false;
+
+        elem->Layer = to_string(layer);
+        this->OnChanged(this->getMSceneElement(elem));
+        return true;
+    }
 
 
 	void MSceneManager::OnChanged(MSceneElement^ element)

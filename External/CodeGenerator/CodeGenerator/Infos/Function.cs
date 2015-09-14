@@ -7,6 +7,7 @@ namespace CodeGenerator.Infos
     public static class FunctionAttributes
     {
         public const string Wrap = "wrap";
+        public const string Const = "const";
         public const string EndGroup = "endgroup";
     }
 

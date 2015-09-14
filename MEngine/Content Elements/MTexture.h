@@ -100,6 +100,8 @@ namespace MyEngine {
 		}
 
 
+#pragma region Texture Functions
+#pragma endregion
 		void Init(uint width, uint height)
 		{
 			width = power_of_two(width);

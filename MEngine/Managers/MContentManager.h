@@ -39,26 +39,28 @@ namespace MyEngine {
 	public:
         MContentManager(MEngine^ owner, ContentManager* contentManager);
 
-		bool ImportPackage(String^ filePath);
-		bool ExportToPackage(String^ filePath, uint id);
-
-		bool CreatePath(String^ fullPath);
-		bool RenamePath(String^ oldFullPath, String^ newFullPath);
-		bool ContainsPath(String^ fullPath);
-		bool DeletePath(String^ fullPath);
-
-		MContentElement^ AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id);
-		MContentElement^ CloneElement(uint id, String^ newName);
-		bool ContainsElement(uint id);
-		bool ContainsElement(String^ fullName);
-		bool RenameElement(uint id, String^ newName);
-		bool MoveElement(uint id, String^ newFullPath);
-		bool DeleteElement(uint id);
-		MContentElement^ GetElement(uint id);
-		MContentElement^ GetElement(uint id, bool load);
-		MContentElement^ GetElement(String^ fullName);
-		MContentElement^ GetElement(String^ fullName, bool load);
-		void SaveElement(uint id);
+#pragma region ContentManager Functions_h
+        bool ImportPackage(String^ filePath);
+        bool ExportToPackage(String^ filePath, uint id);
+        
+        bool CreatePath(String^ fullPath);
+        bool RenamePath(String^ oldFullPath, String^ newFullPath);
+        bool ContainsPath(String^ fullPath);
+        bool DeletePath(String^ fullPath);
+        
+        MContentElement^ AddElement(EContentElementType type, String^ name, String^ package, String^ path, uint id);
+        bool ContainsElement(uint id);
+        bool ContainsElement(String^ fullName);
+        bool MoveElement(uint id, String^ newFullPath);
+        bool DeleteElement(uint id);
+        MContentElement^ GetElement(uint id, bool load, bool waitForLoad);
+        MContentElement^ GetElement(String^ fullName, bool load, bool waitForLoad);
+        void SaveElement(uint id);
+#pragma endregion
+        MContentElement^ CloneElement(uint id, String^ newName);
+        bool RenameElement(uint id, String^ newName);
+        MContentElement^ GetElement(uint id);
+        MContentElement^ GetElement(String^ fullName);
 
 	private:
 		void OnChanged(MContentElement^ element);

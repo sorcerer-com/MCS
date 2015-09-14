@@ -44,7 +44,7 @@ namespace MyEngine {
         this->SkyBoxID = INVALID_ID;
 	}
 
-	bool SceneManager::Save(const string& filePath)
+	bool SceneManager::Save(const string& filePath) const
     {
         lock lck(this->thread->mutex("content"));
 

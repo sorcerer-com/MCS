@@ -51,7 +51,7 @@ namespace MyEngine {
         this->Rotation.normalize();
     }
 
-	Vector3 Camera::GetDirection()
+	Vector3 Camera::GetDirection() const
 	{
 		Vector3 dir(0, 0, 1);
 		return this->Rotation * dir;

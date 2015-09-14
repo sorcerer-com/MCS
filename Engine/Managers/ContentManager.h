@@ -46,25 +46,25 @@ namespace MyEngine {
 		ContentManager(Engine* owner);
         ~ContentManager();
 
-		bool ImportPackage(const string& filePath);
-		bool ExportToPackage(const string& filePath, uint id);
+        bool ImportPackage(const string& filePath);	//* wrap
+        bool ExportToPackage(const string& filePath, uint id);	//* wrap const endgroup
 
-		bool CreatePath(const string& fullPath);
-		bool RenamePath(const string& oldFullPath, const string& newFullPath);
-		bool ContainsPath(const string& fullPath) const;
-		bool DeletePath(const string& fullPath);
-		vector<string> GetPaths() const;
+        bool CreatePath(const string& fullPath);	//* wrap
+        bool RenamePath(const string& oldFullPath, const string& newFullPath);	//* wrap
+        bool ContainsPath(const string& fullPath) const;	//* wrap
+        bool DeletePath(const string& fullPath);	//* wrap endgroup
+        vector<string> GetPaths() const;
 
-		ContentElementPtr AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);
-		bool AddElement(ContentElement* element);
-		bool ContainsElement(uint id) const;
-		bool ContainsElement(const string& fullName);
-		bool MoveElement(uint id, const string& newFullPath);
-		bool DeleteElement(uint id);
-		ContentElementPtr GetElement(uint id, bool load, bool waitForLoad = false);
-		ContentElementPtr GetElement(const string& fullName, bool load, bool waitForLoad = false);
-		vector<ContentElementPtr> GetElements();
-		void SaveElement(uint id);
+        ContentElementPtr AddElement(ContentElementType type, const string& name, const string& package, const string& path, uint id = 0);	//* wrap
+        bool AddElement(ContentElement* element);	//* wrap
+        bool ContainsElement(uint id) const;		//* wrap
+        bool ContainsElement(const string& fullName);	//* wrap const
+        bool MoveElement(uint id, const string& newFullPath);	//* wrap
+        bool DeleteElement(uint id);				//* wrap
+        ContentElementPtr GetElement(uint id, bool load, bool waitForLoad = false);	//* wrap const
+        ContentElementPtr GetElement(const string& fullName, bool load, bool waitForLoad = false);	//* wrap const
+        vector<ContentElementPtr> GetElements() const;
+        void SaveElement(uint id);					//* wrap const
 		
 	private:
 		void doSerilization();
