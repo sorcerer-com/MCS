@@ -460,7 +460,41 @@ namespace MyEngine {
 	{
 		this->addRequest(ESaveElement, id);
 		this->addRequest(ESaveDatabase);
-	}
+    }
+
+
+    /* I N S T A N C E S */
+    ContentElementPtr ContentManager::GetInstance(uint sceneElementID, uint id)
+    {
+        if (sceneElementID == INVALID_ID || id == INVALID_ID)
+            return ContentElementPtr();
+
+        lock lck(this->thread->mutex("content"));
+        if (this->instances.find(sceneElementID) == this->instances.end())
+            this->instances[sceneElementID];
+        if (this->instances[sceneElementID].find(id) == this->instances[sceneElementID].end())
+        {
+            Engine::Log(ELog, "ContentManager", "Create instance of content element (" + to_string(id) + ") for scene element (" + to_string(sceneElementID) + ")");
+            this->instances[sceneElementID][id] = ContentElementPtr(this->GetElement(id, true, true)->Clone());
+        }
+
+        return this->instances[sceneElementID][id];
+    }
+
+    void ContentManager::ClearInstances(uint sceneElementID)
+    {
+        lock lck(this->thread->mutex("content"));
+        Engine::Log(ELog, "ContentManager", "Destroy instances for scene element (" + to_string(sceneElementID) + ")");
+        this->instances[sceneElementID].clear();
+        this->instances.erase(sceneElementID);
+    }
+
+    void ContentManager::ClearAllInstances()
+    {
+        lock lck(this->thread->mutex("content"));
+        Engine::Log(ELog, "ContentManager", "Destroy all instances");
+        this->instances.clear();
+    }
 
 
 	/* S E R I L I Z A T I O N */

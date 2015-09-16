@@ -53,14 +53,14 @@ namespace MyEngine {
         bool ContainsElement(String^ fullName);
         bool MoveElement(uint id, String^ newFullPath);
         bool DeleteElement(uint id);
-        MContentElement^ GetElement(uint id, bool load, bool waitForLoad);
-        MContentElement^ GetElement(String^ fullName, bool load, bool waitForLoad);
         void SaveElement(uint id);
 #pragma endregion
         MContentElement^ CloneElement(uint id, String^ newName);
         bool RenameElement(uint id, String^ newName);
         MContentElement^ GetElement(uint id);
+        MContentElement^ GetElement(uint id, bool load);
         MContentElement^ GetElement(String^ fullName);
+        MContentElement^ GetElement(String^ fullName, bool load);
 
 	private:
 		void OnChanged(MContentElement^ element);

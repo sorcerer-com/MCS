@@ -97,7 +97,7 @@ namespace MyEngine {
         void createRTCScene();
         embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
         void cacheContentElements(const SceneElementPtr sceneElement);
-        InterInfo getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor = false);
+        InterInfo getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor = false, bool noNormalMap = false);
 
         bool generateIrradianceMap();
         bool addIrradianceMapSample(float x, float y, KdTree<Vector3>& irrKdTree, float minDist);

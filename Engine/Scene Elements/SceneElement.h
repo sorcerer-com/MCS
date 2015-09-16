@@ -20,6 +20,7 @@ namespace MyEngine {
         ESkyBox,
 		ESystemObject,
 		EStaticObject,
+        EDynamicObject
 	};
 
 	class SceneElement

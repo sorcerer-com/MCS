@@ -123,16 +123,6 @@ namespace MyEngine {
 	    return res;
 	}
 	
-	MContentElement^ MContentManager::GetElement(uint id, bool load, bool waitForLoad)
-	{
-	    return this->getMContentElement(this->contentManager->GetElement(id, load, waitForLoad));
-	}
-	
-	MContentElement^ MContentManager::GetElement(String^ fullName, bool load, bool waitForLoad)
-	{
-	    return this->getMContentElement(this->contentManager->GetElement(to_string(fullName), load, waitForLoad));
-	}
-	
 	void MContentManager::SaveElement(uint id)
 	{
 	    this->contentManager->SaveElement(id);
@@ -177,12 +167,22 @@ namespace MyEngine {
 
     MContentElement^ MContentManager::GetElement(uint id)
     {
-        return this->GetElement(id, true, true);
+        return this->GetElement(id, true);
+    }
+
+    MContentElement^ MContentManager::GetElement(uint id, bool load)
+    {
+        return this->getMContentElement(this->contentManager->GetElement(id, load, true));
     }
 
     MContentElement^ MContentManager::GetElement(String^ fullName)
     {
-        return this->GetElement(fullName, true, true);
+        return this->GetElement(fullName, true);
+    }
+
+    MContentElement^ MContentManager::GetElement(String^ fullName, bool load)
+    {
+        return this->getMContentElement(this->contentManager->GetElement(to_string(fullName), load, true));
     }
 
 

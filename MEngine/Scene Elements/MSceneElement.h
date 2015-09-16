@@ -20,7 +20,8 @@ namespace MyEngine {
         Light,
         SkyBox,
 		SystemObject,
-		StaticObject,
+        StaticObject,
+        DynamicObject,
 	};
 
 	public ref class MSceneElement

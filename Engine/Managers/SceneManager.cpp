@@ -42,6 +42,8 @@ namespace MyEngine {
 		this->FogDensity = 0.0f;
         this->TimeOfDay = 0.0f;
         this->SkyBoxID = INVALID_ID;
+
+        this->Owner->ContentManager->ClearAllInstances();
 	}
 
 	bool SceneManager::Save(const string& filePath) const
@@ -281,7 +283,7 @@ namespace MyEngine {
 		}
 
         lock lck(this->thread->mutex("content"));
-		//this->ContentManager.ClearInstances(id); // delete all used instaces for this scene element
+		this->Owner->ContentManager->ClearInstances(id); // delete all used instaces for this scene element
 		this->sceneElements.erase(id);
 
 		Engine::Log(LogType::ELog, "Scene", "Delete scene element (" + to_string(id) + ")");

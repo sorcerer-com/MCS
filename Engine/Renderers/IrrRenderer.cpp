@@ -424,7 +424,7 @@ namespace MyEngine {
         if (this->Owner->ContentManager->ContainsElement(sceneElement->ContentID) &&
             !this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, false)->IsLoaded)
             return NULL;
-
+        
         irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->addEmptySceneNode(NULL, sceneElement->ID);
 
         if (sceneElement->Type == SceneElementType::ECamera ||
@@ -471,7 +471,12 @@ namespace MyEngine {
     {
         ContentElementPtr contentElement = NULL;
         if (this->Owner->ContentManager->ContainsElement(sceneElement->ContentID))
-            contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, false);
+        {
+            if (sceneElement->Type != SceneElementType::EDynamicObject)
+                contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
+            else
+                contentElement = this->Owner->ContentManager->GetInstance(sceneElement->ID, sceneElement->ContentID);
+        }
         if (!contentElement || contentElement->Type != ContentElementType::EMesh || !contentElement->IsLoaded)
         {
             if ((irrMesh->getMeshBufferCount() > 0 && irrMesh->getMeshBuffer(0)->getIndexCount() == 36))
@@ -540,7 +545,12 @@ namespace MyEngine {
         {
             ContentElementPtr contentElement = NULL;
             if (this->Owner->ContentManager->ContainsElement(sceneElement->MaterialID))
-                contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, false);
+            {
+                if (sceneElement->Type != SceneElementType::EDynamicObject)
+                    contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+                else
+                    contentElement = this->Owner->ContentManager->GetInstance(sceneElement->ID, sceneElement->MaterialID);
+            }
             if (!contentElement || contentElement->Type != ContentElementType::EMaterial || !contentElement->IsLoaded)
             {
                 if (irrMaterial.DiffuseColor == IrrRenderer::irrInvalidColor)
@@ -636,7 +646,7 @@ namespace MyEngine {
         if (irrTexture == NULL)
             irrTexture = this->irrDriver->addTexture(irr::core::dimension2du(texture->Width, texture->Height), irr::core::stringw(to_string(texture->ID).c_str()));
 
-        if (irrTexture != NULL && texture->Changed)
+        if (irrTexture != NULL && texture->Pixels != NULL && texture->Changed)
         {
             byte* data = (byte*)irrTexture->lock(irr::video::E_TEXTURE_LOCK_MODE::ETLM_WRITE_ONLY);
             for (uint i = 0; i < texture->Width * texture->Height; i++)

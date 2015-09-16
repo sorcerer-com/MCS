@@ -235,6 +235,16 @@ namespace MyEngine {
 	}
 #pragma endregion
 
+    MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, uint contentID)
+    {
+        return this->AddElement(type, name, contentID, 0);
+    }
+
+    MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, String^ contentFullName)
+    {
+        return this->AddElement(type, name, contentFullName, 0);
+    }
+
     MSceneElement^ MSceneManager::CloneElement(uint id, String^ newName)
     {
         SceneElementPtr elem = this->sceneManager->GetElement(id);

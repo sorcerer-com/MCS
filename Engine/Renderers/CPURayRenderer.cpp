@@ -443,7 +443,12 @@ namespace MyEngine {
         // get mesh
         ContentElementPtr contentElement = NULL;
         if (this->Owner->ContentManager->ContainsElement(sceneElement->ContentID))
-            contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
+        {
+            if (sceneElement->Type != SceneElementType::EDynamicObject)
+                contentElement = this->Owner->ContentManager->GetElement(sceneElement->ContentID, true, true);
+            else
+                contentElement = this->Owner->ContentManager->GetInstance(sceneElement->ID, sceneElement->ContentID);
+        }
         if (!contentElement || contentElement->Type != ContentElementType::EMesh)
         {
             Engine::Log(LogType::EWarning, "CPURayRenderer", "Scene element '" + sceneElement->Name + "' (" + to_string(sceneElement->ID) + ") is referred to invalid mesh (" +
@@ -489,7 +494,12 @@ namespace MyEngine {
         if (this->contentElements.find(sceneElement->MaterialID) == this->contentElements.end())
         {
             if (this->Owner->ContentManager->ContainsElement(sceneElement->MaterialID))
-                contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+            {
+                if (sceneElement->Type != SceneElementType::EDynamicObject)
+                    contentElement = this->Owner->ContentManager->GetElement(sceneElement->MaterialID, true, true);
+                else
+                    contentElement = this->Owner->ContentManager->GetInstance(sceneElement->ID, sceneElement->MaterialID);
+            }
             if (!contentElement || contentElement->Type != ContentElementType::EMaterial)
             {
                 if (sceneElement->MaterialID != INVALID_ID)
@@ -568,7 +578,7 @@ namespace MyEngine {
         }
     }
 
-    InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor/* = false*/)
+    InterInfo CPURayRenderer::getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor /* = false */, bool noNormalMap /* = false */)
     {
         Profile;
         Vector3 rayDir(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]);
@@ -634,10 +644,13 @@ namespace MyEngine {
                     if (normalMap)
                     {
                         Color4 n = normalMap->GetColor(result.UV.x, result.UV.y);
-                        Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
-                        Vector3 pn1, pn2;
-                        orthonormedSystem(result.normal, pn1, pn2);
-                        result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+                        if (!noNormalMap)
+                        {
+                            Vector3 bumpN = Vector3((n.r - 0.5f) * 2.0f, (n.g - 0.5f) * 2.0f, (n.b - 0.5f) * 2.0f);
+                            Vector3 pn1, pn2;
+                            orthonormedSystem(result.normal, pn1, pn2);
+                            result.normal += pn1 * bumpN.x + pn2 * bumpN.y;
+                        }
 
                         result.reflection = 1.0f - (material->SpecularColor.a * n.a);
                     }
@@ -934,7 +947,7 @@ namespace MyEngine {
         embree::rtcIntersect(this->rtcScene, rtcRay);
         if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
         {
-            const InterInfo& interInfo = this->getInterInfo(rtcRay);
+            const InterInfo& interInfo = this->getInterInfo(rtcRay, false, true);
             newSample.id = interInfo.sceneElement->ID;
             newSample.position = interInfo.interPos - Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * 0.01f;
             newSample.normal = interInfo.normal;
@@ -1124,7 +1137,8 @@ namespace MyEngine {
         result["Diffuse"].a = 1.0f;
 
         // calculate lighting
-        if (interInfo.sceneElement->Type == SceneElementType::EStaticObject &&
+        if ((interInfo.sceneElement->Type == SceneElementType::EStaticObject ||
+             interInfo.sceneElement->Type == SceneElementType::EDynamicObject) &&
             interInfo.diffuse > 0.01f)
         {
             const auto& lighting = this->getLighting(rtcRay, interInfo);
@@ -1133,7 +1147,8 @@ namespace MyEngine {
 
             // calculate GI
             bool bruteForce = true;
-            if (this->GI && this->IrradianceMap && this->irrMapSamples.size() > 0 && rtcRay.align0 == 0) // if irradiance map is enabled
+            if (this->GI && this->IrradianceMap && this->irrMapSamples.size() > 0 && rtcRay.align0 == 0 && 
+                interInfo.sceneElement->Type != SceneElementType::EDynamicObject) // if irradiance map is enabled
             {
                 result["IndirectLight"] = Color4::Black();
 
@@ -1156,7 +1171,8 @@ namespace MyEngine {
             }
             if (bruteForce)
             {
-                if (this->GI && (!this->IrradianceMap || (this->irrMapSamples.size() > 0 && rtcRay.align0 != 0)))
+                if (this->GI && (!this->IrradianceMap || (this->irrMapSamples.size() > 0 && rtcRay.align0 != 0) || 
+                                 interInfo.sceneElement->Type == SceneElementType::EDynamicObject))
                 {
                     uint samples = adaptiveSampling(this->GISamples, this->GISamples * 4, this->SampleThreshold, [&](int) -> Color4
                     {
@@ -1179,7 +1195,8 @@ namespace MyEngine {
                     result["IndirectLight"] = this->Owner->SceneManager->AmbientLight;
             }
         }
-        else if (interInfo.sceneElement->Type != SceneElementType::EStaticObject) // non static objects
+        else if (interInfo.sceneElement->Type != SceneElementType::EStaticObject &&
+                 interInfo.sceneElement->Type != SceneElementType::EDynamicObject) // non static or dynamic objects
             result["DirectLight"] = Color4::White();
 
         result["TotalLight"] = (result["DirectLight"] + result["IndirectLight"]);
@@ -1577,12 +1594,12 @@ namespace MyEngine {
             this->thread->rw_mutex("lightCache").read_unlock();
             if (indices.size() > 0) // get value
             {
+                result = Color4();
                 this->thread->rw_mutex("lightCache").read_lock();
                 for (int idx : indices)
                     result += this->lightCacheSamples[idx].color;
                 this->thread->rw_mutex("lightCache").read_unlock();
                 result *= (1.0f / indices.size());
-                result.a = 1.0f;
                 return result;
             }
         }
@@ -1596,10 +1613,12 @@ namespace MyEngine {
         float sample = rand.randFloat();
 
         // diffuse
-        if (interInfo.sceneElement->Type == SceneElementType::EStaticObject &&
+        if ((interInfo.sceneElement->Type == SceneElementType::EStaticObject ||
+             interInfo.sceneElement->Type == SceneElementType::EDynamicObject) &&
             sample <= interInfo.diffuse)
         {
             result = this->getLighting(rtcRay, interInfo)["DirectLight"] * pathMultiplier;
+            result.a = 1.0f;
 
             // GI
             const Vector3& dir = hemisphereSample(interInfo.normal);
@@ -1613,6 +1632,8 @@ namespace MyEngine {
             result.a = 1.0f;
             return result;
         }
+        else
+            result = Color4();
 
         // refraction
         if (interInfo.diffuse < sample && sample <= interInfo.diffuse + interInfo.refraction)
@@ -1660,6 +1681,7 @@ namespace MyEngine {
         embree::rtcIntersect(this->rtcScene, rtcNextRay);
         const InterInfo& interInfoNext = this->getInterInfo(rtcNextRay);
         result += this->getGILighting(rtcNextRay, interInfoNext, pathMultiplier * color * (1.0f / pdf));
+        result.a /= 2.0f;
 
 
         // fog
@@ -1694,14 +1716,10 @@ namespace MyEngine {
             rtcNextRay.align0++;
             result = this->getGILighting(rtcNextRay, interInfo, pathMultiplier);
         }
-        if (result.intensity() > 20.0f)
-            result = interInfo.color * this->Owner->SceneManager->AmbientLight;
-        result.a = 1.0f;
 
         // TODO: may be save LightCache and IrradianceMap to file?
-        // TODO: in scene element add option "moving object" and if it's true don't add light cache sample
         // set to light cache
-        if (this->LightCache)
+        if (this->LightCache && interInfo.sceneElement->Type != SceneElementType::EDynamicObject)
         {
             // trace 2 more rays
             embree::RTCRay rtcNextRay = rtcRay;
@@ -1709,7 +1727,6 @@ namespace MyEngine {
             for (int i = 1; i < 3; i++)
                 result += this->getGILighting(rtcNextRay, interInfo, pathMultiplier);
             result *= 1.0f / 3.0f;
-            result.a = 1.0f;
 
             LightCacheSample sample;
             sample.position = interInfo.interPos;
@@ -1837,16 +1854,15 @@ namespace MyEngine {
         for (sample = 1; sample <= maxSamples; sample++)
         {
             Color4 c = func(sample);
+            color += c;
 
             if (sample > minSamples)
             {
-                Color4 tempColor = color + c;
-                Color4 c1 = color * (1.0f / (sample - 1));
-                Color4 c2 = tempColor * (1.0f / sample);
+                Color4 c1 = (color - c) * (1.0f / (sample - 1));
+                Color4 c2 = color * (1.0f / sample);
                 if (absolute(c1 - c2) < sampleThreshold)
                     break;
             }
-            color += c;
         }
         return min(sample, maxSamples);
     }

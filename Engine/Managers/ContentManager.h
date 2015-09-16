@@ -34,13 +34,14 @@ namespace MyEngine {
 
 		using PackageInfoMapType = map < string, PackageInfo > ; // package name / package info
 		using ContentMapType = map < uint, ContentElementPtr >; // id / content element
+        using InstanceMapType = map < uint, map < uint, ContentElementPtr > > ; // scene element id / (content element id / content element)
 
 	private:
 		RequestQueueType requests;
 
 		PackageInfoMapType packageInfos;
-		ContentMapType content;
-		// TODO: instances
+        ContentMapType content;
+        InstanceMapType instances;
 
 	public:
 		ContentManager(Engine* owner);
@@ -61,10 +62,14 @@ namespace MyEngine {
         bool ContainsElement(const string& fullName);	//* wrap const
         bool MoveElement(uint id, const string& newFullPath);	//* wrap
         bool DeleteElement(uint id);				//* wrap
-        ContentElementPtr GetElement(uint id, bool load, bool waitForLoad = false);	//* wrap const
-        ContentElementPtr GetElement(const string& fullName, bool load, bool waitForLoad = false);	//* wrap const
+        ContentElementPtr GetElement(uint id, bool load, bool waitForLoad = false);
+        ContentElementPtr GetElement(const string& fullName, bool load, bool waitForLoad = false);
         vector<ContentElementPtr> GetElements() const;
         void SaveElement(uint id);					//* wrap const
+
+        ContentElementPtr GetInstance(uint sceneElementID, uint id);
+        void ClearInstances(uint sceneElementID);
+        void ClearAllInstances();
 		
 	private:
 		void doSerilization();

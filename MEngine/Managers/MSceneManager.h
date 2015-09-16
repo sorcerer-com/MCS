@@ -97,6 +97,8 @@ namespace MyEngine {
 		bool DeleteLayer(String^ layer);
 		List<MSceneElement^>^ GetLayerElements(String^ layer);
 #pragma endregion
+        MSceneElement^ AddElement(ESceneElementType type, String^ name, uint contentID);
+        MSceneElement^ AddElement(ESceneElementType type, String^ name, String^ contentFullName);
         MSceneElement^ CloneElement(uint id, String^ newName);
         bool RenameElement(String^ oldName, String^ newName);
         bool SetElementLayer(uint id, String^ layer);

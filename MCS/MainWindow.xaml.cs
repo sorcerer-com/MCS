@@ -534,15 +534,15 @@ namespace MCS
                     if (dist == 0 || dist > 1000)
                         dist = 100;
 
-                    MContentElement element = o as MContentElement;
-                    string name = element != null ? element.Name : o.ToString();
+                    Tuple<MContentElement, ESceneElementType> tuple = o as Tuple<MContentElement, ESceneElementType>;
+                    string name = tuple != null ? tuple.Item1.Name : o.ToString();
                     int count = 1;
                     while (this.engine.SceneManager.ContainsElement(name + count.ToString("000"))) count++;
                     name = name + count.ToString("000");
 
                     MSceneElement mse = null;
-                    if (element != null)
-                        mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, name, element.ID);
+                    if (tuple != null)
+                        mse = this.engine.SceneManager.AddElement(tuple.Item2, name, tuple.Item1.ID);
                     else if (name.StartsWith("Camera"))
                         mse = this.engine.SceneManager.AddElement(ESceneElementType.Camera, name, @"MPackage#Meshes\System\Camera");
                     else if (name.StartsWith("Light"))
@@ -609,7 +609,7 @@ namespace MCS
             this.KeyDown += WindowsManager.Window_KeyDown;
 
             // TODO: remove:
-            MSceneElement mse = this.engine.SceneManager.AddElement(ESceneElementType.StaticObject, "test", @"MPackage#Meshes\Primitives\Cube");
+            MSceneElement mse = this.engine.SceneManager.AddElement(ESceneElementType.DynamicObject, "test", @"MPackage#Meshes\Primitives\Cube");
             mse.Position = new MPoint(0, 0, -100);
             mse.Rotation = new MPoint(-20, -20, 0);
             mse.Material = this.engine.ContentManager.GetElement(@"MPackage#Materials\Glass");
@@ -892,7 +892,7 @@ namespace MCS
             foreach (var item in items)
             {
                 System.Windows.Controls.MenuItem menu = item as System.Windows.Controls.MenuItem;
-                if (menu != null && menu.Header.ToString() == "Add Object")
+                if (menu != null && menu.StaysOpenOnClick)
                 {
                     menu.Items.Clear();
                     List<object> selectedContentElements = this.GetSelectedContentElementsList(null);
@@ -901,7 +901,10 @@ namespace MCS
                         System.Windows.Controls.MenuItem mi = new System.Windows.Controls.MenuItem();
                         mi.Header = element.ToString();
                         mi.Command = this.AddElementCommand;
-                        mi.CommandParameter = element;
+                        ESceneElementType type = ESceneElementType.StaticObject;
+                        if (menu.Header.ToString().Contains("Dynamic"))
+                            type = ESceneElementType.DynamicObject;
+                        mi.CommandParameter = new Tuple<MContentElement, ESceneElementType>(element as MContentElement, type);
                         menu.Items.Add(mi);
                     }
                 }
