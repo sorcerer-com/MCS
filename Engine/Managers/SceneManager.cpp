@@ -13,6 +13,7 @@
 #include "..\Scene Elements\Light.h"
 
 #include "..\Managers\ContentManager.h"
+#include "..\Managers\AnimationManager.h"
 #include "..\Content Elements\ContentElement.h"
 
 
@@ -32,16 +33,18 @@ namespace MyEngine {
     {
         lock lck(this->thread->mutex("content"));
 
-		Engine::Log(LogType::ELog, "Scene", "New scene");
-		this->sceneElements.clear();
-		this->layers.clear();
-		this->layers.push_back(DEFAULT_LAYER_NAME);
-		this->ActiveCamera = NULL;
-		this->AmbientLight = Color4(0.2, 0.2, 0.2, 1.0);
-		this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
-		this->FogDensity = 0.0f;
+        Engine::Log(LogType::ELog, "Scene", "New scene");
+#pragma region SceneManager Init
+        this->ActiveCamera = NULL;
+        this->AmbientLight = Color4(0.2f, 0.2f, 0.2f, 1.0f);
+        this->FogColor = Color4(0.0f, 0.0f, 0.0f, 1.0f);
+        this->FogDensity = 0.0f;
         this->TimeOfDay = 0.0f;
-        this->SkyBoxID = INVALID_ID;
+        this->SkyBoxID = 0;
+        this->sceneElements = SceneMapType();
+        this->layers = LayerVectorType();
+#pragma endregion
+        this->layers.push_back(DEFAULT_LAYER_NAME);
 
         this->Owner->ContentManager->ClearAllInstances();
 	}
@@ -106,6 +109,9 @@ namespace MyEngine {
 
         // skybox
         Write(ofile, this->SkyBoxID);
+
+        // animtions
+        this->Owner->AnimationManager->WriteToFile(ofile);
 
 		ofile.close();
 
@@ -192,6 +198,9 @@ namespace MyEngine {
 
             // skybox
             Read(ifile, this->SkyBoxID);
+
+            // animtions
+            this->Owner->AnimationManager->ReadFromFile(ifile);
 		}
 
 		ifile.close();

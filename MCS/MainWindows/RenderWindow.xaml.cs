@@ -198,7 +198,7 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.GISamples = 4;
             RenderWindow.renderSettings.IrradianceMap = true;
             RenderWindow.renderSettings.IrradianceMapSamples = 64;
-            RenderWindow.renderSettings.IrradianceMapDistanceThreshold = 1.0f;      // 0.1 - all
+            RenderWindow.renderSettings.IrradianceMapDistanceThreshold = 0.5f;      // 0.1 - all
             RenderWindow.renderSettings.IrradianceMapNormalThreshold = 0.1f;        // 0.1 high // 0.2 medium // 0.3 low
             RenderWindow.renderSettings.IrradianceMapColorThreshold = 0.3f;         // 0.3 high // 0.4 medium low
             RenderWindow.renderSettings.LightCache = true;

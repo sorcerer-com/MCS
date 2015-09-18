@@ -9,6 +9,7 @@
 #include "Utils\Types\Profiler.h"
 #include "Managers\ContentManager.h"
 #include "Managers\SceneManager.h"
+#include "Managers\AnimationManager.h"
 #include "Renderers\IrrRenderer.h"
 #include "Renderers\CPURayRenderer.h"
 
@@ -46,7 +47,8 @@ namespace MyEngine {
 		Engine::Log(LogType::ELog, "Engine", "Create engine");
 
 		this->ContentManager = make_shared<MyEngine::ContentManager>(this);
-		this->SceneManager = make_shared<MyEngine::SceneManager>(this);
+        this->SceneManager = make_shared<MyEngine::SceneManager>(this);
+        this->AnimationManager = make_shared<MyEngine::AnimationManager>(this);
 
 		this->ViewPortRenderer = make_shared<IrrRenderer>(this);
         this->ProductionRenderer = make_shared<CPURayRenderer>(this);
@@ -57,6 +59,7 @@ namespace MyEngine {
         this->ProductionRenderer.reset();
         this->ViewPortRenderer.reset();
 
+        this->AnimationManager.reset();
         this->SceneManager.reset();
         this->ContentManager.reset();
 

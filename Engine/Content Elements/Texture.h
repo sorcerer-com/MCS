@@ -11,8 +11,8 @@ namespace MyEngine {
 	class Texture : public ContentElement
 	{
 	public:
-		uint Width;                         //* group["Image"] readonly
-		uint Height;                        //* group["Image"] readonly
+		uint Width;                         //* group["Image"] nosave readonly
+		uint Height;                        //* group["Image"] nosave readonly
 		byte* Pixels;                       //* nosave
 
 		bool Changed;                       //* default[true] nosave noget noproperty

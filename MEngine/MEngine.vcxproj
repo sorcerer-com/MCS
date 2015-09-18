@@ -238,6 +238,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(
     <ClInclude Include="Content Elements\MMaterial.h" />
     <ClInclude Include="Content Elements\MMesh.h" />
     <ClInclude Include="Content Elements\MTexture.h" />
+    <ClInclude Include="Managers\MAnimationManager.h" />
     <ClInclude Include="Managers\MBaseManager.h" />
     <ClInclude Include="Managers\MContentManager.h" />
     <ClInclude Include="Managers\MSceneManager.h" />
@@ -256,6 +257,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="Managers\MAnimationManager.cpp" />
     <ClCompile Include="Managers\MContentManager.cpp" />
     <ClCompile Include="Managers\MSceneManager.cpp" />
     <ClCompile Include="Stdafx.cpp">

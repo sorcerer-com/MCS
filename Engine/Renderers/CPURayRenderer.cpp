@@ -49,7 +49,7 @@ namespace MyEngine {
         this->GISamples = 4;
         this->IrradianceMap = true;
         this->IrradianceMapSamples = 64;
-        this->IrradianceMapDistanceThreshold = 1.0f;
+        this->IrradianceMapDistanceThreshold = 0.5f;
         this->IrradianceMapNormalThreshold = 0.1f;
         this->IrradianceMapColorThreshold = 0.3f;
         this->LightCache = true;
@@ -736,6 +736,9 @@ namespace MyEngine {
         {
             for (uint i = 0; i <= this->Width; i += delta)
             {
+                if (!this->IsStarted)
+                    return false;
+
                 int x = min(i, this->Width - 1);
                 if (x > 0 && x < (int)this->Width - 1) x += rand.randInt(0, delta / 2);
                 int y = min(j, this->Height - 1);
@@ -765,6 +768,9 @@ namespace MyEngine {
         // generate more samples if it's needed
         for (int i = 0; i < this->irrMapTriangles.size(); i += 3)
         {
+            if (!this->IsStarted)
+                return false;
+
             // spit between v1 and v2
             int v0 = -1, v1 = -1, v2 = -1, v3 = -1;
 
@@ -949,7 +955,7 @@ namespace MyEngine {
         {
             const InterInfo& interInfo = this->getInterInfo(rtcRay, false, true);
             newSample.id = interInfo.sceneElement->ID;
-            newSample.position = interInfo.interPos - Vector3(rtcRay.dir[0], rtcRay.dir[1], rtcRay.dir[2]) * 0.01f;
+            newSample.position = interInfo.interPos;
             newSample.normal = interInfo.normal;
             if (interInfo.sceneElement->Type == SceneElementType::EStaticObject)
                 newSample.color = this->getLighting(rtcRay, interInfo)["DirectLight"];
@@ -1121,8 +1127,7 @@ namespace MyEngine {
         return colors["Final"] * div;
     }
 
-    using ColorsMapType = map < string, Color4 > ; // buffer name / color
-    ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
+    CPURayRenderer::ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
     {
         Profile;
         ColorsMapType result;
@@ -1165,8 +1170,11 @@ namespace MyEngine {
                     const IrradianceMapSample& sample1 = this->irrMapSamples[this->irrMapTriangles[triangle + 0]];
                     const IrradianceMapSample& sample2 = this->irrMapSamples[this->irrMapTriangles[triangle + 1]];
                     const IrradianceMapSample& sample3 = this->irrMapSamples[this->irrMapTriangles[triangle + 2]];
-                    result["IndirectLight"] = linearFilter(sample1.color, sample2.color, sample3.color, rtcIrrRay.u, rtcIrrRay.v);
-                    bruteForce = false;
+                    if (sample1.color.intensity() >= 0.0f && sample2.color.intensity() >= 0.0f && sample3.color.intensity() >= 0.0f)
+                    {
+                        result["IndirectLight"] = linearFilter(sample1.color, sample2.color, sample3.color, rtcIrrRay.u, rtcIrrRay.v);
+                        bruteForce = false;
+                    }
                 }
             }
             if (bruteForce)
@@ -1302,7 +1310,7 @@ namespace MyEngine {
         return result;
     }
 
-    ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
+    CPURayRenderer::ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
     {
         Profile;
         ColorsMapType lighting;
@@ -1323,6 +1331,9 @@ namespace MyEngine {
                 {
                     Light* aLight = (Light*)a.get();
                     Light* bLight = (Light*)b.get();
+                    if (aLight->LType != bLight->LType)
+                        return aLight->LType < bLight->LType;
+
                     float aContribution = aLight->Color.intensity() * aLight->Intensity / (aLight->Position - interInfo.interPos).lengthSqr();
                     float bContribution = bLight->Color.intensity() * bLight->Intensity / (bLight->Position - interInfo.interPos).lengthSqr();
                     return aContribution > bContribution;
@@ -1373,7 +1384,7 @@ namespace MyEngine {
         return lighting;
     }
 
-    ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo)
+    CPURayRenderer::ColorsMapType CPURayRenderer::getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo)
     {
         ColorsMapType lighting;
         lighting["DirectLight"] = Color4::Black();

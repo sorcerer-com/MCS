@@ -22,7 +22,8 @@ namespace MyEngine {
 		this->engine = new Engine();
 
 		this->ContentManager = gcnew MContentManager(this, this->engine->ContentManager.get());
-		this->SceneManager = gcnew MSceneManager(this, this->engine->SceneManager.get());
+        this->SceneManager = gcnew MSceneManager(this, this->engine->SceneManager.get());
+        this->AnimationManager = gcnew MAnimationManager(this, this->engine->AnimationManager.get());
 
         this->ViewPortRenderer = gcnew MViewPortRenderer(this->engine->ViewPortRenderer.get());
         this->ProductionRenderer = gcnew MProductionRenderer(this->engine->ProductionRenderer.get());
@@ -35,6 +36,9 @@ namespace MyEngine {
 
         delete this->ViewPortRenderer;
         this->ViewPortRenderer = nullptr;
+
+        delete this->AnimationManager;
+        this->AnimationManager = nullptr;
 
         delete this->SceneManager;
         this->SceneManager = nullptr;

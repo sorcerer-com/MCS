@@ -263,6 +263,9 @@ namespace MyEngine {
 
     void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
     {
+        if (!sceneElement)
+            return;
+
         irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->getSceneNodeFromId(sceneElement->ID);
         if (!irrSceneNode)
             irrSceneNode = this->createIrrSceneNode(sceneElement);
@@ -637,9 +640,13 @@ namespace MyEngine {
 
     bool IrrRenderer::updateIrrTexture(Texture* texture, irr::video::ITexture*& irrTexture)
     {
+        if (texture == NULL)
+            return false;
+
         if (irrTexture != NULL && (irrTexture->getSize().Width != texture->Width || irrTexture->getSize().Height != texture->Height))
         {
-            irrDriver->removeTexture(irrTexture);
+            this->irrDriver->renameTexture(irrTexture, "");
+            //this->irrDriver->removeTexture(irrTexture); // make crashes
             irrTexture = NULL;
         }
 

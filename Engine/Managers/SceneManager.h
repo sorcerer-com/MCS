@@ -20,8 +20,8 @@ namespace MyEngine {
 		using LayerVectorType = vector < string > ; // layer name
 
 		Camera* ActiveCamera;               //* 
-		Color4 AmbientLight;                //* 
-		Color4 FogColor;                    //* 
+		Color4 AmbientLight;                //* default[Color4(0.2f, 0.2f, 0.2f, 1.0f)]
+		Color4 FogColor;                    //* default[Color4(0.0f, 0.0f, 0.0f, 1.0f)]
         float FogDensity;                   //* 
         float TimeOfDay;                    //* noproperty
         uint SkyBoxID;                      //* noproperty

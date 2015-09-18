@@ -6,6 +6,7 @@
 
 #include "Managers\MContentManager.h"
 #include "Managers\MSceneManager.h"
+#include "Managers\MAnimationManager.h"
 #include "Renderers\MViewPortRenderer.h"
 #include "Renderers\MProductionRenderer.h"
 #include "Utils\MSelector.h"
@@ -33,7 +34,8 @@ namespace MyEngine {
 
 	public:
 		property MContentManager^ ContentManager;
-		property MSceneManager^ SceneManager;
+        property MSceneManager^ SceneManager;
+        property MAnimationManager^ AnimationManager;
 
         property MViewPortRenderer^ ViewPortRenderer;
         property MProductionRenderer^ ProductionRenderer;

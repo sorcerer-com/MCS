@@ -20,6 +20,7 @@
     <ClInclude Include="Renderers\MViewPortRenderer.h" />
     <ClInclude Include="Renderers\MProductionRenderer.h" />
     <ClInclude Include="Renderers\MRenderer.h" />
+    <ClInclude Include="Managers\MAnimationManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="Managers\MContentManager.cpp" />
     <ClCompile Include="MEngine.cpp" />
     <ClCompile Include="Managers\MSceneManager.cpp" />
+    <ClCompile Include="Managers\MAnimationManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

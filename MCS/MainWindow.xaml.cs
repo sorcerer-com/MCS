@@ -278,6 +278,11 @@ namespace MCS
                             mse.Rotation = MPoint.Parse(xmlElement.GetAttribute("Rotation"));
                             mse.Scale = MPoint.Parse(xmlElement.GetAttribute("Scale"));
 
+                            string layer = xmlElement.GetAttribute("Layer");
+                            if (!this.engine.SceneManager.ContainsLayer(layer))
+                                this.engine.SceneManager.CreateLayer(layer);
+                            this.engine.SceneManager.SetElementLayer(mse.ID, layer);
+
                             if (mse.Content == null)
                                 mse.Content = this.engine.ContentManager.GetElement(@"MPackage#Meshes\Primitives\Cube");
                             if (mse.Material == null)
@@ -346,6 +351,7 @@ namespace MCS
                             System.Xml.XmlElement xmlElement = xmlDoc.CreateElement(type);
                             xmlElement.SetAttribute("Name", mse.Name);
                             xmlElement.SetAttribute("Type", mse.Type.ToString());
+                            xmlElement.SetAttribute("Layer", mse.Layer);
                             if (mse.Content != null)
                                 xmlElement.SetAttribute("Content", mse.Content.FullName);
                             if (mse.Material != null)

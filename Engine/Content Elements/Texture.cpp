@@ -26,8 +26,6 @@ namespace MyEngine {
 		if (this->Version >= 1)
         {
 #pragma region Texture Read
-            Read(file, this->Width);
-            Read(file, this->Height);
 #pragma endregion
 
 			// read PNG data
@@ -175,8 +173,6 @@ namespace MyEngine {
     {
         long long size = ContentElement::Size();
 #pragma region Texture Size
-        size += SizeOf(this->Width);
-        size += SizeOf(this->Height);
 #pragma endregion
         size += SizeOf(this->rawDataSize);
         size += this->rawDataSize;
@@ -188,8 +184,6 @@ namespace MyEngine {
 		ContentElement::WriteToFile(file);
 
 #pragma region Texture Write
-		Write(file, this->Width);
-		Write(file, this->Height);
 #pragma endregion
 
         Write(file, this->rawDataSize);

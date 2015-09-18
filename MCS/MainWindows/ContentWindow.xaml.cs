@@ -533,7 +533,11 @@ namespace MCS.MainWindows
                 MSelector.Deselect(MSelector.ESelectionType.ContentElement, item.ID);
 
             foreach (ContentItem item in e.AddedItems)
+            {
                 MSelector.Select(MSelector.ESelectionType.ContentElement, item.ID);
+                // to save all selected elements
+                //this.changedElements.Add(item.ID);
+            }
 
             this.OnPropertyChanged("SelectedElement");
         }

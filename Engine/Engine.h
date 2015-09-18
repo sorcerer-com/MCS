@@ -11,6 +11,7 @@ namespace MyEngine {
 
 	class ContentManager;
 	class SceneManager;
+    class AnimationManager;
     class ViewPortRenderer;
     class ProductionRenderer;
 
@@ -43,7 +44,8 @@ namespace MyEngine {
 
 	public:
 		shared_ptr<ContentManager> ContentManager;
-		shared_ptr<SceneManager> SceneManager;
+        shared_ptr<SceneManager> SceneManager;
+        shared_ptr<AnimationManager> AnimationManager;
 
         shared_ptr<ViewPortRenderer> ViewPortRenderer;
         shared_ptr<ProductionRenderer> ProductionRenderer;
