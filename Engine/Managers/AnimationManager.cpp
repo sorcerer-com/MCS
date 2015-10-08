@@ -14,52 +14,85 @@
 namespace MyEngine {
 
     // A n i m   K e y   F r a m e
-    AnimKeyFrame::AnimKeyFrame(const float& value)
+    AnimTrack::AnimTrack(TrackType type)
     {
-        this->Type = AnimKeyFrame::EFloat;
-        this->Value[0] = value;
+        this->Type = type;
     }
 
-    AnimKeyFrame::AnimKeyFrame(const Vector3& value)
+    AnimTrack::AnimTrack(istream& file)
     {
-        this->Type = AnimKeyFrame::EVector3;
-        this->Value[0] = value.x;
-        this->Value[1] = value.y;
-        this->Value[2] = value.z;
-    }
+        Read(file, this->Type); // track's type
 
-    AnimKeyFrame::AnimKeyFrame(const Color4& value)
-    {
-        this->Type = AnimKeyFrame::EColor4;
-        this->Value[0] = value.r;
-        this->Value[1] = value.g;
-        this->Value[2] = value.b;
-        this->Value[3] = value.a;
-    }
-
-    AnimKeyFrame::AnimKeyFrame(istream& file)
-    {
-        Read(file, this->Type);
-        Read(file, this->Value[0]);
-        if (this->Type != AnimKeyFrame::EFloat)
+        // track's keyframes
+        int keyframesCount = 0;
+        Read(file, keyframesCount);
+        for (int j = 0; j < keyframesCount; j++)
         {
-            Read(file, this->Value[1]);
-            Read(file, this->Value[2]);
-            if (this->Type == AnimKeyFrame::EColor4)
-                Read(file, this->Value[3]);
+            int frame = 0;
+            Read(file, frame); // keyframe's frame
+
+            // keyframe's value
+            Read(file, this->KeyFrames[frame][0]);
+            if (this->Type != TrackType::EFloat)
+            {
+                Read(file, this->KeyFrames[frame][1]);
+                Read(file, this->KeyFrames[frame][2]);
+                if (this->Type == TrackType::EColor4)
+                    Read(file, this->KeyFrames[frame][3]);
+            }
         }
     }
 
-    void AnimKeyFrame::WriteToFile(ostream& file) const
+    bool AnimTrack::SetKeyframe(int frame, const float& value)
     {
-        Write(file, this->Type);
-        Write(file, this->Value[0]);
-        if (this->Type != AnimKeyFrame::EFloat)
+        if (this->Type != TrackType::EFloat)
+            return false;
+
+        this->KeyFrames[frame][0] = value;
+        return true;
+    }
+
+    bool AnimTrack::SetKeyframe(int frame, const Vector3& value)
+    {
+        if (this->Type != TrackType::EVector3)
+            return false;
+
+        this->KeyFrames[frame][0] = value.x;
+        this->KeyFrames[frame][1] = value.y;
+        this->KeyFrames[frame][2] = value.z;
+        return true;
+    }
+
+    bool AnimTrack::SetKeyframe(int frame, const Color4& value)
+    {
+        if (this->Type != TrackType::EColor4)
+            return false;
+
+        this->KeyFrames[frame][0] = value.r;
+        this->KeyFrames[frame][1] = value.g;
+        this->KeyFrames[frame][2] = value.b;
+        this->KeyFrames[frame][3] = value.a;
+        return true;
+    }
+
+    void AnimTrack::WriteToFile(ostream& file) const
+    {
+        Write(file, this->Type); // track's type
+
+        Write(file, (int)this->KeyFrames.size()); // keyframes count
+        for (const auto& animKeyframe : this->KeyFrames)
         {
-            Write(file, this->Value[1]);
-            Write(file, this->Value[2]);
-            if (this->Type == AnimKeyFrame::EColor4)
-                Write(file, this->Value[3]);
+            Write(file, animKeyframe.first); // keframe's frame
+
+            // keyframe's value
+            Write(file, animKeyframe.second[0]);
+            if (this->Type != TrackType::EFloat)
+            {
+                Write(file, animKeyframe.second[1]);
+                Write(file, animKeyframe.second[2]);
+                if (this->Type == TrackType::EColor4)
+                    Write(file, animKeyframe.second[3]);
+            }
         }
     }
 
@@ -94,18 +127,8 @@ namespace MyEngine {
                 // track's name
                 string trackName = "";
                 Read(file, trackName);
-                this->animations[animName][trackName];
-
-                // track's keyframes
-                int keyframesCount = 0;
-                Read(file, keyframesCount);
-                for (int j = 0; j < keyframesCount; j++)
-                {
-                    int frame = 0;
-                    Read(file, frame); // keyframe's frame
-
-                    this->animations[animName][trackName][frame] = AnimKeyFrame(file);
-                }
+                // track
+                this->animations[animName][trackName] = AnimTrack(file);
             }
         }
     }
@@ -129,14 +152,8 @@ namespace MyEngine {
                 // track's name
                 Write(file, animTrack.first);
 
-                // track's keyframes count
-                Write(file, (int)animTrack.second.size());
-
-                for (const auto& animKeyframe : animTrack.second)
-                {
-                    Write(file, animKeyframe.first); // keframe's frame
-                    animKeyframe.second.WriteToFile(file);
-                }
+                // track
+                animTrack.second.WriteToFile(file);
             }
         }
     }
@@ -180,8 +197,7 @@ namespace MyEngine {
         lock lck(this->thread->mutex("content"));
         AnimationType animation = this->animations[oldName];
         this->animations[oldName].clear();
-        if (!this->DeleteAnimation(oldName))
-            return false;
+        this->animations.erase(oldName);
 
         this->animations[newName] = animation;
         Engine::Log(ELog, "AnimationManager", "Rename animation '" + oldName + "' to '" + newName + "'");
@@ -202,18 +218,7 @@ namespace MyEngine {
         Engine::Log(ELog, "AnimationManager", "Delete animation '" + name + "'");
         return true;
     }
-
-    AnimationManager::AnimationType AnimationManager::GetAnimation(const string& name)
-    {
-        if (!this->ContainsAnimation(name))
-        {
-            Engine::Log(LogType::EWarning, "AnimationManager", "Try to get non existent animation '" + name + "'");
-            return AnimationType();
-        }
-
-        return this->animations[name];
-    }
-
+    
     vector<string> AnimationManager::GetAnimationsNames()
     {
         vector<string> result;
@@ -226,7 +231,7 @@ namespace MyEngine {
     
 
     /* T R A C K S   A N D   K E Y F R A M E S */
-    bool AnimationManager::AddTrack(const string& animation, const string& track)
+    bool AnimationManager::AddTrack(const string& animation, const string& track, AnimTrack::TrackType type)
     {
         if (!this->ContainsAnimation(animation))
         {
@@ -238,9 +243,14 @@ namespace MyEngine {
             Engine::Log(LogType::EWarning, "AnimationManager", "Try to add track '" + track + "' that already exists");
             return false;
         }
+        if (type == AnimTrack::TrackType::ENone)
+        {
+            Engine::Log(LogType::EWarning, "AnimationManager", "Try to add invalid type track");
+            return false;
+        }
 
         lock lck(this->thread->mutex("content"));
-        this->animations[animation][track];
+        this->animations[animation][track].Type = type;
 
         Engine::Log(ELog, "AnimationManager", "Add track '" + track + "' to animation '" + animation + "'");
         return true;
@@ -274,7 +284,7 @@ namespace MyEngine {
         return true;
     }
 
-    bool AnimationManager::SetKeyframe(const string& animation, const string& track, uint frame, const AnimKeyFrame& keyframe)
+    bool AnimationManager::SetKeyframe(const string& animation, const string& track, uint frame, const float* keyframe)
     {
         if (!this->ContainsAnimation(animation))
         {
@@ -283,16 +293,17 @@ namespace MyEngine {
         }
         if (!this->ContainsTrack(animation, track))
         {
-            Engine::Log(LogType::EWarning, "AnimationManager", "Try to set key to non existent track '" + track+ "' in animation '" + animation + "'");
+            Engine::Log(LogType::EWarning, "AnimationManager", "Try to set key to non existent track '" + track + "' in animation '" + animation + "'");
             return false;
         }
-        
-        this->animations[animation][track][frame] = keyframe;
+
+        for (int i = 0; i < 4; i++)
+            this->animations[animation][track].KeyFrames[frame][i] = keyframe[i];
 
         return true;
     }
 
-    bool AnimationManager::RemoveKeyframe(const string& animation, const string& track, uint frame)
+    bool AnimationManager::RemoveKeyframe(const string& animation, const string& track, int frame)
     {
         if (!this->ContainsAnimation(animation))
         {
@@ -305,9 +316,35 @@ namespace MyEngine {
             return false;
         }
 
-        this->animations[animation][track].erase(frame);
+        this->animations[animation][track].KeyFrames.erase(frame);
 
         return true;
+    }
+
+    AnimTrack AnimationManager::GetTrack(const string& animation, const string& track)
+    {
+        if (!this->ContainsAnimation(animation))
+        {
+            Engine::Log(LogType::EWarning, "AnimationManager", "Try to get track from non existent animation '" + animation + "'");
+            return AnimTrack();
+        }
+        if (!this->ContainsTrack(animation, track))
+        {
+            Engine::Log(LogType::EWarning, "AnimationManager", "Try to get non existent track '" + track + "' in animation '" + animation + "'");
+            return AnimTrack();
+        }
+
+        return this->animations[animation][track];
+    }
+
+    vector<string> AnimationManager::GetTracksNames(const string& animation)
+    {
+        vector<string> result;
+
+        for (const auto& track : this->animations[animation])
+            result.push_back(track.first);
+
+        return result;
     }
 
 }

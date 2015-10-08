@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "MAnimationManager.h"
 
+#include "..\MEngine.h"
 
 
 namespace MyEngine {
@@ -59,15 +60,7 @@ namespace MyEngine {
 	    return res;
 	}
 	
-	
-	bool MAnimationManager::AddTrack(String^ animation, String^ track)
-	{
-	    bool res = this->animationManager->AddTrack(to_string(animation), to_string(track));
-	    if (res)
-	        this->OnChanged(nullptr);
-	    return res;
-	}
-	
+		
 	bool MAnimationManager::ContainsTrack(String^ animation, String^ track)
 	{
 	    return this->animationManager->ContainsTrack(to_string(animation), to_string(track));
@@ -81,15 +74,7 @@ namespace MyEngine {
 	    return res;
 	}
 	
-	bool MAnimationManager::SetKeyframe(String^ animation, String^ track, uint frame, AnimKeyFrame keyframe)
-	{
-	    bool res = this->animationManager->SetKeyframe(to_string(animation), to_string(track), frame, keyframe);
-	    if (res)
-	        this->OnChanged(nullptr);
-	    return res;
-	}
-	
-	bool MAnimationManager::RemoveKeyframe(String^ animation, String^ track, uint frame)
+	bool MAnimationManager::RemoveKeyframe(String^ animation, String^ track, int frame)
 	{
 	    bool res = this->animationManager->RemoveKeyframe(to_string(animation), to_string(track), frame);
 	    if (res)
@@ -104,13 +89,16 @@ namespace MyEngine {
             !this->animationManager->AddAnimation(to_string(newName)))
             return false;
 
+        string oldAnimName = to_string(name);
         string newAnimName = to_string(newName);
-        const auto& animation = this->animationManager->GetAnimation(to_string(name));
-        for (const auto& track : animation)
+        const auto& tracksNames = this->animationManager->GetTracksNames(oldAnimName);
+        for (const auto& trackName : tracksNames)
         {
-            this->animationManager->AddTrack(newAnimName, track.first);
-            for (const auto& keyframe : track.second)
-                this->animationManager->SetKeyframe(newAnimName, track.first, keyframe.first, keyframe.second);
+            const auto& oldTrack = this->animationManager->GetTrack(oldAnimName, trackName);
+
+            this->animationManager->AddTrack(newAnimName, trackName, oldTrack.Type);
+            for (const auto& keyframe : oldTrack.KeyFrames)
+                this->animationManager->SetKeyframe(newAnimName, trackName, keyframe.first, keyframe.second);
         }
 
         this->OnChanged(nullptr);
@@ -119,30 +107,55 @@ namespace MyEngine {
 
     MAnimationManager::MAnimationType MAnimationManager::GetAnimation(String^ name)
     {
-        Dictionary<String^, Dictionary<int, MAnimKeyFrame>^>^ result = 
-            gcnew Dictionary<String^, Dictionary<int, MAnimKeyFrame>^>();
+        Dictionary<String^, Dictionary<int, MAnimKeyFrame^>^>^ result =
+            gcnew Dictionary<String^, Dictionary<int, MAnimKeyFrame^>^>();
 
-        const auto& animation = this->animationManager->GetAnimation(to_string(name));
-        for (const auto& track : animation)
+        const auto& tracksNames = this->animationManager->GetTracksNames(to_string(name));
+        for (const auto& trackName : tracksNames)
         {
-            String^ trackName = gcnew String(track.first.c_str());
-            result->Add(trackName, gcnew Dictionary<int, MAnimKeyFrame>());
+            String^ trackNameStr = gcnew String(trackName.c_str());
+            result->Add(trackNameStr, gcnew Dictionary<int, MAnimKeyFrame^>());
 
-            for (const auto& keyframe : track.second)
+            const auto& track = this->animationManager->GetTrack(to_string(name), trackName);
+            for (const auto& keyframe : track.KeyFrames)
             {
-                MAnimKeyFrame mKeyframe;
-                mKeyframe.Type = (EAnimKeyFrameType)keyframe.second.Type;
-                if (mKeyframe.Type == EAnimKeyFrameType::Float)
-                    mKeyframe.Float = keyframe.second.Value[0];
-                else if (mKeyframe.Type == EAnimKeyFrameType::MPoint)
-                    mKeyframe.Point = MPoint(keyframe.second.Value[0], keyframe.second.Value[1], keyframe.second.Value[2]);
-                else if (mKeyframe.Type == EAnimKeyFrameType::MColor)
-                    mKeyframe.Color = MColor(keyframe.second.Value[0], keyframe.second.Value[1], keyframe.second.Value[2], keyframe.second.Value[3]);
-                result[trackName]->Add(keyframe.first, mKeyframe);
+                MAnimKeyFrame^ mKeyframe = nullptr;
+                if (track.Type == AnimTrack::TrackType::EFloat)
+                    mKeyframe = gcnew MAnimKeyFrame(1);
+                else if (track.Type == AnimTrack::TrackType::EVector3)
+                    mKeyframe = gcnew MAnimKeyFrame(3);
+                else if (track.Type == AnimTrack::TrackType::EColor4)
+                    mKeyframe = gcnew MAnimKeyFrame(4);
+                else
+                    continue;
+
+                for (int i = 0; i < mKeyframe->Length; i++)
+                    mKeyframe[i] = keyframe.second[i];
+                result[trackNameStr]->Add(keyframe.first, mKeyframe);
             }
         }
 
         return result;
+    }
+
+    bool MAnimationManager::AddTrack(String^ animation, String^ track, EAnimTrackType type)
+    {
+        bool res = this->animationManager->AddTrack(to_string(animation), to_string(track), (AnimTrack::TrackType)type);
+        if (res)
+            this->OnChanged(nullptr);
+        return res;
+    }
+
+    bool MAnimationManager::SetKeyframe(String^ animation, String^ track, int frame, MAnimKeyFrame^ mKeyframe)
+    {
+        float value[4];
+        for (int i = 0; i < mKeyframe->Length; i++)
+            value[i] = (float)mKeyframe[i];
+
+        bool res = this->animationManager->SetKeyframe(to_string(animation), to_string(track), frame, value);
+        if (res)
+            this->OnChanged(nullptr);
+        return res;
     }
 
 

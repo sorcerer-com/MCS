@@ -10,7 +10,7 @@ namespace MCS.Controls
     public class NumberBox : TextBox
     {
         public static DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(double), typeof(NumberBox), new PropertyMetadata(OnValuePropertyChanged));
+            DependencyProperty.Register("Value", typeof(double), typeof(NumberBox), new PropertyMetadata(0.0, OnValuePropertyChanged));
 
         public static RoutedEvent ChangedEvent = 
             EventManager.RegisterRoutedEvent("Changed", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(NumberBox));
@@ -48,7 +48,6 @@ namespace MCS.Controls
 
         public NumberBox()
         {
-            this.Value = 0.0;
             this.IsInteger = false;
             this.Min = double.MinValue;
             this.Max = double.MaxValue;

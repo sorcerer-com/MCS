@@ -462,6 +462,15 @@ namespace MCS
             get { return "Render " + WindowsManager.GetHotkey(this.GetType(), "RenderWindowCommand", true); }
         }
 
+        public ICommand AnimationsWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(AnimationsWindow), this.engine.AnimationManager); }); }
+        }
+        public string AnimationsWindowCommandTooltip
+        {
+            get { return "Animations " + WindowsManager.GetHotkey(this.GetType(), "AnimationsWindowCommand", true); }
+        }
+
 
         // Scene Elements commands
         public ICommand CloneElementCommand
@@ -573,6 +582,7 @@ namespace MCS
 
             this.engine = new MEngine();
             this.engine.SceneManager.Changed += SceneManager_Changed;
+            this.engine.AnimationManager.Changed += AnimationManager_Changed;
             MSelector.SelectionChanged += MSelector_SelectionChanged;
 
             this.SceneSaved = true;
@@ -662,6 +672,12 @@ namespace MCS
             this.SceneSaved = false;
             this.updateTitle();
             this.OnPropertyChanged("SelectedElement");
+        }
+
+        private void AnimationManager_Changed(MAnimationManager sender)
+        {
+            this.SceneSaved = false;
+            this.updateTitle();
         }
 
         private void MSelector_SelectionChanged(MSelector.ESelectionType selectionType, uint id)

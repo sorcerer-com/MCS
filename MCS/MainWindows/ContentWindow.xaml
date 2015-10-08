@@ -1,7 +1,7 @@
 ﻿<Window x:Class="MCS.MainWindows.ContentWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="clr-namespace:MCS.Controls"
+        xmlns:mcs="clr-namespace:MCS.Controls"
         Title="Content Borwser" Width="640" Height="480" Icon="/Images/MainWindow/Contents.PNG"
         Closing="Window_Closing">
     <Grid>
@@ -116,7 +116,7 @@
               Width="2"/>
 
         <!-- Properties -->
-        <mc:PropertyGrid Grid.Column="4" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}" Changed="PropertyGrid_Changed"/>
+        <mcs:PropertyGrid Grid.Column="4" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}" Changed="PropertyGrid_Changed"/>
         
     </Grid>
 </Window>

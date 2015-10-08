@@ -134,6 +134,7 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.E, true, false, false, "", "EnvironmentWindowCommand"));
             keys.Add(new HotKeyInfo(Key.L, true, false, false, "", "LayersWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F9, false, false, false, "", "RenderWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.A, true, false, false, "", "AnimationsWindowCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
 
             // ContentWindow

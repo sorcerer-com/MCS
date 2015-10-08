@@ -22,10 +22,10 @@ namespace MCS.Controls
             DependencyProperty.Register("GetList", typeof(GetListDelegate), typeof(PropertyGrid), new PropertyMetadata(OnPropertyChanged));
 
         public static readonly DependencyProperty ShowParentPropertiesProperty =
-            DependencyProperty.Register("ShowParentProperties", typeof(bool), typeof(PropertyGrid), new PropertyMetadata(OnPropertyChanged));
+            DependencyProperty.Register("ShowParentProperties", typeof(bool), typeof(PropertyGrid), new PropertyMetadata(true, OnPropertyChanged));
 
         public static readonly DependencyProperty ExpandedProperty =
-            DependencyProperty.Register("Expanded", typeof(bool), typeof(PropertyGrid), new PropertyMetadata(OnPropertyChanged));
+            DependencyProperty.Register("Expanded", typeof(bool), typeof(PropertyGrid), new PropertyMetadata(false, OnPropertyChanged));
 
         public static readonly RoutedEvent ChangedEvent =
             EventManager.RegisterRoutedEvent("Changed", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PropertyGrid));
@@ -65,8 +65,6 @@ namespace MCS.Controls
         {
             InitializeComponent();
 
-            this.ShowParentProperties = true;
-            this.Expanded = false;
             this.expandedGroups = new List<string>();
             this.IsLocked = false;
             this.IsSorted = true;

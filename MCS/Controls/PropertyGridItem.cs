@@ -15,7 +15,7 @@ namespace MCS.Controls
             DependencyProperty.Register("Object", typeof(object), typeof(PropertyGridItem), new PropertyMetadata(OnPropertyChanged));
 
         public static readonly DependencyProperty CanWriteProperty =
-            DependencyProperty.Register("CanWrite", typeof(bool), typeof(PropertyGridItem), new PropertyMetadata(OnPropertyChanged));
+            DependencyProperty.Register("CanWrite", typeof(bool), typeof(PropertyGridItem), new PropertyMetadata(true, OnPropertyChanged));
 
         public static readonly DependencyProperty GetListProperty =
             DependencyProperty.Register("GetList", typeof(GetListDelegate), typeof(PropertyGridItem), new PropertyMetadata(OnPropertyChanged));
@@ -45,7 +45,6 @@ namespace MCS.Controls
 
         public PropertyGridItem()
         {
-            this.CanWrite = true;
         }
 
         public PropertyGridItem(object obj)

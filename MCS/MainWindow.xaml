@@ -1,7 +1,7 @@
 ﻿<Window x:Class="MCS.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="clr-namespace:MCS.Controls"
+        xmlns:mcs="clr-namespace:MCS.Controls"
         Title="My Creative Studio" Width="800" Height="600" Icon="/Images/Icon.ico"
         Loaded="Window_Loaded" Closing="Window_Closing">
     
@@ -75,7 +75,7 @@
                 <Button ToolTip="{Binding Path=LayersWindowCommandTooltip}" Command="{Binding Path=LayersWindowCommand}">
                     <Image Source="/Images/MainWindow/Layers.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Animations (Ctrl+A)">
+                <Button ToolTip="{Binding Path=AnimationsWindowCommandTooltip}" Command="{Binding Path=AnimationsWindowCommand}">
                     <Image Source="/Images/MainWindow/Animations.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <Button ToolTip="Scripts (F10)">
@@ -136,7 +136,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <mc:PropertyGrid Grid.Row="0" Expanded="True" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}"/>
+            <mcs:PropertyGrid Grid.Row="0" Expanded="True" Object="{Binding Path=SelectedElement}" GetList="{Binding Path=GetSelectedContentElementsList}"/>
 
             <!-- Bottom StatusBar -->
             <StatusBar Grid.Row="1" VerticalAlignment="Top">

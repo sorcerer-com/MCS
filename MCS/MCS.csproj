@@ -113,6 +113,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Controls\GraphsViewer.cs" />
     <Compile Include="Controls\NumberBox.cs" />
     <Compile Include="Controls\PropertyGrid.xaml.cs">
       <DependentUpon>PropertyGrid.xaml</DependentUpon>
@@ -123,6 +124,9 @@
     </Compile>
     <Compile Include="Dialogs\TextDialogBox.xaml.cs">
       <DependentUpon>TextDialogBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainWindows\AnimationsWindow.xaml.cs">
+      <DependentUpon>AnimationsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindows\EnvironmentWindow.xaml.cs">
       <DependentUpon>EnvironmentWindow.xaml</DependentUpon>
@@ -143,6 +147,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MainWindows\AnimationsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindows\ContentWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -285,6 +293,9 @@
   <ItemGroup>
     <Resource Include="Images\Common\Lock.png" />
     <Resource Include="Images\Common\Unlock.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Common\Clone.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

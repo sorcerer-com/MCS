@@ -34,7 +34,7 @@ namespace MyEngine {
 		virtual ContentElement* Clone() const override;
 
     protected:
-        long long rawDataSize;
+        int rawDataSize;
         byte* rawData;
 
         void init();

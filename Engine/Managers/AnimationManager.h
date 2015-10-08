@@ -9,32 +9,31 @@
 
 
 namespace MyEngine {
-#pragma warning (disable:4503)
 
-    struct AnimKeyFrame
+    struct AnimTrack
     {
-        enum {
+        enum TrackType {
             ENone,
             EFloat,
             EVector3,
             EColor4
         } Type;
 
-        float Value[4];
+        map<int, float[4]> KeyFrames;
 
-        AnimKeyFrame() = default;
-        AnimKeyFrame(const float& value);
-        AnimKeyFrame(const Vector3& value);
-        AnimKeyFrame(const Color4& value);
-        AnimKeyFrame(istream& file);
+        AnimTrack() = default;
+        AnimTrack(TrackType type);
+        AnimTrack(istream& file);
 
+        bool SetKeyframe(int frame, const float& value);
+        bool SetKeyframe(int frame, const Vector3& value);
+        bool SetKeyframe(int frame, const Color4& value);
         void WriteToFile(ostream& file) const;
     };
 
 	class AnimationManager : public BaseManager
 	{
     public:
-        using AnimTrack = map < int, AnimKeyFrame > ; // frame / keyframe
         using AnimationType = map < string, AnimTrack >; // track name / track
         using AnimationsMapType = map < string, AnimationType > ; // name / animation
 
@@ -51,14 +50,15 @@ namespace MyEngine {
         bool ContainsAnimation(const string& name) const;   //* wrap
         bool RenameAnimation(const string& oldName, const string& newName); //* wrap
         bool DeleteAnimation(const string& name);           //* wrap endgroup
-        AnimationType GetAnimation(const string& name);
         vector<string> GetAnimationsNames();
 
-        bool AddTrack(const string& animation, const string& track);     //* wrap
+        bool AddTrack(const string& animation, const string& track, AnimTrack::TrackType type);
         bool ContainsTrack(const string& animation, const string& track) const;  //* wrap
         bool DeleteTrack(const string& animation, const string& track);  //* wrap
-        bool SetKeyframe(const string& animation, const string& track, uint frame, const AnimKeyFrame& keyframe);   //* wrap
-        bool RemoveKeyframe(const string& animation, const string& track, uint frame);//* wrap
+        bool SetKeyframe(const string& animation, const string& track, uint frame, const float* keyframe);   //* wrap
+        bool RemoveKeyframe(const string& animation, const string& track, int frame);//* wrap
+        AnimTrack GetTrack(const string& animation, const string& track);
+        vector<string> GetTracksNames(const string& animation);
     };
 
 }

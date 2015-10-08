@@ -12,20 +12,12 @@
 
 namespace MyEngine {
 
-    public enum class EAnimKeyFrameType
+    public enum class EAnimTrackType
     {
         None,
         Float,
         MPoint,
         MColor
-    };
-
-    public value struct MAnimKeyFrame
-    {
-        EAnimKeyFrameType Type;
-        property float Float;
-        property MPoint Point;
-        property MColor Color;
     };
 
     public ref class MAnimationManager : MBaseManager
@@ -34,7 +26,8 @@ namespace MyEngine {
         AnimationManager* animationManager;
 
     public:
-        using MAnimationType = Dictionary < String^, Dictionary<int, MAnimKeyFrame>^ >^;
+        using MAnimKeyFrame = array<double>;
+        using MAnimationType = Dictionary < String^, Dictionary<int, MAnimKeyFrame^>^ >^;
 
 		property List<String^>^ AnimationsNames
 		{
@@ -57,14 +50,14 @@ namespace MyEngine {
         bool RenameAnimation(String^ oldName, String^ newName);
         bool DeleteAnimation(String^ name);
         
-        bool AddTrack(String^ animation, String^ track);
         bool ContainsTrack(String^ animation, String^ track);
         bool DeleteTrack(String^ animation, String^ track);
-        bool SetKeyframe(String^ animation, String^ track, uint frame, AnimKeyFrame keyframe);
-        bool RemoveKeyframe(String^ animation, String^ track, uint frame);
+        bool RemoveKeyframe(String^ animation, String^ track, int frame);
 #pragma endregion
         bool CloneAnimation(String^ name, String^ newName);
         MAnimationType GetAnimation(String^ name);
+        bool AddTrack(String^ animation, String^ track, EAnimTrackType type);
+        bool SetKeyframe(String^ animation, String^ track, int frame, MAnimKeyFrame^ mKeyframe);
 
 	private:
 		void OnChanged(String^ element);
