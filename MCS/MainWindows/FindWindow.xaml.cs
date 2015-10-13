@@ -77,9 +77,6 @@ namespace MCS.MainWindows
             List<MSceneElement> mses = this.sceneManager.Elements;
             foreach (MSceneElement mse in mses)
             {
-                if (mse.Type == ESceneElementType.SystemObject)
-                    continue;
-
                 if (!mse.Name.ToLower().Contains(this.FindText.ToLower()))
                     continue;
 

@@ -114,10 +114,11 @@
                     <Separator/>
                     <MenuItem Header="Add Camera" Command="{Binding Path=AddElementCommand}" CommandParameter="Camera"/>
                     <MenuItem Header="Add Light" Command="{Binding Path=AddElementCommand}" CommandParameter="Light"/>
+                    <MenuItem Header="Add Render Object">
+                        <MenuItem Header="Clipper" Command="{Binding Path=AddElementCommand}" CommandParameter="RenderObject.Clipper"/>
+                    </MenuItem>
                     <MenuItem Header="Add Static Object" StaysOpenOnClick="True"/>
                     <MenuItem Header="Add Dynamic Object" StaysOpenOnClick="True"/>
-                    <MenuItem Header="Add Water"/>
-                    <MenuItem Header="Add Character"/>
                 </ContextMenu>
             </WindowsFormsHost.ContextMenu>
 

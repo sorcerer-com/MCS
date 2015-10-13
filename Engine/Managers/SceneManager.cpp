@@ -9,6 +9,7 @@
 #include "..\Utils\IOUtils.h"
 #include "..\Utils\Types\Thread.h"
 #include "..\Scene Elements\SceneElement.h"
+#include "..\Scene Elements\RenderElement.h"
 #include "..\Scene Elements\Camera.h"
 #include "..\Scene Elements\Light.h"
 
@@ -158,11 +159,13 @@ namespace MyEngine {
 				const streamoff offset = -(streamoff)(sizeof(version) + sizeof(type));
 				ifile.seekg(offset, ios_base::cur);
 
-				SceneElement* element = NULL;
-				if (type == SceneElementType::ECamera)
-					element = new Camera(this, ifile);
+                SceneElement* element = NULL;
+                if (type == SceneElementType::ECamera)
+                    element = new Camera(this, ifile);
 				else if (type == SceneElementType::ELight)
 					element = new Light(this, ifile);
+                else if (type == SceneElementType::ERenderObject)
+                    element = new RenderElement(this, ifile);
 				/* TODO: add different scene elements types */
 				else
 					element = new SceneElement(this, ifile);
@@ -215,10 +218,12 @@ namespace MyEngine {
 	{
 		SceneElement *element = NULL;
 
-		if (type == SceneElementType::ECamera)
-			element = new Camera(this, name, contentID);
+        if (type == SceneElementType::ECamera)
+            element = new Camera(this, name, contentID);
 		else if (type == SceneElementType::ELight)
-			element = new Light(this, name, contentID, EStaticLight);
+            element = new Light(this, name, contentID, EStaticLight);
+        else if (type == SceneElementType::ERenderObject)
+            element = new RenderElement(this, name, contentID);
 		/* TODO: add other scene elements */
 		else
 			element = new SceneElement(this, type, name, contentID);

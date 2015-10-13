@@ -205,6 +205,7 @@
     <ClCompile Include="Renderers\Renderer.cpp" />
     <ClCompile Include="Scene Elements\Camera.cpp" />
     <ClCompile Include="Scene Elements\Light.cpp" />
+    <ClCompile Include="Scene Elements\RenderElement.cpp" />
     <ClCompile Include="Scene Elements\SceneElement.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -229,6 +230,7 @@
     <ClInclude Include="Renderers\Renderer.h" />
     <ClInclude Include="Scene Elements\Camera.h" />
     <ClInclude Include="Scene Elements\Light.h" />
+    <ClInclude Include="Scene Elements\RenderElement.h" />
     <ClInclude Include="Scene Elements\SceneElement.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="Utils\Config.h" />

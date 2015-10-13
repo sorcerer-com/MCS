@@ -247,6 +247,7 @@ xcopy /F /Y /Q "$(SolutionDir)Includes\tbbmalloc$(PlatformArchitecture).dll" "$(
     <ClInclude Include="Renderers\MViewPortRenderer.h" />
     <ClInclude Include="Scene Elements\MCamera.h" />
     <ClInclude Include="Scene Elements\MLight.h" />
+    <ClInclude Include="Scene Elements\MRenderElement.h" />
     <ClInclude Include="Scene Elements\MSceneElement.h" />
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="MEngine.h" />

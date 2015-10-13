@@ -9,13 +9,17 @@ namespace CodeGenerator.Utils
             {"long long",  "long"},
             {"float",  "double"},
             {"string",  "String^"},
+
             {"Vector3", "MPoint"},
             {"Quaternion", "MPoint"},
             {"Color4",  "MColor"},
+
             {"ContentElementType",  "EContentElementType"},
             {"SceneElementType",  "ESceneElementType"},
+            {"RenderElementType",  "ERenderElementType"},
             {"LightType",  "ELightType"},
             {"RendererType",  "ERendererType"},
+
             {"SceneElementPtr",  "MSceneElement^"},
             {"ContentElementPtr",  "MContentElement^"},
         };

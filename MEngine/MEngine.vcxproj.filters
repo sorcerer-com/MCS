@@ -21,6 +21,7 @@
     <ClInclude Include="Renderers\MProductionRenderer.h" />
     <ClInclude Include="Renderers\MRenderer.h" />
     <ClInclude Include="Managers\MAnimationManager.h" />
+    <ClInclude Include="Scene Elements\MRenderElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />

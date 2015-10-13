@@ -344,7 +344,7 @@ namespace MCS
                         var mses = this.engine.SceneManager.Elements;
                         foreach (var mse in mses)
                         {
-                            if (mse.Type == ESceneElementType.SystemObject)
+                            if (mse.Type == ESceneElementType.RenderObject)
                                 continue;
 
                             string type = mse.Type == ESceneElementType.Light ? "Light" : "SceneElement";
@@ -562,6 +562,16 @@ namespace MCS
                         mse = this.engine.SceneManager.AddElement(ESceneElementType.Camera, name, @"MPackage#Meshes\System\Camera");
                     else if (name.StartsWith("Light"))
                         mse = this.engine.SceneManager.AddElement(ESceneElementType.Light, name, 0);
+                    else if (name.StartsWith("RenderObject"))
+                    {
+                        mse = this.engine.SceneManager.AddElement(ESceneElementType.RenderObject, name, 0);
+                        MRenderElement mre = mse as MRenderElement;
+                        if (mre != null && name.Contains("Clipper"))
+                        {
+                            mre.RType = ERenderElementType.Slicer;
+                            mre.Content = this.engine.ContentManager.GetElement(@"MPackage#Meshes\Primitives\Plane");
+                        }
+                    }
 
                     if (mse != null && this.engine.SceneManager.ActiveCamera != null)
                     {
@@ -648,6 +658,11 @@ namespace MCS
             //this.engine.SceneManager.FogDensity = 0.01;
             this.engine.SceneManager.TimeOfDay = 10;
             this.engine.SceneManager.SkyBox = this.engine.ContentManager.GetElement(@"MPackage#Textures\SkyBoxes\ElyHills");
+
+            MRenderElement mre = this.engine.SceneManager.AddElement(ESceneElementType.RenderObject, "clipper", @"MPackage#Meshes\Primitives\Plane") as MRenderElement;
+            mre.RType = ERenderElementType.Slicer;
+            mre.Position = new MPoint(0, 0, -100);
+            mre.Rotation = new MPoint(-20, -20, 0);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

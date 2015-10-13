@@ -22,6 +22,7 @@ namespace embree {
 #include "..\Managers\ContentManager.h"
 #include "..\Scene Elements\Camera.h"
 #include "..\Scene Elements\Light.h"
+#include "..\Scene Elements\RenderElement.h"
 #include "..\Content Elements\Mesh.h"
 #include "..\Content Elements\Texture.h"
 
@@ -254,10 +255,11 @@ namespace MyEngine {
         {
             float time = 0.0f;
             int count = 0;
-            for (int j = 0; j < 9; j++) // 3x3
+            const int d = 3;
+            for (int j = 0; j < d * d; j++)
             {
-                int ii = i + (j % 3 - 1) + (j / 3 - 1) * sw; // i + xx + yy * sw
-                if (ii > 0 && ii < this->Regions.size() && ii != i)
+                int ii = i + (j % d - 1) + (j / d - 1) * sw; // i + xx + yy * sw
+                if (ii > 0 && ii < (int)this->Regions.size() && ii != i)
                 {
                     time += this->Regions[ii].time;
                     count++;
@@ -416,7 +418,7 @@ namespace MyEngine {
         for (const auto& sceneElement : sceneElements)
         {
             if (sceneElement->ContentID == INVALID_ID || !sceneElement->Visible ||
-                sceneElement->Type == SceneElementType::ECamera || sceneElement->Type == SceneElementType::ESystemObject)
+                sceneElement->Type == SceneElementType::ECamera || sceneElement->Type == SceneElementType::ERenderObject)
                 continue;
 
             embree::RTCScene rtcGeometry = this->createRTCGeometry(sceneElement);
@@ -433,6 +435,32 @@ namespace MyEngine {
             this->cacheContentElements(sceneElement);
         }
         embree::rtcCommit(this->rtcScene);
+
+
+        // Create System Scene
+        this->rtcSystemScene = embree::rtcNewScene(sflags, aflags);
+
+        // Create SceneElements
+        sceneElements = this->Owner->SceneManager->GetElements(SceneElementType::ERenderObject);
+        for (const auto& sceneElement : sceneElements)
+        {
+            if (sceneElement->ContentID == INVALID_ID || !sceneElement->Visible)
+                continue;
+
+            embree::RTCScene rtcGeometry = this->createRTCGeometry(sceneElement);
+            if (rtcGeometry != NULL)
+            {
+                uint rtcInstance = embree::rtcNewInstance(this->rtcSystemScene, rtcGeometry);
+                vector<float> matrix = getMatrix(sceneElement->Position, sceneElement->Rotation, sceneElement->Scale);
+                embree::rtcSetTransform(this->rtcSystemScene, rtcInstance, embree::RTCMatrixType::RTC_MATRIX_COLUMN_MAJOR_ALIGNED16, &matrix[0]);
+                embree::rtcUpdate(this->rtcSystemScene, rtcInstance);
+
+                this->rtcInstances[-(int)rtcInstance - 2] = sceneElement;
+            }
+
+            this->cacheContentElements(sceneElement);
+        }
+        embree::rtcCommit(this->rtcSystemScene);
     }
 
     embree::RTCScene CPURayRenderer::createRTCGeometry(const SceneElementPtr sceneElement)
@@ -467,13 +495,13 @@ namespace MyEngine {
         uint meshID = embree::rtcNewTriangleMesh(rtcGeometry, embree::RTCGeometryFlags::RTC_GEOMETRY_STATIC, mesh->Triangles.size(), mesh->Vertices.size());
         float* vertices = (float*)embree::rtcMapBuffer(rtcGeometry, meshID, embree::RTCBufferType::RTC_VERTEX_BUFFER);
         int* triangles = (int*)embree::rtcMapBuffer(rtcGeometry, meshID, embree::RTCBufferType::RTC_INDEX_BUFFER);
-        for (int i = 0; i < mesh->Vertices.size(); i++)
+        for (int i = 0; i < (int)mesh->Vertices.size(); i++)
         {
             vertices[i * 4 + 0] = mesh->Vertices[i].x;
             vertices[i * 4 + 1] = mesh->Vertices[i].y;
             vertices[i * 4 + 2] = mesh->Vertices[i].z;
         }
-        for (int i = 0; i < mesh->Triangles.size(); i++)
+        for (int i = 0; i < (int)mesh->Triangles.size(); i++)
         {
             triangles[i * 3 + 0] = mesh->Triangles[i].vertices[0];
             triangles[i * 3 + 1] = mesh->Triangles[i].vertices[1];
@@ -717,6 +745,61 @@ namespace MyEngine {
         return result;
     }
 
+    void CPURayRenderer::processRenderElements(embree::RTCRay& rtcRay, InterInfo& interInfo)
+    {
+        embree::RTCRay rtcSysRay = rtcRay;
+        rtcSysRay.tfar = 10000.0f;
+        rtcSysRay.geomID = RTC_INVALID_GEOMETRY_ID;
+        rtcSysRay.primID = RTC_INVALID_GEOMETRY_ID;
+        rtcSysRay.instID = RTC_INVALID_GEOMETRY_ID;
+
+        embree::rtcIntersect(this->rtcSystemScene, rtcSysRay);
+        rtcSysRay.instID = -rtcSysRay.instID - 2;
+        const InterInfo& interInfoSys = this->getInterInfo(rtcSysRay);
+        if (!interInfoSys.sceneElement || interInfoSys.sceneElement->Type != SceneElementType::ERenderObject)
+            return;
+
+        RenderElement* re = (RenderElement*)interInfoSys.sceneElement.get();
+        if (re->RType == RenderElementType::ESlicer && rtcRay.tfar < rtcSysRay.tfar)
+        {
+            int count = 1;
+            embree::RTCRay rtcPrevRay = rtcRay;
+            while (rtcRay.tfar < rtcSysRay.tfar) // count intersections
+            {
+                rtcPrevRay = rtcRay;
+                rtcRay.tnear = rtcRay.tfar + 0.01f;
+                rtcRay.tfar = 10000.0f;
+                rtcRay.geomID = RTC_INVALID_GEOMETRY_ID;
+                rtcRay.primID = RTC_INVALID_GEOMETRY_ID;
+                rtcRay.instID = RTC_INVALID_GEOMETRY_ID;
+                embree::rtcIntersect(this->rtcScene, rtcRay);
+                if (rtcRay.geomID == rtcPrevRay.geomID &&
+                    rtcRay.instID == rtcPrevRay.instID)
+                    count++;
+                else
+                    count = 1;
+            }
+
+            if (count % 2 == 0 && rtcRay.geomID == rtcPrevRay.geomID && rtcRay.instID == rtcPrevRay.instID) // if it's inside the object
+            {
+                rtcRay = rtcSysRay;
+
+                interInfo = this->getInterInfo(rtcPrevRay);
+                if (interInfoSys.sceneElement->MaterialID == INVALID_ID &&              // if slicer doesn't have material use the object's one
+                    interInfoSys.sceneElement->Textures.DiffuseMapID == INVALID_ID &&
+                    interInfoSys.sceneElement->Textures.NormalMapID == INVALID_ID)
+                {
+                    interInfo.interPos = interInfoSys.interPos;
+                    interInfo.normal = interInfoSys.normal;
+                }
+                else
+                    interInfo = interInfoSys;
+            }
+            else
+                interInfo = this->getInterInfo(rtcRay);
+        }
+    }
+
 
     atomic_int nextSample;
     bool CPURayRenderer::generateIrradianceMap()
@@ -766,7 +849,7 @@ namespace MyEngine {
         }
 
         // generate more samples if it's needed
-        for (int i = 0; i < this->irrMapTriangles.size(); i += 3)
+        for (int i = 0; i < (int)this->irrMapTriangles.size(); i += 3)
         {
             if (!this->IsStarted)
                 return false;
@@ -804,7 +887,7 @@ namespace MyEngine {
             {
                 // find opposite triangle
                 int trgl2 = -1;
-                for (int k = 0; k < this->irrMapTriangles.size(); k += 3)
+                for (int k = 0; k < (int)this->irrMapTriangles.size(); k += 3)
                 {
                     int i1 = -1, i2 = -1, i3 = -1;
                     for (int j = 0; j < 3; j++)
@@ -912,13 +995,13 @@ namespace MyEngine {
         uint meshID = embree::rtcNewTriangleMesh(this->rtcIrrMapScene, embree::RTCGeometryFlags::RTC_GEOMETRY_STATIC, this->irrMapTriangles.size() / 3, this->irrMapSamples.size());
         float* vertices = (float*)embree::rtcMapBuffer(this->rtcIrrMapScene, meshID, embree::RTCBufferType::RTC_VERTEX_BUFFER);
         int* triangles = (int*)embree::rtcMapBuffer(this->rtcIrrMapScene, meshID, embree::RTCBufferType::RTC_INDEX_BUFFER);
-        for (int i = 0; i < this->irrMapSamples.size(); i++)
+        for (int i = 0; i < (int)this->irrMapSamples.size(); i++)
         {
             vertices[i * 4 + 0] = this->irrMapSamples[i].position.x;
             vertices[i * 4 + 1] = this->irrMapSamples[i].position.y;
             vertices[i * 4 + 2] = this->irrMapSamples[i].position.z;
         }
-        for (int i = 0; i < this->irrMapTriangles.size(); i += 3)
+        for (int i = 0; i < (int)this->irrMapTriangles.size(); i += 3)
         {
             triangles[i + 0] = this->irrMapTriangles[i + 0];
             triangles[i + 1] = this->irrMapTriangles[i + 1];
@@ -953,7 +1036,8 @@ namespace MyEngine {
         embree::rtcIntersect(this->rtcScene, rtcRay);
         if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
         {
-            const InterInfo& interInfo = this->getInterInfo(rtcRay, false, true);
+            InterInfo interInfo = this->getInterInfo(rtcRay, false, true);
+            this->processRenderElements(rtcRay, interInfo);
             newSample.id = interInfo.sceneElement->ID;
             newSample.position = interInfo.interPos;
             newSample.normal = interInfo.normal;
@@ -987,7 +1071,7 @@ namespace MyEngine {
 
         int sampleIdx = nextSample;
         nextSample++;
-        if (sampleIdx >= this->irrMapSamples.size())
+        if (sampleIdx >= (int)this->irrMapSamples.size())
         {
             this->nextRagion = 0;
             return false;
@@ -1008,7 +1092,7 @@ namespace MyEngine {
             setFlag(rtcGIRay.align1, RayFlags::RAY_INDIRECT, true);
             embree::rtcIntersect(this->rtcScene, rtcGIRay);
 
-            const InterInfo& interInfoGI = this->getInterInfo(rtcGIRay);
+            InterInfo interInfoGI = this->getInterInfo(rtcGIRay);
             const Color4& lighting = this->getGILighting(rtcGIRay, interInfoGI, Color4::White());
             sample.color += lighting;
             return lighting;
@@ -1031,7 +1115,7 @@ namespace MyEngine {
 
         // get region
         this->thread->mutex("regions").lock();
-        if (this->nextRagion >= this->Regions.size())
+        if (this->nextRagion >= (int)this->Regions.size())
         {
             this->thread->mutex("regions").unlock();
             return false;
@@ -1113,9 +1197,10 @@ namespace MyEngine {
             if (rtcRay4.instID[k] == RTC_INVALID_GEOMETRY_ID)
                 continue;
 
-            const embree::RTCRay& rtcRay = getRTCRay(rtcRay4, k);
-            const InterInfo& interInfo = this->getInterInfo(rtcRay);
-            const ColorsMapType& temp = this->computeColor(rtcRay, interInfo);
+            embree::RTCRay rtcRay = getRTCRay(rtcRay4, k);
+            InterInfo interInfo = this->getInterInfo(rtcRay);
+            this->processRenderElements(rtcRay, interInfo);
+            const ColorsMapType& temp = this->computeColor(rtcRay, interInfo, 1.0f);
             for (const auto& color : temp)
                 colors[color.first] += color.second;
         }
@@ -1127,7 +1212,7 @@ namespace MyEngine {
         return colors["Final"] * div;
     }
 
-    CPURayRenderer::ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo)
+    CPURayRenderer::ColorsMapType CPURayRenderer::computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo, float contribution)
     {
         Profile;
         ColorsMapType result;
@@ -1138,7 +1223,10 @@ namespace MyEngine {
         if (!interInfo.sceneElement)
             return result;
 
-        result["Diffuse"] = interInfo.color;
+        if (contribution < 0.02f)
+            return result;
+
+        result["Diffuse"] = interInfo.color * interInfo.diffuse;
         result["Diffuse"].a = 1.0f;
 
         // calculate lighting
@@ -1182,7 +1270,9 @@ namespace MyEngine {
                 if (this->GI && (!this->IrradianceMap || (this->irrMapSamples.size() > 0 && rtcRay.align0 != 0) || 
                                  interInfo.sceneElement->Type == SceneElementType::EDynamicObject))
                 {
-                    uint samples = adaptiveSampling(this->GISamples, this->GISamples * 4, this->SampleThreshold, [&](int) -> Color4
+                    uint giSamples = (uint)(this->GISamples * contribution * interInfo.diffuse);
+                    giSamples = max(1u, giSamples);
+                    uint samples = adaptiveSampling(giSamples, giSamples * 4, this->SampleThreshold, [&](int) -> Color4
                     {
                         const Vector3& dir = hemisphereSample(interInfo.normal);
                         embree::RTCRay rtcGIRay = RTCRay(interInfo.interPos + interInfo.normal * 0.01f, dir, (uint)rtcRay.align0 + 1);
@@ -1209,7 +1299,7 @@ namespace MyEngine {
 
         result["TotalLight"] = (result["DirectLight"] + result["IndirectLight"]);
         result["TotalLight"].a = 1.0f;
-        result["Lighted"] = (result["Diffuse"] * result["TotalLight"] + result["Specular"]) * interInfo.diffuse;
+        result["Lighted"] = result["Diffuse"] * result["TotalLight"] + result["Specular"];
         result["Lighted"].a = 1.0f;
 
 
@@ -1237,7 +1327,7 @@ namespace MyEngine {
                 embree::rtcIntersect(this->rtcScene, rtcRefrRay);
                 const InterInfo& interInfoRefr = this->getInterInfo(rtcRefrRay);
 
-                result["Refraction"] = this->computeColor(rtcRefrRay, interInfoRefr)["Final"];
+                result["Refraction"] = this->computeColor(rtcRefrRay, interInfoRefr, contribution * interInfo.refraction)["Final"];
             }
             result["Refraction"] *= interInfo.refraction;
             result["Refraction"].a = 1.0f;
@@ -1262,7 +1352,7 @@ namespace MyEngine {
             embree::rtcIntersect(this->rtcScene, rtcReflRay);
             const InterInfo& interInfoRefl = this->getInterInfo(rtcReflRay);
 
-            result["Reflection"] = this->computeColor(rtcReflRay, interInfoRefl)["Final"];
+            result["Reflection"] = this->computeColor(rtcReflRay, interInfoRefl, contribution * interInfo.reflection)["Final"];
             result["Reflection"] *= interInfo.reflection;
             result["Reflection"].a = 1.0f;
         }

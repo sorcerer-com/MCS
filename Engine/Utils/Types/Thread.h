@@ -241,7 +241,7 @@ namespace MyEngine {
 
         bool waitTask(int id)
         {
-            for (int i = 0; i < this->workers.size(); i++)
+            for (int i = 0; i < (int)this->workers.size(); i++)
                 this->waitCounter |= (2 << i);
 
             while (!this->interrupt && this->waitCounter != 0)

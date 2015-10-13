@@ -358,9 +358,9 @@ namespace MyEngine {
                     this->meshesCache[sceneElement->ContentID] = new irr::scene::SMesh();
 
                 irr::scene::SMesh* irrMesh = this->meshesCache[sceneElement->ContentID];
-                if (this->updateIrrMesh(sceneElement, irrMesh))
+                irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrChildSceneNode;
+                if (this->updateIrrMesh(sceneElement, irrMesh) || irrMeshSceneNode->getMesh() != irrMesh)
                 {
-                    irr::scene::IMeshSceneNode* irrMeshSceneNode = (irr::scene::IMeshSceneNode*) irrChildSceneNode;
                     irrMeshSceneNode->setMesh(irrMesh);
                     
                     irr::scene::ITriangleSelector* irrTriangleSelector = this->irrSmgr->createOctreeTriangleSelector(irrMesh, irrChildSceneNode);
@@ -431,7 +431,7 @@ namespace MyEngine {
         irr::scene::ISceneNode* irrSceneNode = this->irrSmgr->addEmptySceneNode(NULL, sceneElement->ID);
 
         if (sceneElement->Type == SceneElementType::ECamera ||
-            sceneElement->Type == SceneElementType::ESystemObject)
+            sceneElement->Type == SceneElementType::ERenderObject)
             irrSceneNode->setIsDebugObject(true);
 
         if (this->meshesCache.find(sceneElement->ContentID) == this->meshesCache.end())

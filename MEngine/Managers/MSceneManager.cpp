@@ -6,6 +6,7 @@
 #include "..\MEngine.h"
 #include "..\Utils\Types\MColor.h"
 #include "..\Scene Elements\MSceneElement.h"
+#include "..\Scene Elements\MRenderElement.h"
 #include "..\Scene Elements\MCamera.h"
 #include "..\Scene Elements\MLight.h"
 
@@ -320,10 +321,12 @@ namespace MyEngine {
 			return nullptr;
 
 		MSceneElement^ mse = nullptr;
-		if (element->Type == SceneElementType::ECamera)
-			mse = gcnew MCamera(element->Owner, element->ID);
+        if (element->Type == SceneElementType::ECamera)
+            mse = gcnew MCamera(element->Owner, element->ID);
 		else if (element->Type == SceneElementType::ELight)
-			mse = gcnew MLight(element->Owner, element->ID);
+            mse = gcnew MLight(element->Owner, element->ID); 
+        else if (element->Type == SceneElementType::ERenderObject)
+            mse = gcnew MRenderElement(element->Owner, element->ID);
 		/* TODO: add scene elements */
 		else
 			mse = gcnew MSceneElement(element->Owner, element->ID);

@@ -149,7 +149,7 @@ namespace MyEngine {
         template <typename Func>
         inline void build(Node& node, const vector<IndexType>& indices, const Func& getElement, const BoundingBox& bbox, const IndexType& depth)
         {
-            if (indices.size() < this->max_leaf_size || depth > this->max_tree_depth) // there isn't a lot of indices, put them in leaf
+            if ((IndexType)indices.size() < this->max_leaf_size || depth > this->max_tree_depth) // there isn't a lot of indices, put them in leaf
             {
                 node.axis = -1;
                 node.splitPos = 0.0f;
@@ -221,7 +221,7 @@ namespace MyEngine {
         {
             if (node.axis == -1) // leaf
             {
-                if (node.data.indices->size() < this->max_leaf_size || depth > this->max_tree_depth) // there is enought "space"
+                if ((IndexType)node.data.indices->size() < this->max_leaf_size || depth > this->max_tree_depth) // there is enought "space"
                 {
                     node.data.indices->push_back(index);
                 }
@@ -263,7 +263,7 @@ namespace MyEngine {
                             return distA < distB;
                     });
 
-                    if (out_indices.size() > num_closest)
+                    if ((IndexType)out_indices.size() > num_closest)
                         out_indices.pop_back();
                 }
             }
@@ -271,7 +271,7 @@ namespace MyEngine {
             {
                 DistanceType delta = element[node.axis] - node.splitPos;
                 find_nearest((delta <= 0.0f ? node.data.children[0] : node.data.children[1]), element, getElement, num_closest, out_indices);
-                if (out_indices.size() < num_closest || abs(delta) < distance(element, getElement(*out_indices.rbegin()), this->dim))
+                if ((IndexType)out_indices.size() < num_closest || abs(delta) < distance(element, getElement(*out_indices.rbegin()), this->dim))
                     find_nearest((delta <= 0.0f ? node.data.children[1] : node.data.children[0]), element, getElement, num_closest, out_indices);
             }
         }

@@ -18,7 +18,7 @@ namespace MyEngine {
 		ECamera,
         ELight,
         ESkyBox,
-		ESystemObject,
+		ERenderObject,
 		EStaticObject,
         EDynamicObject
 	};

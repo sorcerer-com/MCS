@@ -19,7 +19,7 @@ namespace MyEngine {
 		Camera,
         Light,
         SkyBox,
-		SystemObject,
+		RenderObject,
         StaticObject,
         DynamicObject,
 	};

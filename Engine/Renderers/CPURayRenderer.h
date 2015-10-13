@@ -27,10 +27,6 @@ namespace MyEngine {
 
     class CPURayRenderer : public ProductionRenderer
     {
-        // TODO: 
-        // images(diffuse, specular, direct light, indirect light, total light, reflection, refraction, depth, final) - map may be?
-        // buffer intersection infos
-        // flags - max reflection/refraction level, GI, interactive(dynamic scene or not), animation - may be in ProductionRenderer
 	public:
         uint RegionSize;
         vector<Region> Regions;
@@ -61,6 +57,7 @@ namespace MyEngine {
         int nextRagion;
 
         embree::__RTCScene* rtcScene;
+        embree::__RTCScene* rtcSystemScene;
         map<uint, embree::__RTCScene*> rtcGeometries; // mesh id / rtcScene(Geometry)
         map<int, SceneElementPtr> rtcInstances; // rtcInstance id / scene element
 
@@ -98,6 +95,7 @@ namespace MyEngine {
         embree::__RTCScene* createRTCGeometry(const SceneElementPtr sceneElement);
         void cacheContentElements(const SceneElementPtr sceneElement);
         InterInfo getInterInfo(const embree::RTCRay& rtcRay, bool onlyColor = false, bool noNormalMap = false);
+        void processRenderElements(embree::RTCRay& rtcRay, InterInfo& interInfo);
 
         bool generateIrradianceMap();
         bool addIrradianceMapSample(float x, float y, KdTree<Vector3>& irrKdTree, float minDist);
@@ -106,7 +104,7 @@ namespace MyEngine {
 
         bool render(bool preview);
         Color4 renderPixel(int x, int y);
-        ColorsMapType computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo);
+        ColorsMapType computeColor(const embree::RTCRay& rtcRay, const InterInfo& interInfo, float contribution);
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const InterInfo& interInfo); // diffuse light / sepcular light / samples
         ColorsMapType getLighting(const embree::RTCRay& rtcRay, const Light* light, const InterInfo& interInfo); // diffuse light / sepcular light
         Vector3 getLightSample(const Light* light, int numSamples, int sample);
