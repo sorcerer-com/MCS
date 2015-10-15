@@ -25,15 +25,7 @@
               Width="2"/>
 
         <mcs:GraphsViewer Grid.Column="2" Grid.Row="0" Data="{Binding Curves}" CursorPosition="{Binding CurrentFrame, Mode=TwoWay}" SelectedCurve="{Binding SelectedCurve, Mode=TwoWay}"
-                          MouseDoubleClick="GraphsViewer_MouseDoubleClick" MouseMove="GraphsViewer_MouseMove" MouseWheel="GraphsViewer_MouseWheel"
-                          ContextMenuOpening="GraphsViewer_ContextMenuOpening">
-            <mcs:GraphsViewer.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Add Track" Command="{Binding AddTrackCommand}"/>
-                    <MenuItem Header="Delete Track" Command="{Binding DeleteTrackCommand}"/>
-                </ContextMenu>
-            </mcs:GraphsViewer.ContextMenu>
-        </mcs:GraphsViewer>
+                          MouseDown="GraphsViewer_MouseDown" MouseMove="GraphsViewer_MouseMove" MouseWheel="GraphsViewer_MouseWheel"/>
 
         <StatusBar Grid.Column="0" Grid.Row="1">
             <Button ToolTip="Add Animation" Command="{Binding AddAnimationCommand}">
@@ -52,6 +44,13 @@
 
         <StatusBar Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1">
             <Separator/>
+            <Button ToolTip="Add Track" Command="{Binding AddTrackCommand}">
+                <Image Source="/Images/Common/Add.png" Width="18" Height="17" Stretch="Fill"/>
+            </Button>
+            <Button ToolTip="Delete Track" Command="{Binding DeleteTrackCommand}">
+                <Image Source="/Images/Common/Delete.png" Width="18" Height="17" Stretch="Fill"/>
+            </Button>
+            <Separator Margin="36 0 0 0"/>
             <Button ToolTip="Play (Ctrl+P)">
                 <Image Source="/Images/Common/Play.png" Width="18" Height="17" Stretch="Fill"/>
             </Button>

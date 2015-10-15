@@ -88,8 +88,6 @@ namespace MyEngine {
             return &this->IOR;
         else if (name == "Absorption")
             return &this->Absorption;
-        else if (name == "Textures")
-            return &this->Textures;
 #pragma endregion
         return ContentElement::get(name);
     }

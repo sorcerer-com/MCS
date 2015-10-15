@@ -133,6 +133,18 @@ namespace MyEngine {
                     mKeyframe[i] = keyframe.second[i];
                 result[trackNameStr]->Add(keyframe.first, mKeyframe);
             }
+            if (track.KeyFrames.size() == 0) // if track is empty then add dummy 0 keyframe
+            {
+                MAnimKeyFrame^ mKeyframe = nullptr;
+                if (track.Type == AnimTrack::TrackType::EFloat)
+                    mKeyframe = gcnew MAnimKeyFrame(1);
+                else if (track.Type == AnimTrack::TrackType::EVector3)
+                    mKeyframe = gcnew MAnimKeyFrame(3);
+                else if (track.Type == AnimTrack::TrackType::EColor4)
+                    mKeyframe = gcnew MAnimKeyFrame(4);
+                if (mKeyframe != nullptr)
+                    result[trackNameStr]->Add(0, mKeyframe);
+            }
         }
 
         return result;

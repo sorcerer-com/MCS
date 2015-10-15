@@ -21,7 +21,7 @@ namespace CodeGenerator.Generators
             foreach (var member in members)
             {
                 if (member.Access == "public" && member.Class == _class && !member.Pointer &&
-                    !member.ContainsAttribute(MemberAttributes.NoGet))
+                    !member.ContainsAttribute(MemberAttributes.NoProperty) && !member.ContainsAttribute(MemberAttributes.ReadOnly))
                 {
                     result.Add("{0}if (name == \"{1}\")", elseString, member.Name);
                     result.Add("{0}return &this->{1};", CodeGenerator.Indent, member.Name);

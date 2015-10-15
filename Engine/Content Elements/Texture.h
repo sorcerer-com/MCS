@@ -15,7 +15,7 @@ namespace MyEngine {
 		uint Height;                        //* group["Image"] nosave readonly
 		byte* Pixels;                       //* nosave
 
-		bool Changed;                       //* default[true] nosave noget noproperty
+		bool Changed;                       //* default[true] nosave noproperty
 
 	public:
 		Texture(ContentManager* owner, const string& name, const string& package, const string& path);

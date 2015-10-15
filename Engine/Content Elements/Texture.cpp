@@ -161,10 +161,6 @@ namespace MyEngine {
     void* Texture::get(const string& name)
     {
 #pragma region Texture Get
-        if (name == "Width")
-            return &this->Width;
-        else if (name == "Height")
-            return &this->Height;
 #pragma endregion
         return ContentElement::get(name);
     }

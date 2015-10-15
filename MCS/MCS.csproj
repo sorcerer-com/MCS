@@ -101,6 +101,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialogs\SelectDialogBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\TextDialogBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -121,6 +125,9 @@
     <Compile Include="Controls\PropertyGridItem.cs" />
     <Compile Include="Dialogs\ExtendedMessageBox.xaml.cs">
       <DependentUpon>ExtendedMessageBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SelectDialogBox.xaml.cs">
+      <DependentUpon>SelectDialogBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\TextDialogBox.xaml.cs">
       <DependentUpon>TextDialogBox.xaml</DependentUpon>

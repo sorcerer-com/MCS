@@ -184,14 +184,6 @@ namespace MyEngine {
     void* Mesh::get(const string& name)
     {
 #pragma region Mesh Get
-        if (name == "Vertices")
-            return &this->Vertices;
-        else if (name == "Normals")
-            return &this->Normals;
-        else if (name == "TexCoords")
-            return &this->TexCoords;
-        else if (name == "Triangles")
-            return &this->Triangles;
 #pragma endregion
         return ContentElement::get(name);
     }

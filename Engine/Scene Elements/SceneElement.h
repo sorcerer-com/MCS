@@ -28,7 +28,7 @@ namespace MyEngine {
     public:
         SceneManager* Owner;                //* noinit
 
-		uint Version;                       //* default[CURRENT_VERSION] nosave noget readonly
+		uint Version;                       //* default[CURRENT_VERSION] nosave readonly
 		SceneElementType Type;              //* default[SceneElementType::ECamera] group["Base"] readonly
 		uint ID;                            //* default[INVALID_ID] group["Base"] readonly
 		string Name;                        //* group["Base"] readonly

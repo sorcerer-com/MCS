@@ -8,7 +8,6 @@ namespace CodeGenerator.Infos
     {
         public const string NoSave = "nosave";
         public const string NoInit = "noinit";
-        public const string NoGet = "noget";
         public const string NoProperty = "noproperty";
 
         public const string ReadOnly = "readonly";

@@ -84,16 +84,6 @@ namespace MyEngine {
     void* ContentElement::get(const string& name)
     {
 #pragma region ContentElement Get
-        if (name == "Type")
-            return &this->Type;
-        else if (name == "ID")
-            return &this->ID;
-        else if (name == "Name")
-            return &this->Name;
-        else if (name == "Package")
-            return &this->Package;
-        else if (name == "Path")
-            return &this->Path;
 #pragma endregion
         return NULL;
     }

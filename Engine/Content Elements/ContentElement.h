@@ -19,16 +19,16 @@ namespace MyEngine {
 	public:
 		ContentManager* Owner;              //* noinit
 
-		uint Version;                       //* default[CURRENT_VERSION] nosave noget readonly
+		uint Version;                       //* default[CURRENT_VERSION] nosave readonly
 		ContentElementType Type;            //* default[ContentElementType::EMesh] group["Base"] readonly
 		uint ID;                            //* default[INVALID_ID] group["Base"] readonly
 		string Name;                        //* group["Base"] readonly
 		string Package;                     //* readonly
 		string Path;                        //* readonly
 
-		long long PackageOffset;            //* noget noproperty
-		long long SavedSize;                //* noget noproperty
-		bool IsLoaded;                      //* nosave noget group["Base"] readonly
+		long long PackageOffset;            //* noproperty
+		long long SavedSize;                //* noproperty
+		bool IsLoaded;                      //* nosave group["Base"] readonly
 
 	public:
 		ContentElement(ContentManager* owner, ContentElementType type, const string& name, const string& package, const string& path);

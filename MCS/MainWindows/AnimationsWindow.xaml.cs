@@ -33,10 +33,11 @@ namespace MCS.MainWindows
             get { return this.selectedAnimation; }
             set
             {
-                if (value != this.selectedAnimation)
+                if (this.selectedAnimation != value)
                 {
-                    this.selectedAnimation = value; 
+                    this.selectedAnimation = value;
                     this.RefreshCurves();
+                    this.OnPropertyChanged("SelectedAnimation");
                 }
             }
         }
@@ -52,8 +53,10 @@ namespace MCS.MainWindows
                 if (this.selectedCurve != value)
                 {
                     this.selectedCurve = value;
-                    this.OnPropertyChanged("SelectedCurve");
+
+                    this.value = this.GetCurveValue(this.SelectedCurve, (int)this.CurrentFrame);
                     this.OnPropertyChanged("Value");
+                    this.OnPropertyChanged("SelectedCurve");
                 }
             }
         }
@@ -72,8 +75,8 @@ namespace MCS.MainWindows
             }
         }
 
-        private double currentFrame;
-        public double CurrentFrame
+        private int currentFrame;
+        public int CurrentFrame
         {
             get { return this.currentFrame; }
             set
@@ -81,37 +84,28 @@ namespace MCS.MainWindows
                 if (this.currentFrame != value)
                 {
                     this.currentFrame = value;
-                    this.OnPropertyChanged("CurrentFrame");
+
+                    this.value = this.GetCurveValue(this.SelectedCurve, this.CurrentFrame);
                     this.OnPropertyChanged("Value");
+                    this.OnPropertyChanged("CurrentFrame");
                 }
             }
         }
 
+        private double value;
         public double Value
         {
-            get
+            get { return this.value; }
+            set
             {
-                if (string.IsNullOrEmpty(this.SelectedAnimation) || 
-                    string.IsNullOrEmpty(this.SelectedCurve))
-                    return 0.0;
-
-                var curve = this.Curves[this.SelectedCurve];
-                Point prev = new Point(-1.0, 0.0);
-                foreach (var point in curve)
+                if (this.value != value)
                 {
-                    if ((int)this.CurrentFrame <= point.X)
-                    {
-                        if (point.X < 0.0)
-                            return 0.0;
-                        double d = (point.X - prev.X);
-                        double t = ((int)this.CurrentFrame - prev.X) / d;
-                        return this.cubicBezier(t, prev, prev + new Vector(d / 2.0, 0), point - new Vector(d / 2.0, 0), point).Y;
-                    }
-                    prev = point;
+                    this.value = value;
+                    if (this.Autokey)
+                        this.AddKeyframe();
+                    this.OnPropertyChanged("Value");
                 }
-                return 0.0;
             }
-            set { /* TODO: implement or remove */ }
         }
 
         public bool Autokey { get; set; }
@@ -211,10 +205,21 @@ namespace MCS.MainWindows
                     if (string.IsNullOrEmpty(this.SelectedAnimation))
                         return;
 
-                    string trackName = TextDialogBox.Show("Add Track", "Name", "Track" + this.Curves.Count);
+                    var properties = getSceneElementProperties();
+                    string trackName = SelectDialogBox.Show("AddTrack", "Name", new List<string>(properties.Keys));
                     if (!string.IsNullOrEmpty(trackName))
                     {
-                        if (!this.animationManager.AddTrack(this.SelectedAnimation, trackName, EAnimTrackType.None)) // TODO: type
+                        EAnimTrackType trackType = EAnimTrackType.None;
+                        if (properties[trackName] == typeof(double) ||
+                            properties[trackName] == typeof(float) ||
+                            properties[trackName] == typeof(bool))
+                            trackType = EAnimTrackType.Float;
+                        else if (properties[trackName] == typeof(MPoint))
+                            trackType = EAnimTrackType.MPoint;
+                        else if (properties[trackName] == typeof(MColor))
+                            trackType = EAnimTrackType.MColor;
+
+                        if (!this.animationManager.AddTrack(this.SelectedAnimation, trackName, trackType))
                             ExtendedMessageBox.Show("Cannot create the track '" + trackName + "'!", "Add Track", ExtendedMessageBoxButton.OK, ExtendedMessageBoxImage.Error);
                         else
                             RefreshCurves();
@@ -245,7 +250,7 @@ namespace MCS.MainWindows
                         else
                             RefreshCurves();
                     }
-                }, o => !string.IsNullOrEmpty(this.SelectedAnimation) && !string.IsNullOrEmpty(this.SelectedCurve));
+                });
             }
         }
 
@@ -264,22 +269,7 @@ namespace MCS.MainWindows
 
             this.RefreshCurves();
             this.Speed = 1.0;
-            this.CurrentFrame = 0.0;
-
-            // TODO: add functionality
-            this.animationManager.AddAnimation("Animation");
-            this.animationManager.AddTrack("Animation", "Track0", EAnimTrackType.MPoint);
-            this.animationManager.SetKeyframe("Animation", "Track0", 0, new double[] { 0.0, 0.0, 0.0 });
-            this.animationManager.SetKeyframe("Animation", "Track0", 30, new double[] { -10.0, 0.0, 0.0 });
-            this.animationManager.SetKeyframe("Animation", "Track0", 60, new double[] { 5.0, 10.0, 0.0 });
-            this.animationManager.SetKeyframe("Animation", "Track0", 90, new double[] { 15.0, 5.0, 0.0 });
-            this.animationManager.SetKeyframe("Animation", "Track0", 120, new double[] { 0.0, 0.0, 0.0 });
-            this.animationManager.SetKeyframe("Animation", "Track0", 240, new double[] { 10.0, 10.0, 10.0 });
-            this.animationManager.AddTrack("Animation", "Track1", EAnimTrackType.MPoint);
-            this.animationManager.SetKeyframe("Animation", "Track1", 0, new double[] { 0.0, 0.0, 0.0 });
-            this.animationManager.AddTrack("Animation", "Track2", EAnimTrackType.MPoint);
-            this.animationManager.SetKeyframe("Animation", "Track2", 0, new double[] { 0.0, 0.0, 0.0 });
-            this.SelectedAnimation = "Animation";
+            this.CurrentFrame = 0;
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -287,8 +277,10 @@ namespace MCS.MainWindows
             e.Handled = true;
             if (e.Key == Key.Escape) // close window
                 this.Close();
-            //else if (e.Key == Key.Enter) // add keyframe
-            //    this.graphViewer_MouseDoubleClick(null, null);
+            else if (e.Key == Key.Enter) // add keyframe
+                this.AddKeyframe();
+            else if (e.Key == Key.Delete) // remove keyframe
+                this.RemoveKeyframe();
             else if (e.Key == Key.Left) // move cursor left
             {
                 int d = 1;
@@ -376,14 +368,74 @@ namespace MCS.MainWindows
             this.OnPropertyChanged("Curves");
         }
 
+        public double GetCurveValue(string curveName, int frame)
+        {
+            if (this.Curves == null || curveName == null ||
+                !this.Curves.ContainsKey(curveName))
+                return 0.0;
 
-        private void GraphsViewer_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+            var curve = this.Curves[curveName];
+            Point prev = new Point(-1.0, 0.0);
+            foreach (var point in curve)
+            {
+                if (frame <= point.X)
+                {
+                    if (point.X < 0.0)
+                        return 0.0;
+                    double d = (point.X - prev.X);
+                    double t = (frame - prev.X) / d;
+                    return cubicBezier(t, prev, prev + new Vector(d / 2.0, 0), point - new Vector(d / 2.0, 0), point).Y;
+                }
+                prev = point;
+            }
+            return 0.0;
+        }
+
+        public void AddKeyframe()
+        {
+            if (string.IsNullOrEmpty(this.SelectedAnimation) ||
+                string.IsNullOrEmpty(this.SelectedCurve))
+                return;
+
+            int index = 0;
+            string track = this.SelectedCurve;
+            if (track.Contains("["))
+            {
+                index = int.Parse(track.Substring(track.IndexOf('[') + 1, track.IndexOf(']') - track.IndexOf('[') - 1));
+                track = track.Substring(0, track.IndexOf('['));
+            }
+
+            double[] keyframe = new double[4];
+            for (int i = 0; i < 4; i++ )
+                keyframe[i] = this.GetCurveValue(string.Format("{0}[{1}]", track, i), this.CurrentFrame);
+            keyframe[index] = this.Value;
+
+            this.animationManager.SetKeyframe(this.SelectedAnimation, track, this.CurrentFrame, keyframe);
+            this.RefreshCurves();
+        }
+
+        public void RemoveKeyframe()
+        {
+            if (string.IsNullOrEmpty(this.SelectedAnimation) ||
+                string.IsNullOrEmpty(this.SelectedCurve))
+                return;
+
+            string track = this.SelectedCurve;
+            if (track.Contains("["))
+                track = track.Substring(0, track.IndexOf('['));
+
+            this.animationManager.RemoveKeyframe(this.SelectedAnimation, track, this.CurrentFrame);
+            this.RefreshCurves();
+        }
+
+
+        private void GraphsViewer_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var graphsViewer = sender as GraphsViewer;
             if (graphsViewer == null)
                 return;
 
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
             {
                 Point pos = e.GetPosition(this);
                 string curveName = graphsViewer.GetCurveName(pos);
@@ -392,11 +444,12 @@ namespace MCS.MainWindows
                 else
                     graphsViewer.SelectedCurve = curveName;
             }
-            else if (e.ChangedButton == MouseButton.Right)
+            else if (e.ChangedButton == MouseButton.Right && e.ClickCount == 2)
             {
                 graphsViewer.Start = new Point();
                 graphsViewer.Scale = new Size(2.0, 1.0);
             }
+            graphsViewer.Focus();
         }
 
         private void GraphsViewer_MouseMove(object sender, MouseEventArgs e)
@@ -434,37 +487,46 @@ namespace MCS.MainWindows
                 scale = 0.9;
             graphsViewer.Scale = new Size(graphsViewer.Scale.Width * scale, graphsViewer.Scale.Height);
         }
-
-        private void GraphsViewer_ContextMenuOpening(object sender, System.Windows.Controls.ContextMenuEventArgs e)
-        {
-            FrameworkElement frameworkElement = sender as FrameworkElement;
-            if (frameworkElement == null)
-                return;
-
-            List<object> items = new List<object>();
-            foreach (var item in frameworkElement.ContextMenu.Items)
-                items.Add(item);
-
-            frameworkElement.ContextMenu.Items.Clear();
-            foreach (var item in items)
-                frameworkElement.ContextMenu.Items.Add(item);
-        }
-
+        
 
         // https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-        private Point bezier(double t, Point p0, Point p1)
+        private static Point bezier(double t, Point p0, Point p1)
         {
             return (Point)((Vector)p0 * (1 - t) + (Vector)p1 * t);
         }
 
-        private Point quadraticBezier(double t, Point p0, Point p1, Point p2)
+        private static Point quadraticBezier(double t, Point p0, Point p1, Point p2)
         {
             return bezier(t, bezier(t, p0, p1), bezier(t, p1, p2));
         }
 
-        private Point cubicBezier(double t, Point p0, Point p1, Point p2, Point p3)
+        private static Point cubicBezier(double t, Point p0, Point p1, Point p2, Point p3)
         {
             return bezier(t, quadraticBezier(t, p0, p1, p2), quadraticBezier(t, p1, p2, p3));
+        }
+
+        private static Dictionary<string, Type> getSceneElementProperties(Type type = null)
+        {
+            if (type == null) type = typeof(MSceneElement);
+            Dictionary<string, Type> result = new Dictionary<string, Type>();
+
+            var properties = type.GetProperties();
+            foreach (var property in properties)
+            {
+                if (!property.CanWrite)
+                    continue;
+
+                if (property.PropertyType.IsValueType)
+                    result.Add(property.Name, property.PropertyType);
+                else if(property.Name == "Material" && property.PropertyType == typeof(MContentElement))
+                {
+                    var props = getSceneElementProperties(typeof(MMaterial));
+                    foreach (var prop in props)
+                        result.Add(property.Name + "." + prop.Key, prop.Value);
+                }
+            }
+
+            return result;
         }
 
 

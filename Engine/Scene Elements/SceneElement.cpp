@@ -107,20 +107,10 @@ namespace MyEngine {
     void* SceneElement::get(const string& name)
     {
 #pragma region SceneElement Get
-        if (name == "Type")
-            return &this->Type;
-        else if (name == "ID")
-            return &this->ID;
-        else if (name == "Name")
-            return &this->Name;
-        else if (name == "Layer")
-            return &this->Layer;
-        else if (name == "ContentID")
+        if (name == "ContentID")
             return &this->ContentID;
         else if (name == "MaterialID")
             return &this->MaterialID;
-        else if (name == "Textures")
-            return &this->Textures;
         else if (name == "Visible")
             return &this->Visible;
         else if (name == "Position")

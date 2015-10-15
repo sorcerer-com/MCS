@@ -1034,20 +1034,20 @@ namespace MyEngine {
 
         embree::RTCRay rtcRay = this->getRTCScreenRay(newSample.x, newSample.y);
         embree::rtcIntersect(this->rtcScene, rtcRay);
+        newSample.color = Color4(-1.0f, -1.0f, -1.0f);
         if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
         {
             InterInfo interInfo = this->getInterInfo(rtcRay, false, true);
             this->processRenderElements(rtcRay, interInfo);
-            newSample.id = interInfo.sceneElement->ID;
-            newSample.position = interInfo.interPos;
-            newSample.normal = interInfo.normal;
-            if (interInfo.sceneElement->Type == SceneElementType::EStaticObject)
-                newSample.color = this->getLighting(rtcRay, interInfo)["DirectLight"];
-            else
-                newSample.color = Color4(-1.0f, -1.0f, -1.0f);
+            if (rtcRay.instID != RTC_INVALID_GEOMETRY_ID)
+            {
+                newSample.id = interInfo.sceneElement->ID;
+                newSample.position = interInfo.interPos;
+                newSample.normal = interInfo.normal;
+                if (interInfo.sceneElement->Type == SceneElementType::EStaticObject)
+                    newSample.color = this->getLighting(rtcRay, interInfo)["DirectLight"];
+            }
         }
-        else
-            newSample.color = Color4(-1.0f, -1.0f, -1.0f);
         this->irrMapSamples.push_back(newSample);
 
         irrKdTree.insert((int)this->irrMapSamples.size() - 1, [&](int idx) { return Vector3(this->irrMapSamples[idx].x, this->irrMapSamples[idx].y, 0.0); });

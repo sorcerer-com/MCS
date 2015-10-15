@@ -1,15 +1,19 @@
 ﻿using MCS.Managers;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 
 namespace MCS.Dialogs
 {
     /// <summary>
-    /// Interaction logic for TextDialogBox.xaml
+    /// Interaction logic for SelectDialogBox.xaml
     /// </summary>
-    public partial class TextDialogBox : Window
+    public partial class SelectDialogBox : Window
     {
         public string Label { get; set; }
+
+        public ObservableCollection<string> Items { get; private set; }
 
         public string Text { get; set; }
 
@@ -19,7 +23,7 @@ namespace MCS.Dialogs
         {
             get { return new DelegateCommand((o) => { this.DialogResult = true; }); }
         }
-        
+
         public ICommand CancelButtonCommand
         {
             get { return new DelegateCommand((o) => { this.DialogResult = false; }); }
@@ -28,27 +32,32 @@ namespace MCS.Dialogs
         #endregion
 
 
-        private TextDialogBox()
+        public SelectDialogBox()
         {
             InitializeComponent();
             this.DataContext = this;
+
+            this.Items = new ObservableCollection<string>();
         }
 
-        public TextDialogBox(string title, string label)
+        public SelectDialogBox(string title, string label, List<string> items)
             : this()
         {
             this.Title = title;
             this.Label = label + ":";
+            this.Items = new ObservableCollection<string>(items);
+            if (items.Count > 0)
+                this.Text = items[0];
         }
 
-        public TextDialogBox(string title, string label, string text)
-            : this(title, label)
+        public SelectDialogBox(string title, string label, List<string> items, string text)
+            : this(title, label, items)
         {
             this.Text = text;
         }
 
 
-        private void TextDialogBox_KeyDown(object sender, KeyEventArgs e)
+        private void SelectDialogBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 this.OkButtonCommand.Execute(null);
@@ -57,14 +66,15 @@ namespace MCS.Dialogs
         }
 
 
-        public static string Show(string title, string label)
+        public static string Show(string title, string label, List<string> items)
         {
-            return TextDialogBox.Show(title, label, "");
+            string text = items.Count > 0 ? items[0] : "";
+            return SelectDialogBox.Show(title, label, items, text);
         }
 
-        public static string Show(string title, string label, string text)
+        public static string Show(string title, string label, List<string> items, string text)
         {
-            TextDialogBox dialog = new TextDialogBox(title, label, text);
+            SelectDialogBox dialog = new SelectDialogBox(title, label, items, text);
 
             // show dialog where the mouse is
             Window mainWindow = Application.Current.MainWindow;
@@ -80,6 +90,5 @@ namespace MCS.Dialogs
                 return string.Empty;
             return null;
         }
-
     }
 }
