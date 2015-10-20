@@ -17,6 +17,9 @@ namespace MCS.Controls
         public static readonly DependencyProperty CanWriteProperty =
             DependencyProperty.Register("CanWrite", typeof(bool), typeof(PropertyGridItem), new PropertyMetadata(true, OnPropertyChanged));
 
+        public static readonly DependencyProperty FloatStringFormatProperty =
+            DependencyProperty.Register("FloatStringFormat", typeof(string), typeof(PropertyGridItem), new PropertyMetadata("0.000", OnPropertyChanged));
+
         public static readonly DependencyProperty GetListProperty =
             DependencyProperty.Register("GetList", typeof(GetListDelegate), typeof(PropertyGridItem), new PropertyMetadata(OnPropertyChanged));
 
@@ -34,6 +37,12 @@ namespace MCS.Controls
         {
             get { return (bool)GetValue(CanWriteProperty); }
             set { SetValue(CanWriteProperty, value); }
+        }
+
+        public string FloatStringFormat
+        {
+            get { return (string)GetValue(FloatStringFormatProperty); }
+            set { SetValue(FloatStringFormatProperty, value); }
         }
 
         public GetListDelegate GetList
@@ -126,6 +135,7 @@ namespace MCS.Controls
                 type == typeof(float) || type == typeof(double))
             {
                 NumberBox nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 if (type == typeof(uint))
                 {
                     nb.SetValueWithoutRaiseChanged((uint)this.Object);
@@ -175,6 +185,7 @@ namespace MCS.Controls
                 Color c = Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 
                 NumberBox nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.R);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -184,6 +195,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 0);
 
                 nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.G);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -193,6 +205,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 1);
 
                 nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.B);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -202,6 +215,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 2);
 
                 nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.A);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -219,6 +233,7 @@ namespace MCS.Controls
                 MyEngine.MPoint point = (MyEngine.MPoint)this.Object;
 
                 NumberBox nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(point.X);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -227,6 +242,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 0);
 
                 nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(point.Y);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -235,6 +251,7 @@ namespace MCS.Controls
                 Grid.SetColumn(nb, 1);
 
                 nb = new NumberBox();
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(point.Z);
                 nb.ToolTip = nb.Text;
                 nb.Margin = new Thickness(0, 5, 3, 5);
@@ -332,6 +349,7 @@ namespace MCS.Controls
                 type == typeof(float) || type == typeof(double))
             {
                 NumberBox nb = this.Children[0] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 if (type == typeof(uint))
                     nb.SetValueWithoutRaiseChanged((uint)this.Object);
                 else if (type == typeof(int))
@@ -360,18 +378,22 @@ namespace MCS.Controls
                 Color c = Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 
                 NumberBox nb = this.Children[0] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.R);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[1] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.G);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[2] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.B);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[3] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(color.A);
                 nb.ToolTip = nb.Text;
             }
@@ -380,14 +402,17 @@ namespace MCS.Controls
                 MyEngine.MPoint point = (MyEngine.MPoint)this.Object;
 
                 NumberBox nb = this.Children[0] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(point.X);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[1] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(point.Y);
                 nb.ToolTip = nb.Text;
 
                 nb = this.Children[2] as NumberBox;
+                nb.StringFormat = this.FloatStringFormat;
                 nb.SetValueWithoutRaiseChanged(point.Z);
                 nb.ToolTip = nb.Text;
             }

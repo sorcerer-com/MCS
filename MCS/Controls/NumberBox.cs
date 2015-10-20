@@ -30,16 +30,30 @@ namespace MCS.Controls
             {
                 this.isInteger = value;
                 if (!value)
-                    this.Text = this.Value.ToString("0.000", CultureInfo.InvariantCulture.NumberFormat);
+                    this.Text = this.Value.ToString(this.StringFormat, CultureInfo.InvariantCulture.NumberFormat);
                 else
-                    this.Text = this.Value.ToString("0");
+                    this.Text = this.Value.ToString();
             }
         }
 
-        public double Min {get;set;}
-        public double Max {get;set;}
+        public double Min { get; set; }
+        public double Max { get; set; }
 
         public bool IsMouseChangeable { get; set; }
+
+        private string stringFormat;
+        public string StringFormat
+        {
+            get { return this.stringFormat; }
+            set
+            {
+                this.stringFormat = value;
+                if (!this.IsInteger)
+                    this.Text = this.Value.ToString(this.StringFormat, CultureInfo.InvariantCulture.NumberFormat);
+                else
+                    this.Text = this.Value.ToString();
+            }
+        }
 
 
         private DispatcherTimer timer;
@@ -52,6 +66,7 @@ namespace MCS.Controls
             this.Min = double.MinValue;
             this.Max = double.MaxValue;
             this.IsMouseChangeable = true;
+            this.StringFormat = "0.000";
 
             this.timer = new DispatcherTimer();
             this.timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
@@ -97,7 +112,7 @@ namespace MCS.Controls
                 return;
 
             if (!nb.IsInteger)
-                nb.Text = ((double)e.NewValue).ToString("0.000", CultureInfo.InvariantCulture.NumberFormat);
+                nb.Text = ((double)e.NewValue).ToString(nb.StringFormat, CultureInfo.InvariantCulture.NumberFormat);
             else
                 nb.Text = ((double)e.NewValue).ToString("0");
         }

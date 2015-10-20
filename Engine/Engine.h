@@ -43,14 +43,16 @@ namespace MyEngine {
         static mutex logMutex;
 
 	public:
-		shared_ptr<ContentManager> ContentManager;
+        bool Started;
+
+        shared_ptr<ContentManager> ContentManager;
         shared_ptr<SceneManager> SceneManager;
         shared_ptr<AnimationManager> AnimationManager;
 
         shared_ptr<ViewPortRenderer> ViewPortRenderer;
         shared_ptr<ProductionRenderer> ProductionRenderer;
 
-		static EngineMode Mode;
+        static EngineMode Mode;
 
 	public:
 		Engine();

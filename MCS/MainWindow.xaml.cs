@@ -472,6 +472,22 @@ namespace MCS
         }
 
 
+        public bool IsEngineStarted
+        {
+            get { return this.engine.Started; }
+            set { this.engine.Started = value; this.OnPropertyChanged("IsEngineStarted"); }
+        }
+        public ICommand PlayStopCommand
+        {
+            get { return new DelegateCommand((o) => { this.IsEngineStarted = !this.IsEngineStarted; }); }
+        }
+        public string PlayStopCommandTooltip
+        {
+            get { return "Play/Stop " + WindowsManager.GetHotkey(this.GetType(), "PlayStopCommand", true); }
+        }
+
+
+
         // Scene Elements commands
         public ICommand CloneElementCommand
         {
@@ -663,6 +679,17 @@ namespace MCS
             mre.RType = ERenderElementType.Slicer;
             mre.Position = new MPoint(0, 0, -100);
             mre.Rotation = new MPoint(-20, -20, 0);
+
+            this.engine.AnimationManager.AddAnimation("Animation");
+            this.engine.AnimationManager.AddTrack("Animation", "Position", EAnimTrackType.MPoint);
+            this.engine.AnimationManager.SetKeyframe("Animation", "Position", 0, new double[] { 0.0, 0, 0 });
+            this.engine.AnimationManager.SetKeyframe("Animation", "Position", 60, new double[] { 10.0, 0, 0 });
+            this.engine.AnimationManager.SetKeyframe("Animation", "Position", 120, new double[] { 0.0, 0, 0 });
+            this.engine.AnimationManager.AddTrack("Animation", "Rotation", EAnimTrackType.MPoint);
+            this.engine.AnimationManager.SetKeyframe("Animation", "Rotation", 0, new double[] { 0.0, 0, 0 });
+            this.engine.AnimationManager.SetKeyframe("Animation", "Rotation", 60, new double[] { 60.0, 0, 0 });
+            this.engine.AnimationManager.SetKeyframe("Animation", "Rotation", 120, new double[] { 0.0, 0, 0 });
+            this.engine.AnimationManager.PlayAnimation(mre.ID, "Animation", 0, 0, false, true, 1.0);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)

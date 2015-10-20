@@ -31,17 +31,33 @@ namespace MyEngine {
         void WriteToFile(ostream& file) const;
     };
 
+    struct AnimStatus
+    {
+        float StartTime;
+        string Animation;
+        float CurrentTime;
+        bool Paused;
+        bool Loop;
+        float Speed;
+    };
+
 	class AnimationManager : public BaseManager
 	{
     public:
-        using AnimationType = map < string, AnimTrack >; // track name / track
+        using AnimationType = map < string, AnimTrack > ; // track name / track
         using AnimationsMapType = map < string, AnimationType > ; // name / animation
+
+        using AnimationsStatusMapType = map < uint, AnimStatus > ; // scene element id / animation info
 
     private:
         AnimationsMapType animations;
+
+        float time; // time from start in seconds
+        AnimationsStatusMapType animationsStatuses;
         
 	public:
         AnimationManager(Engine* owner);
+        ~AnimationManager();
 
         void ReadFromFile(istream& file);
         void WriteToFile(ostream& file) const;
@@ -56,9 +72,22 @@ namespace MyEngine {
         bool ContainsTrack(const string& animation, const string& track) const;  //* wrap
         bool DeleteTrack(const string& animation, const string& track);  //* wrap
         bool SetKeyframe(const string& animation, const string& track, uint frame, const float* keyframe);   //* wrap
-        bool RemoveKeyframe(const string& animation, const string& track, int frame);//* wrap
+        bool RemoveKeyframe(const string& animation, const string& track, int frame);//* wrap endgroup
         AnimTrack GetTrack(const string& animation, const string& track);
         vector<string> GetTracksNames(const string& animation);
+
+        void PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed);    //* wrap
+        bool IsPlayingAnimation(uint seID) const;           //* wrap
+        void StopAnimation(uint seID);                      //* wrap
+        AnimStatus GetAnimationStatus(uint seID);           
+        void MoveTime(float deltaTime);                     //* wrap
+
+    private:
+        void doAnimation();
+        void applyAnimation(uint seID, const AnimStatus& animStatus, float deltaTime);
+        bool getValue(const AnimTrack& animTrack, float time, float* out);
+        float getAnimationLength(const string& name);
+
     };
 
 }

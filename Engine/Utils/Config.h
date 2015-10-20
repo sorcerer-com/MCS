@@ -1,17 +1,19 @@
 // Config.h
 #pragma once
 
-#define INVALID_ID 0u
-#define CURRENT_VERSION 1u 
+#define INVALID_ID          0u
+#define CURRENT_VERSION     1u 
 
-#define LOG_FILE "log.txt"
+#define LOG_FILE            "log.txt"
 
-#define CONTENT_FOLDER "Contents"
-#define CONTENT_DB_FILE "content.mdb"
+#define CONTENT_FOLDER      "Contents"
+#define CONTENT_DB_FILE     "content.mdb"
 
-#define BACKUP_FOLDER "Backups"
+#define BACKUP_FOLDER       "Backups"
 
-#define PACKAGE_EXT ".mpk"
-#define SCENE_EXT ".msn"
+#define PACKAGE_EXT         ".mpk"
+#define SCENE_EXT           ".msn"
 
-#define DEFAULT_LAYER_NAME "Default"
+#define DEFAULT_LAYER_NAME  "Default"
+
+#define FPS                 30

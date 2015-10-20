@@ -9,6 +9,10 @@
 #include "..\Utils\IOUtils.h"
 #include "..\Utils\Types\Thread.h"
 #include "..\Utils\Types\Vector3.h"
+#include "..\Utils\Types\Quaternion.h"
+#include "..\Managers\SceneManager.h"
+#include "..\Managers\ContentManager.h"
+#include "..\Scene Elements\SceneElement.h"
 
 
 namespace MyEngine {
@@ -101,13 +105,23 @@ namespace MyEngine {
     AnimationManager::AnimationManager(Engine* owner) :
         BaseManager(owner)
     {
+        this->time = 0;
+
         this->thread->defMutex("content");
+        this->thread->defMutex("status");
+        this->thread->defWorker(&AnimationManager::doAnimation, this);
+    }
+
+    AnimationManager::~AnimationManager()
+    {
+        this->MoveTime(-this->time);
     }
 
 
     void AnimationManager::ReadFromFile(istream& file)
     {
         this->animations.clear();
+        this->animationsStatuses.clear();
 
         // animations count
         int animCount = 0;
@@ -131,14 +145,29 @@ namespace MyEngine {
                 this->animations[animName][trackName] = AnimTrack(file);
             }
         }
+
+        // animations statuses count
+        int animStatusesCount = 0;
+        Read(file, animStatusesCount);
+        for (int i = 0; i < animStatusesCount; i++)
+        {
+            uint seID = INVALID_ID;
+            Read(file, seID);
+            AnimStatus animStatus;
+            Read(file, animStatus.StartTime);
+            Read(file, animStatus.Animation);
+            Read(file, animStatus.CurrentTime);
+            Read(file, animStatus.Paused);
+            Read(file, animStatus.Loop);
+            Read(file, animStatus.Speed);
+            this->animationsStatuses[seID] = animStatus;
+        }
     }
 
     void AnimationManager::WriteToFile(ostream& file) const
     {
         // animations count
         Write(file, (int)this->animations.size());
-
-        // animations
         for (const auto& anim : this->animations)
         {
             // animation's name
@@ -155,6 +184,20 @@ namespace MyEngine {
                 // track
                 animTrack.second.WriteToFile(file);
             }
+        }
+
+        // animations statuses count
+        Write(file, (int)this->animationsStatuses.size());
+        // animations statuses
+        for (const auto& animStatus : this->animationsStatuses)
+        {
+            Write(file, animStatus.first);
+            Write(file, animStatus.second.StartTime);
+            Write(file, animStatus.second.Animation);
+            Write(file, animStatus.second.CurrentTime);
+            Write(file, animStatus.second.Paused);
+            Write(file, animStatus.second.Loop);
+            Write(file, animStatus.second.Speed);
         }
     }
 
@@ -345,6 +388,232 @@ namespace MyEngine {
             result.push_back(track.first);
 
         return result;
+    }
+
+
+    /* A N I M A T I O N   S T A T U S */
+    void AnimationManager::PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed)
+    {
+        lock lck(this->thread->mutex("status"));
+        if (!this->ContainsAnimation(animation))
+            Engine::Log(EError, "AnimationManager", "Try to play non existent animation '" + animation + "'");
+        else if (!this->Owner->SceneManager->ContainsElement(seID))
+            Engine::Log(EError, "AnimationManager", "Try to play animation to non existent scene element (" + to_string(seID) + ")");
+        else
+        {
+            AnimStatus animStatus;
+            animStatus.StartTime = startTime;
+            animStatus.Animation = animation;
+            animStatus.CurrentTime = startAt;
+            animStatus.Paused = paused;
+            animStatus.Loop = loop;
+            animStatus.Speed = speed;
+
+            this->animationsStatuses[seID] = animStatus;
+            this->applyAnimation(seID, animStatus, startAt);
+        }
+    }
+
+    bool AnimationManager::IsPlayingAnimation(uint seID) const
+    {
+        return this->animationsStatuses.find(seID) != this->animationsStatuses.end();
+    }
+
+    void AnimationManager::StopAnimation(uint seID)
+    {
+        lock lck(this->thread->mutex("status"));
+        this->animationsStatuses.erase(seID);
+    }
+
+    AnimStatus AnimationManager::GetAnimationStatus(uint seID)
+    {
+        if (!this->IsPlayingAnimation(seID))
+            return AnimStatus();
+
+        return this->animationsStatuses[seID];
+    }
+
+    void AnimationManager::MoveTime(float deltaTime)
+    {
+        lock lck(this->thread->mutex("status"));
+
+        if (this->time < -deltaTime && deltaTime < 0)
+            deltaTime = -this->time;
+
+        for (auto& animStatus : this->animationsStatuses)
+        {
+            float dTime = deltaTime;
+            float animLength = this->getAnimationLength(animStatus.second.Animation);
+            while (animStatus.second.CurrentTime + dTime * animStatus.second.Speed < -animLength)
+                dTime += animLength;
+
+            if (!animStatus.second.Paused && this->time >= animStatus.second.StartTime)
+                animStatus.second.CurrentTime += dTime * animStatus.second.Speed;
+            if (animStatus.second.Loop && animStatus.second.CurrentTime > animLength)
+                animStatus.second.CurrentTime = 0;
+
+            if (this->time >= animStatus.second.StartTime)
+                this->applyAnimation(animStatus.first, animStatus.second, dTime);
+        }
+        this->time += deltaTime;
+    }
+
+
+    void AnimationManager::doAnimation()
+    {
+        const float deltaTime = 1.0f / FPS;
+
+        while (!this->thread->interrupted())
+        {
+            this->thread->mutex("status").lock();
+            for (auto& animStatus : this->animationsStatuses)
+            {
+                bool playing = this->Owner->Started && !animStatus.second.Paused && this->time >= animStatus.second.StartTime;
+                if (playing)
+                    animStatus.second.CurrentTime += deltaTime * animStatus.second.Speed;
+                if (animStatus.second.Loop && animStatus.second.CurrentTime > this->getAnimationLength(animStatus.second.Animation))
+                    animStatus.second.CurrentTime = 0;
+
+                this->applyAnimation(animStatus.first, animStatus.second, playing ? deltaTime : 0.0f);
+            }
+            this->thread->mutex("status").unlock();
+
+            if (!this->Owner->Started)
+            {
+                if (this->time != 0)
+                    this->MoveTime(-this->time); // TODO: remove it if there will be Timeline
+                this_thread::sleep_for(chrono::milliseconds((int)(deltaTime * 10000)));
+            }
+            else
+            {
+                this_thread::sleep_for(chrono::milliseconds((int)(deltaTime * 1000)));
+                this->time += deltaTime;
+            }
+        }
+    }
+
+    void AnimationManager::applyAnimation(uint seID, const AnimStatus& animStatus, float deltaTime)
+    {
+        if (!this->ContainsAnimation(animStatus.Animation) ||
+            !this->Owner->SceneManager->ContainsElement(seID) ||
+            deltaTime == 0.0f)
+            return;
+
+        const auto& se = this->Owner->SceneManager->GetElement(seID);
+        const auto& anim = this->animations[animStatus.Animation];
+        for (const auto& track : anim)
+        {
+            float value[4], prev_value[4];
+            if (!this->getValue(track.second, animStatus.CurrentTime, value))
+                continue;
+
+            this->getValue(track.second, animStatus.CurrentTime - deltaTime * animStatus.Speed, prev_value);
+            if (track.second.Type == AnimTrack::TrackType::EFloat)
+            {
+                float f = value[0] - prev_value[0];
+                if (track.first.find("Material") == 0)
+                {
+                    ContentElementPtr contentElement = NULL;
+                    if (this->Owner->ContentManager->ContainsElement(se->MaterialID))
+                    {
+                        if (se->Type != SceneElementType::EDynamicObject)
+                            contentElement = this->Owner->ContentManager->GetElement(se->MaterialID, true, true);
+                        else
+                            contentElement = this->Owner->ContentManager->GetInstance(se->ID, se->MaterialID);
+                    }
+                    if (contentElement && contentElement->Type == ContentElementType::EMaterial)
+                    {
+                        Material* mat = (Material*)contentElement.get();
+                        string name = track.first.substr(9);
+                        mat->Get<float>(name) += f;
+                    }
+                }
+                else
+                    se->Get<float>(track.first) += f;
+            }
+            else if(track.second.Type == AnimTrack::TrackType::EVector3)
+            {
+                Vector3 vec = Vector3(value[0] - prev_value[0], value[1] - prev_value[1], value[2] - prev_value[2]);
+                if (track.first == "Rotation")
+                    se->Get<Quaternion>(track.first) = Quaternion(vec) * se->Get<Quaternion>(track.first);
+                else
+                    se->Get<Vector3>(track.first) += vec;
+            }
+            else if (track.second.Type == AnimTrack::TrackType::EColor4)
+            {
+                Color4 col = Color4(value[0] - prev_value[0], value[1] - prev_value[1], value[2] - prev_value[2], value[3] - prev_value[3]);
+                if (track.first.find("Material") == 0)
+                {
+                    ContentElementPtr contentElement = NULL;
+                    if (this->Owner->ContentManager->ContainsElement(se->MaterialID))
+                    {
+                        if (se->Type != SceneElementType::EDynamicObject)
+                            contentElement = this->Owner->ContentManager->GetElement(se->MaterialID, true, true);
+                        else
+                            contentElement = this->Owner->ContentManager->GetInstance(se->ID, se->MaterialID);
+                    }
+                    if (contentElement && contentElement->Type == ContentElementType::EMaterial)
+                    {
+                        Material* mat = (Material*)contentElement.get();
+                        string name = track.first.substr(9);
+                        mat->Get<Color4>(name) += col;
+                    }
+                }
+                else
+                    se->Get<Color4>(track.first) += col;
+            }
+        }
+    }
+
+    bool AnimationManager::getValue(const AnimTrack& animTrack, float time, float* out)
+    {
+        // if we are outside the animation
+        if (animTrack.KeyFrames.size() == 0 ||
+            time < (*animTrack.KeyFrames.begin()).first)
+        {
+            for (int i = 0; i < 4; i++)
+                out[i] = 0;
+            return false;
+        }
+        if (time > (*animTrack.KeyFrames.rbegin()).first)
+        {
+            for (int i = 0; i < 4; i++)
+                out[i] = (*animTrack.KeyFrames.rbegin()).second[i];
+            return false;
+        }
+
+        int frame = (int)(time * FPS);
+        int prevKeyframeTime = -1;
+        for(const auto& keyframe : animTrack.KeyFrames)
+        {
+            if (frame <= keyframe.first)
+            {
+                if (keyframe.first < 0.0)
+                    return false;
+
+                float d = (float)(keyframe.first - prevKeyframeTime);
+                float t = (frame - prevKeyframeTime) / d;
+                const auto& prevKeyrame = prevKeyframeTime >= 0 ? animTrack.KeyFrames.at(prevKeyframeTime) : keyframe.second;
+                // cubic bezier
+                for (int i = 0; i < 4; i++)
+                    out[i] = pow(1.0f - t, 3) * prevKeyrame[i] + 3 * pow(1.0f - t, 2) * t * prevKeyrame[i] + 3 * (1.0f - t) * pow(t, 2) * keyframe.second[i] + pow(t, 3) * keyframe.second[i];
+                return true;
+            }
+            prevKeyframeTime = keyframe.first;
+        }
+        return false;
+    }
+
+    float AnimationManager::getAnimationLength(const string& name)
+    {
+        int res = 0;
+
+        const auto& anim = this->animations[name];
+        for (const auto& track : anim)
+            if (track.second.KeyFrames.size() > 0)
+                res = max(res, (*track.second.KeyFrames.rbegin()).first);
+
+        return (float)res / FPS;
     }
 
 }

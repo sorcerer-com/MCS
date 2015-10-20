@@ -20,9 +20,9 @@ namespace MyEngine {
     ContentManager::ContentManager(Engine* owner) : 
         BaseManager(owner)
 	{
-		this->thread->defWorker(&ContentManager::doSerilization, this);
 		this->thread->defMutex("requests");
-		this->thread->defMutex("content", mutex_type::recursive);
+        this->thread->defMutex("content", mutex_type::recursive);
+        this->thread->defWorker(&ContentManager::doSerilization, this);
 
 		this->addRequest(ELoadDatabase, true);
     }

@@ -135,6 +135,7 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.L, true, false, false, "", "LayersWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F9, false, false, false, "", "RenderWindowCommand"));
             keys.Add(new HotKeyInfo(Key.A, true, false, false, "", "AnimationsWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.F5, false, false, false, "", "PlayStopCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
 
             // ContentWindow

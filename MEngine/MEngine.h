@@ -40,6 +40,12 @@ namespace MyEngine {
         property MViewPortRenderer^ ViewPortRenderer;
         property MProductionRenderer^ ProductionRenderer;
 
+        property bool Started
+        {
+            bool get();
+            void set(bool value);
+        }
+
         static property EEngineMode Mode
         {
             EEngineMode get();
@@ -49,6 +55,9 @@ namespace MyEngine {
 	public:
 		MEngine();
 		~MEngine();
+
+        void Start();
+        void Stop();
 
 		static void Log(ELogType type, String^ category, String^ text);
 	};

@@ -58,7 +58,7 @@
             </ToolBar>
         </ToolBarTray>
 
-        <mcs:PropertyGrid Object="{Binding Path=RenderSettings}" Expanded="True" Grid.Row="0" Grid.RowSpan="2"  Grid.Column="1"/>
+        <mcs:PropertyGrid Object="{Binding Path=RenderSettings}" Expanded="True" FloatStringFormat="0.0000" Grid.Row="0" Grid.RowSpan="2"  Grid.Column="1"/>
 
     </Grid>
 </Window>

@@ -44,7 +44,9 @@ namespace MyEngine {
 	{
 		ofstream ofile(LOG_FILE);
 		ofile.close();
-		Engine::Log(LogType::ELog, "Engine", "Create engine");
+        Engine::Log(LogType::ELog, "Engine", "Create engine");
+
+        this->Started = false;
 
 		this->ContentManager = make_shared<MyEngine::ContentManager>(this);
         this->SceneManager = make_shared<MyEngine::SceneManager>(this);

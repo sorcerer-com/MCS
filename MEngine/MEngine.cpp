@@ -16,6 +16,16 @@ namespace MyEngine {
         Engine::Mode = (EngineMode)value;
     }
 
+    bool MEngine::Started::get()
+    {
+        return this->engine->Started;
+    }
+
+    void MEngine::Started::set(bool value)
+    {
+        this->engine->Started = value;
+    }
+
 
 	MEngine::MEngine()
 	{
@@ -48,7 +58,18 @@ namespace MyEngine {
 
 		delete this->engine;
 		this->engine = NULL;
-	}
+    }
+
+
+    void MEngine::Start()
+    {
+        this->Started = true;
+    }
+
+    void MEngine::Stop()
+    {
+        this->Started = false;
+    }
 
 
 	void MEngine::Log(ELogType type, String^ category, String^ text)

@@ -27,6 +27,9 @@ namespace MCS.Controls
         public static readonly DependencyProperty ExpandedProperty =
             DependencyProperty.Register("Expanded", typeof(bool), typeof(PropertyGrid), new PropertyMetadata(false, OnPropertyChanged));
 
+        public static readonly DependencyProperty FloatStringFormatProperty =
+            DependencyProperty.Register("FloatStringFormat", typeof(string), typeof(PropertyGrid), new PropertyMetadata("0.000", OnPropertyChanged));
+
         public static readonly RoutedEvent ChangedEvent =
             EventManager.RegisterRoutedEvent("Changed", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PropertyGrid));
 
@@ -49,6 +52,12 @@ namespace MCS.Controls
             set { SetValue(ExpandedProperty, value); }
         }
         private List<string> expandedGroups;
+
+        public string FloatStringFormat
+        {
+            get { return (string)GetValue(FloatStringFormatProperty); }
+            set { SetValue(FloatStringFormatProperty, value); }
+        }
 
         public bool IsLocked { get; set; }
 
@@ -298,6 +307,7 @@ namespace MCS.Controls
             PropertyGridItem pgi = new PropertyGridItem(value);
             pgi.Name = name;
             pgi.CanWrite = canWrite;
+            pgi.FloatStringFormat = this.FloatStringFormat;
             if (this.GetList != null && choosable)
                 pgi.GetList = () => { return this.GetList(pgi.Name); };
             pgi.Changed += new RoutedEventHandler(property_Changed);

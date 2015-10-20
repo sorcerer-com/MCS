@@ -60,7 +60,7 @@ namespace MyEngine {
 	    return res;
 	}
 	
-		
+	
 	bool MAnimationManager::ContainsTrack(String^ animation, String^ track)
 	{
 	    return this->animationManager->ContainsTrack(to_string(animation), to_string(track));
@@ -80,6 +80,30 @@ namespace MyEngine {
 	    if (res)
 	        this->OnChanged(nullptr);
 	    return res;
+	}
+	
+	
+	void MAnimationManager::PlayAnimation(uint seID, String^ animation, double startTime, double startAt, bool paused, bool loop, double speed)
+	{
+	    this->animationManager->PlayAnimation(seID, to_string(animation), (float)startTime, (float)startAt, paused, loop, (float)speed);
+	    this->OnChanged(nullptr);
+	}
+	
+	bool MAnimationManager::IsPlayingAnimation(uint seID)
+	{
+	    return this->animationManager->IsPlayingAnimation(seID);
+	}
+	
+	void MAnimationManager::StopAnimation(uint seID)
+	{
+	    this->animationManager->StopAnimation(seID);
+	    this->OnChanged(nullptr);
+	}
+	
+	void MAnimationManager::MoveTime(double deltaTime)
+	{
+	    this->animationManager->MoveTime((float)deltaTime);
+	    this->OnChanged(nullptr);
 	}
 #pragma endregion
 
