@@ -55,6 +55,9 @@ namespace MyEngine {
         this->IrradianceMapColorThreshold = 0.3f;
         this->LightCache = true;
         this->LightCacheSampleSize = 0.1f;
+        this->Animation = false;
+        this->AnimationFPS = 30;
+        this->AnimationResetCaches = false;
 
         this->thread->defThreadPool();
         this->thread->defMutex("regions");
@@ -149,11 +152,14 @@ namespace MyEngine {
         ProfileLog;
         ProductionRenderer::Start();
         // TODO: progressive rendering
+        // TODO: think how to add preview as option because of sort of the regions
+
         // clear previous scene
         if (this->rtcScene != NULL)
         {
             this->lights.clear();
             this->contentElements.clear();
+            // TODO: irradiance map doesn't work well with animation, twice done for equal part of the scene, put it in the if
             this->irrMapSamples.clear();
             this->irrMapTriangles.clear();
             if (this->rtcIrrMapScene)
@@ -161,8 +167,11 @@ namespace MyEngine {
                 embree::rtcDeleteScene(this->rtcIrrMapScene);
                 this->rtcIrrMapScene = NULL;
             }
-            this->lightCacheSamples.clear();
-            this->lightCacheKdTree.clear();
+            if (!this->Animation || this->AnimationResetCaches)
+            {
+                this->lightCacheSamples.clear();
+                this->lightCacheKdTree.clear();
+            }
 
             this->rtcInstances.clear();
             for (const auto& rtcGeom : this->rtcGeometries)
@@ -177,13 +186,14 @@ namespace MyEngine {
         this->beginFrame();
         this->createRTCScene();
 
-        // preview phase
         this->phasePofiler->start();
+        // preview phase
         this->thread->addNTasks([&](int) { return this->render(true); }, (int)this->Regions.size());
         this->thread->addWaitTask();
         this->thread->addTask([&](int) { return this->sortRegions(); });
         this->thread->addWaitTask();
         this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Preview phase time"); return true; });
+        this->thread->addWaitTask();
         // irradiance map phase
         if (this->GI && this->IrradianceMap)
         {
@@ -192,11 +202,13 @@ namespace MyEngine {
             this->thread->addNTasks([&](int) { while (this->computeIrradianceMap()); return true; });
             this->thread->addWaitTask();
             this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Irradiance Map phase time"); return true; });
+            this->thread->addWaitTask();
         }
         // render phase
         this->thread->addNTasks([&](int) { return this->render(false); }, (int)(this->Regions.size() + this->thread->workersCount() * 3 * 2));
         this->thread->addWaitTask();
         this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Render phase time"); return true; });
+        this->thread->addWaitTask();
         // post-processing phase
         this->thread->addTask([&](int) { return this->postProcessing(); });
         this->thread->addWaitTask();

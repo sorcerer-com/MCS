@@ -134,7 +134,11 @@ namespace MCS.MainWindows
                         this.timer.Start();
                     }
                     else
+                    {
                         this.engine.ProductionRenderer.Stop();
+                        if (RenderWindow.renderSettings.Animation)
+                            this.timer.Stop();
+                    }
                 });
             }
         }
@@ -149,28 +153,7 @@ namespace MCS.MainWindows
             {
                 return new DelegateCommand((o) =>
                 {
-                    MainWindow mainWindow = this.Owner as MainWindow;
-                    if (mainWindow == null)
-                        return;
-
-                    string sceneName = Path.GetFileNameWithoutExtension(mainWindow.SceneFilePath);
-                    if (string.IsNullOrEmpty(sceneName)) 
-                        sceneName = "Scene";
-
-                    System.Drawing.Bitmap bmp = this.engine.ProductionRenderer.GetBuffer(this.SelectedBufferName);
-                    if (bmp == null)
-                        return;
-
-                    if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-                    {
-                        string name = "ScreenShots\\" + sceneName;
-                        int count = 0;
-                        while (File.Exists(name + count + ".png"))
-                            count++;
-                        bmp.Save(name + count + ".png", System.Drawing.Imaging.ImageFormat.Png);
-                    }
-                    else
-                        bmp.Save("ScreenShots\\" + sceneName + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                    this.saveBufferToFile(this.SelectedBufferName, Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl));
                 });
             }
         }
@@ -203,6 +186,9 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.IrradianceMapColorThreshold = 0.3f;         // 0.3 high // 0.4 medium low
             RenderWindow.renderSettings.LightCache = true;
             RenderWindow.renderSettings.LightCacheSampleSize = 0.1;
+            RenderWindow.renderSettings.Animation = false;
+            RenderWindow.renderSettings.AnimationFPS = 30;
+            RenderWindow.renderSettings.AnimationResetCaches = false;
         }
 
         public RenderWindow(MEngine engine)
@@ -227,6 +213,11 @@ namespace MCS.MainWindows
             this.KeyDown += RenderWindow_KeyDown;
         }
 
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            this.timer.Stop();
+        }
+
         void RenderWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.O)
@@ -245,7 +236,18 @@ namespace MCS.MainWindows
             this.OnPropertyChanged("Buffer");
 
             if (!this.engine.ProductionRenderer.IsStarted)
-                this.timer.Stop();
+            {
+                if (RenderWindow.renderSettings.Animation)
+                {
+                    this.saveBufferToFile(BuffersNames[BuffersNames.Count - 1], true); // save last buffer to file incrementally
+
+                    this.engine.AnimationManager.MoveTime(1.0 / RenderWindow.renderSettings.AnimationFPS);
+                    this.engine.ProductionRenderer.Init(this.RenderSettings);
+                    this.engine.ProductionRenderer.Start();
+                }
+                else
+                    this.timer.Stop();
+            }
         }
 
         private void Window_MouseMove(object sender, MouseEventArgs e)
@@ -303,6 +305,33 @@ namespace MCS.MainWindows
                 tt.Y = 0.0;
             }
 
+        }
+
+
+        private void saveBufferToFile(string bufferName, bool incremental)
+        {
+            MainWindow mainWindow = this.Owner as MainWindow;
+            if (mainWindow == null)
+                return;
+
+            string sceneName = Path.GetFileNameWithoutExtension(mainWindow.SceneFilePath);
+            if (string.IsNullOrEmpty(sceneName))
+                sceneName = "Scene";
+
+            System.Drawing.Bitmap bmp = this.engine.ProductionRenderer.GetBuffer(bufferName);
+            if (bmp == null)
+                return;
+
+            if (incremental)
+            {
+                string name = "ScreenShots\\" + sceneName;
+                int count = 0;
+                while (File.Exists(name + count + ".png"))
+                    count++;
+                bmp.Save(name + count + ".png", System.Drawing.Imaging.ImageFormat.Png);
+            }
+            else
+                bmp.Save("ScreenShots\\" + sceneName + ".png", System.Drawing.Imaging.ImageFormat.Png);
         }
 
 

@@ -19,7 +19,7 @@ namespace MyEngine {
             EColor4
         } Type;
 
-        map<int, float[4]> KeyFrames;
+        map<int, Color4> KeyFrames;
 
         AnimTrack() = default;
         AnimTrack(TrackType type);
@@ -53,7 +53,7 @@ namespace MyEngine {
         AnimationsMapType animations;
 
         float time; // time from start in seconds
-        AnimationsStatusMapType animationsStatuses;
+        AnimationsStatusMapType animationStatuses;
         
 	public:
         AnimationManager(Engine* owner);
@@ -66,7 +66,7 @@ namespace MyEngine {
         bool ContainsAnimation(const string& name) const;   //* wrap
         bool RenameAnimation(const string& oldName, const string& newName); //* wrap
         bool DeleteAnimation(const string& name);           //* wrap endgroup
-        vector<string> GetAnimationsNames();
+        vector<string> GetAnimationNames();
 
         bool AddTrack(const string& animation, const string& track, AnimTrack::TrackType type);
         bool ContainsTrack(const string& animation, const string& track) const;  //* wrap
@@ -74,12 +74,12 @@ namespace MyEngine {
         bool SetKeyframe(const string& animation, const string& track, uint frame, const float* keyframe);   //* wrap
         bool RemoveKeyframe(const string& animation, const string& track, int frame);//* wrap endgroup
         AnimTrack GetTrack(const string& animation, const string& track);
-        vector<string> GetTracksNames(const string& animation);
+        vector<string> GetTrackNames(const string& animation);
 
         void PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed);    //* wrap
         bool IsPlayingAnimation(uint seID) const;           //* wrap
         void StopAnimation(uint seID);                      //* wrap
-        AnimStatus GetAnimationStatus(uint seID);           
+        AnimStatus GetAnimationStatus(uint seID);
         void MoveTime(float deltaTime);                     //* wrap
 
     private:

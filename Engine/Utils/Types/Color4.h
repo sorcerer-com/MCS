@@ -32,7 +32,17 @@ namespace MyEngine {
 		void makeOne(void)
 		{
 			r = g = b = a = 1.0f;
-		}
+        }
+
+        inline const float& operator[](int idx) const
+        {
+            return ((idx == 0) ? r : ((idx == 1) ? g : ((idx == 2) ? b : a)));
+        }
+
+        inline float& operator[](int idx)
+        {
+            return ((idx == 0) ? r : ((idx == 1) ? g : ((idx == 2) ? b : a)));
+        }
 
 		inline void operator +=(const Color4& c)
 		{

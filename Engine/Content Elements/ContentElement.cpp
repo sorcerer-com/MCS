@@ -81,7 +81,7 @@ namespace MyEngine {
 	}
 
 
-    void* ContentElement::get(const string& name)
+    void* ContentElement::get(const string&)
     {
 #pragma region ContentElement Get
 #pragma endregion

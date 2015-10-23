@@ -31,19 +31,28 @@ namespace MyEngine {
         uint RegionSize;
         vector<Region> Regions;
         bool VolumetricFog;
+        // Samples Settings
         uint MinSamples, MaxSamples;
         float SampleThreshold;
+        // Limits
         uint MaxLights;
         uint MaxDepth;
+        // Global Illumination
         bool GI;
         uint GISamples;
+        // Global Illumination - IrradianceMap
         bool IrradianceMap;
         uint IrradianceMapSamples;
         float IrradianceMapDistanceThreshold;
         float IrradianceMapNormalThreshold;
         float IrradianceMapColorThreshold;
+        // Global Illumination - LightCache
         bool LightCache;
         float LightCacheSampleSize;
+        // Animation
+        bool Animation;
+        int AnimationFPS;
+        bool AnimationResetCaches;
 
     protected:
         using ColorsMapType = map < string, Color4 >; // buffer name / color

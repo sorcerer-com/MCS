@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mcs="clr-namespace:MCS.Controls"
         Title="Render" Width="640" Height="480" Icon="/Images/MainWindow/Render.PNG"
-        MouseMove="Window_MouseMove" MouseWheel="Window_MouseWheel" MouseDoubleClick="Window_MouseDoubleClick">
+        MouseMove="Window_MouseMove" MouseWheel="Window_MouseWheel" MouseDoubleClick="Window_MouseDoubleClick"
+        Closing="Window_Closing">
 
     <Window.Resources>
         <Style x:Key="toolbarButtonImageStyle" TargetType="Image">

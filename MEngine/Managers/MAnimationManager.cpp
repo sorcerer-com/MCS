@@ -12,7 +12,7 @@ namespace MyEngine {
     {
         List<String^>^ collection = gcnew List<String^>();
 
-        const auto& animationsNames = this->animationManager->GetAnimationsNames();
+        const auto& animationsNames = this->animationManager->GetAnimationNames();
         for (const auto& name : animationsNames)
             collection->Add(gcnew String(name.c_str()));
 
@@ -115,14 +115,14 @@ namespace MyEngine {
 
         string oldAnimName = to_string(name);
         string newAnimName = to_string(newName);
-        const auto& tracksNames = this->animationManager->GetTracksNames(oldAnimName);
+        const auto& tracksNames = this->animationManager->GetTrackNames(oldAnimName);
         for (const auto& trackName : tracksNames)
         {
             const auto& oldTrack = this->animationManager->GetTrack(oldAnimName, trackName);
 
             this->animationManager->AddTrack(newAnimName, trackName, oldTrack.Type);
             for (const auto& keyframe : oldTrack.KeyFrames)
-                this->animationManager->SetKeyframe(newAnimName, trackName, keyframe.first, keyframe.second);
+                this->animationManager->SetKeyframe(newAnimName, trackName, keyframe.first, &keyframe.second.r); // convert to float*
         }
 
         this->OnChanged(nullptr);
@@ -134,7 +134,7 @@ namespace MyEngine {
         Dictionary<String^, Dictionary<int, MAnimKeyFrame^>^>^ result =
             gcnew Dictionary<String^, Dictionary<int, MAnimKeyFrame^>^>();
 
-        const auto& tracksNames = this->animationManager->GetTracksNames(to_string(name));
+        const auto& tracksNames = this->animationManager->GetTrackNames(to_string(name));
         for (const auto& trackName : tracksNames)
         {
             String^ trackNameStr = gcnew String(trackName.c_str());

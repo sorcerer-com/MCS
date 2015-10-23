@@ -121,7 +121,7 @@ namespace MyEngine {
     void AnimationManager::ReadFromFile(istream& file)
     {
         this->animations.clear();
-        this->animationsStatuses.clear();
+        this->animationStatuses.clear();
 
         // animations count
         int animCount = 0;
@@ -160,7 +160,7 @@ namespace MyEngine {
             Read(file, animStatus.Paused);
             Read(file, animStatus.Loop);
             Read(file, animStatus.Speed);
-            this->animationsStatuses[seID] = animStatus;
+            this->animationStatuses[seID] = animStatus;
         }
     }
 
@@ -187,9 +187,9 @@ namespace MyEngine {
         }
 
         // animations statuses count
-        Write(file, (int)this->animationsStatuses.size());
+        Write(file, (int)this->animationStatuses.size());
         // animations statuses
-        for (const auto& animStatus : this->animationsStatuses)
+        for (const auto& animStatus : this->animationStatuses)
         {
             Write(file, animStatus.first);
             Write(file, animStatus.second.StartTime);
@@ -262,7 +262,7 @@ namespace MyEngine {
         return true;
     }
     
-    vector<string> AnimationManager::GetAnimationsNames()
+    vector<string> AnimationManager::GetAnimationNames()
     {
         vector<string> result;
 
@@ -380,7 +380,7 @@ namespace MyEngine {
         return this->animations[animation][track];
     }
 
-    vector<string> AnimationManager::GetTracksNames(const string& animation)
+    vector<string> AnimationManager::GetTrackNames(const string& animation)
     {
         vector<string> result;
 
@@ -409,20 +409,20 @@ namespace MyEngine {
             animStatus.Loop = loop;
             animStatus.Speed = speed;
 
-            this->animationsStatuses[seID] = animStatus;
+            this->animationStatuses[seID] = animStatus;
             this->applyAnimation(seID, animStatus, startAt);
         }
     }
 
     bool AnimationManager::IsPlayingAnimation(uint seID) const
     {
-        return this->animationsStatuses.find(seID) != this->animationsStatuses.end();
+        return this->animationStatuses.find(seID) != this->animationStatuses.end();
     }
 
     void AnimationManager::StopAnimation(uint seID)
     {
         lock lck(this->thread->mutex("status"));
-        this->animationsStatuses.erase(seID);
+        this->animationStatuses.erase(seID);
     }
 
     AnimStatus AnimationManager::GetAnimationStatus(uint seID)
@@ -430,7 +430,7 @@ namespace MyEngine {
         if (!this->IsPlayingAnimation(seID))
             return AnimStatus();
 
-        return this->animationsStatuses[seID];
+        return this->animationStatuses[seID];
     }
 
     void AnimationManager::MoveTime(float deltaTime)
@@ -440,7 +440,7 @@ namespace MyEngine {
         if (this->time < -deltaTime && deltaTime < 0)
             deltaTime = -this->time;
 
-        for (auto& animStatus : this->animationsStatuses)
+        for (auto& animStatus : this->animationStatuses)
         {
             float dTime = deltaTime;
             float animLength = this->getAnimationLength(animStatus.second.Animation);
@@ -456,6 +456,8 @@ namespace MyEngine {
                 this->applyAnimation(animStatus.first, animStatus.second, dTime);
         }
         this->time += deltaTime;
+
+        Engine::Log(LogType::EWarning, "AnimationManager", "Move time with " + to_string(deltaTime) + " to " + to_string(this->time));
     }
 
 
@@ -466,7 +468,7 @@ namespace MyEngine {
         while (!this->thread->interrupted())
         {
             this->thread->mutex("status").lock();
-            for (auto& animStatus : this->animationsStatuses)
+            for (auto& animStatus : this->animationStatuses)
             {
                 bool playing = this->Owner->Started && !animStatus.second.Paused && this->time >= animStatus.second.StartTime;
                 if (playing)
@@ -480,8 +482,8 @@ namespace MyEngine {
 
             if (!this->Owner->Started)
             {
-                if (this->time != 0)
-                    this->MoveTime(-this->time); // TODO: remove it if there will be Timeline
+                //if (this->time != 0)
+                //    this->MoveTime(-this->time); // TODO: remove it if there will be Timeline
                 this_thread::sleep_for(chrono::milliseconds((int)(deltaTime * 10000)));
             }
             else

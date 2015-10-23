@@ -59,8 +59,14 @@ namespace MyEngine {
             property double IrradianceMapColorThreshold;
             [MPropertyAttribute(SortName = "08", Group = "04. Global Illumination")]
             property bool LightCache;
-            [MPropertyAttribute(SortName = "08", Group = "04. Global Illumination", Name = "SampleSize")]
+            [MPropertyAttribute(SortName = "09", Group = "04. Global Illumination", Name = "SampleSize")]
             property double LightCacheSampleSize;
+            [MPropertyAttribute(SortName = "01", Group = "05. Animation")]
+            property bool Animation;
+            [MPropertyAttribute(SortName = "02", Group = "05. Animation", Name = "FPS")]
+            property int AnimationFPS;
+            [MPropertyAttribute(SortName = "03", Group = "05. Animation", Name = "ResetCaches")]
+            property bool AnimationResetCaches;
         };
 
         property bool IsStarted
@@ -137,6 +143,9 @@ namespace MyEngine {
                 rayRenderer->IrradianceMapColorThreshold = (float)settings->IrradianceMapColorThreshold;
                 rayRenderer->LightCache = settings->LightCache;
                 rayRenderer->LightCacheSampleSize = (float)settings->LightCacheSampleSize;
+                rayRenderer->Animation = settings->Animation;
+                rayRenderer->AnimationFPS = settings->AnimationFPS;
+                rayRenderer->AnimationResetCaches = settings->AnimationResetCaches;
             }
             this->Renderer->Init(settings->Width, settings->Height);
 
