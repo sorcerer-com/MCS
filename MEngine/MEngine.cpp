@@ -16,14 +16,16 @@ namespace MyEngine {
         Engine::Mode = (EngineMode)value;
     }
 
-    bool MEngine::Started::get()
+    bool MEngine::IsStarted::get()
     {
         return this->engine->Started;
     }
 
-    void MEngine::Started::set(bool value)
+    void MEngine::IsStarted::set(bool value)
     {
+        this->OnStartChanging(value);
         this->engine->Started = value;
+        this->OnStartChanged(value);
     }
 
 
@@ -63,12 +65,12 @@ namespace MyEngine {
 
     void MEngine::Start()
     {
-        this->Started = true;
+        this->IsStarted = true;
     }
 
     void MEngine::Stop()
     {
-        this->Started = false;
+        this->IsStarted = false;
     }
 
 
@@ -77,4 +79,14 @@ namespace MyEngine {
 		Engine::Log((LogType)type, to_string(category), to_string(text));
 	}
 
+
+    void MEngine::OnStartChanging(bool value)
+    {
+        this->StartChanging(this, value);
+    }
+
+    void MEngine::OnStartChanged(bool value)
+    {
+        this->StartChanged(this, value);
+    }
 }

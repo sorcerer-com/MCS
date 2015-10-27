@@ -114,6 +114,23 @@ namespace MyEngine {
         OnChanged(nullptr);
     }
 
+    List<byte>^ MSceneManager::Script::get()
+    {
+        List<byte>^ collection = gcnew List<byte>();
+        const auto& res = this->sceneManager->Script;
+        for (const auto& value : res)
+            collection->Add(value);
+        return collection;
+    }
+
+    void MSceneManager::Script::set(List<byte>^ value)
+    {
+        this->sceneManager->Script.resize(value->Count);
+        for (int i = 0; i < value->Count; i++)
+            this->sceneManager->Script[i] = value[i];
+        OnChanged(nullptr);
+    }
+
 
     MSceneManager::MSceneManager(MEngine^ owner, SceneManager* sceneManager) : 
         MBaseManager(owner)
@@ -234,6 +251,7 @@ namespace MyEngine {
 	        collection->Add(this->getMSceneElement(value));
 	    return collection;
 	}
+	
 #pragma endregion
 
     MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, uint contentID)

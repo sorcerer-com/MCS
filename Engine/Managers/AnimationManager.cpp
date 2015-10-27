@@ -114,7 +114,7 @@ namespace MyEngine {
 
     AnimationManager::~AnimationManager()
     {
-        this->MoveTime(-this->time);
+        this->ResetTime();
     }
 
 
@@ -433,6 +433,11 @@ namespace MyEngine {
         return this->animationStatuses[seID];
     }
 
+    float AnimationManager::GetTime() const
+    {
+        return this->time;
+    }
+
     void AnimationManager::MoveTime(float deltaTime)
     {
         lock lck(this->thread->mutex("status"));
@@ -450,7 +455,7 @@ namespace MyEngine {
             if (!animStatus.second.Paused && this->time >= animStatus.second.StartTime)
                 animStatus.second.CurrentTime += dTime * animStatus.second.Speed;
             if (animStatus.second.Loop && animStatus.second.CurrentTime > animLength)
-                animStatus.second.CurrentTime = 0;
+                animStatus.second.CurrentTime = 0.0f;
 
             if (this->time >= animStatus.second.StartTime)
                 this->applyAnimation(animStatus.first, animStatus.second, dTime);
@@ -458,6 +463,19 @@ namespace MyEngine {
         this->time += deltaTime;
 
         Engine::Log(LogType::EWarning, "AnimationManager", "Move time with " + to_string(deltaTime) + " to " + to_string(this->time));
+    }
+
+    void AnimationManager::ResetTime()
+    {
+        lock lck(this->thread->mutex("status"));
+
+        for (auto& animStatus : this->animationStatuses)
+        {
+            float dTime = -animStatus.second.CurrentTime / animStatus.second.Speed;
+            animStatus.second.CurrentTime = 0.0f;
+            this->applyAnimation(animStatus.first, animStatus.second, dTime);
+        }
+        this->time = 0.0f;
     }
 
 
@@ -482,8 +500,6 @@ namespace MyEngine {
 
             if (!this->Owner->Started)
             {
-                //if (this->time != 0)
-                //    this->MoveTime(-this->time); // TODO: remove it if there will be Timeline
                 this_thread::sleep_for(chrono::milliseconds((int)(deltaTime * 10000)));
             }
             else

@@ -57,7 +57,9 @@ namespace MyEngine {
         void PlayAnimation(uint seID, String^ animation, double startTime, double startAt, bool paused, bool loop, double speed);
         bool IsPlayingAnimation(uint seID);
         void StopAnimation(uint seID);
+        double GetTime();
         void MoveTime(double deltaTime);
+        void ResetTime();
 #pragma endregion
         bool CloneAnimation(String^ name, String^ newName);
         MAnimationType GetAnimation(String^ name);

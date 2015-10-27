@@ -100,9 +100,20 @@ namespace MyEngine {
 	    this->OnChanged(nullptr);
 	}
 	
+	double MAnimationManager::GetTime()
+	{
+	    return this->animationManager->GetTime();
+	}
+	
 	void MAnimationManager::MoveTime(double deltaTime)
 	{
 	    this->animationManager->MoveTime((float)deltaTime);
+	    this->OnChanged(nullptr);
+	}
+	
+	void MAnimationManager::ResetTime()
+	{
+	    this->animationManager->ResetTime();
 	    this->OnChanged(nullptr);
 	}
 #pragma endregion

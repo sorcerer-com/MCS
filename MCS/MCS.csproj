@@ -71,6 +71,7 @@
     <ApplicationIcon>Images\Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -147,6 +148,9 @@
     <Compile Include="MainWindows\RenderWindow.xaml.cs">
       <DependentUpon>RenderWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindows\ScriptWindow.xaml.cs">
+      <DependentUpon>ScriptWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Managers\ConfigManager.cs" />
     <Compile Include="Managers\DelegateCommand.cs" />
     <Compile Include="Managers\WindowsManager.cs" />
@@ -179,6 +183,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindows\RenderWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindows\ScriptWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

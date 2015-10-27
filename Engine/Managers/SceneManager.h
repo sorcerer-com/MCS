@@ -18,6 +18,7 @@ namespace MyEngine {
 	public:
 		using SceneMapType = map < uint, SceneElementPtr >; // id / scene element
 		using LayerVectorType = vector < string > ; // layer name
+        using ScriptType = vector < char > ; // scipt compressed data
 
 		Camera* ActiveCamera;               //* 
 		Color4 AmbientLight;                //* default[Color4(0.2f, 0.2f, 0.2f, 1.0f)]
@@ -25,6 +26,7 @@ namespace MyEngine {
         float FogDensity;                   //* 
         float TimeOfDay;                    //* noproperty
         uint SkyBoxID;                      //* noproperty
+        vector<char> Script;                //* noproperty
 
     private:
 		SceneMapType sceneElements;

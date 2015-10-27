@@ -70,6 +70,12 @@ namespace MyEngine {
             void set(MContentElement^ value);
         }
 
+        property List<byte>^ Script
+        {
+            List<byte>^ get();
+            void set(List<byte>^ value);
+        }
+
 
 		delegate void ChangedEventHandler(MSceneManager^ sender, MSceneElement^ element);
 		event ChangedEventHandler^ Changed;

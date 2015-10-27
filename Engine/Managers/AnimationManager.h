@@ -80,7 +80,9 @@ namespace MyEngine {
         bool IsPlayingAnimation(uint seID) const;           //* wrap
         void StopAnimation(uint seID);                      //* wrap
         AnimStatus GetAnimationStatus(uint seID);
+        float GetTime() const;                              //* wrap
         void MoveTime(float deltaTime);                     //* wrap
+        void ResetTime();                                   //* wrap
 
     private:
         void doAnimation();

@@ -135,6 +135,8 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.L, true, false, false, "", "LayersWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F9, false, false, false, "", "RenderWindowCommand"));
             keys.Add(new HotKeyInfo(Key.A, true, false, false, "", "AnimationsWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.F10, false, false, false, "", "ScriptWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.System, false, false, false, "", "ScriptWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F5, false, false, false, "", "PlayStopCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
 
@@ -156,6 +158,13 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.F11, false, false, false, "", "SaveBufferCommand"));
             keys.Add(new HotKeyInfo(Key.F11, true, false, false, "", "SaveBufferCommand"));
             hotkeys.Add(typeof(RenderWindow), keys);
+
+            // ScriptWindow
+            keys = new List<HotKeyInfo>();
+            keys.Add(new HotKeyInfo(Key.F10, false, false, false, "", "OpenCommand"));
+            keys.Add(new HotKeyInfo(Key.System, false, false, false, "", "OpenCommand"));
+            keys.Add(new HotKeyInfo(Key.F11, false, false, false, "", "UpdateCommand"));
+            hotkeys.Add(typeof(ScriptWindow), keys);
 
             saveHotkeys();
         }

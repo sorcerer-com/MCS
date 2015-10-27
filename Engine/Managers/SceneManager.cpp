@@ -42,6 +42,7 @@ namespace MyEngine {
         this->FogDensity = 0.0f;
         this->TimeOfDay = 0.0f;
         this->SkyBoxID = 0;
+        this->Script = vector<char>();
         this->sceneElements = SceneMapType();
         this->layers = LayerVectorType();
 #pragma endregion
@@ -113,6 +114,9 @@ namespace MyEngine {
 
         // animtions
         this->Owner->AnimationManager->WriteToFile(ofile);
+
+        // script
+        Write(ofile, this->Script);
 
 		ofile.close();
 
@@ -204,6 +208,9 @@ namespace MyEngine {
 
             // animtions
             this->Owner->AnimationManager->ReadFromFile(ifile);
+            
+            // script
+            Read(ifile, this->Script);
 		}
 
 		ifile.close();

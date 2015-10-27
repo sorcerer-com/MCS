@@ -40,7 +40,7 @@ namespace MyEngine {
         property MViewPortRenderer^ ViewPortRenderer;
         property MProductionRenderer^ ProductionRenderer;
 
-        property bool Started
+        property bool IsStarted
         {
             bool get();
             void set(bool value);
@@ -52,6 +52,11 @@ namespace MyEngine {
             void set(EEngineMode value);
         }
 
+
+        delegate void StartedEventHandler(MEngine^ sender, bool value);
+        event StartedEventHandler^ StartChanging;
+        event StartedEventHandler^ StartChanged;
+
 	public:
 		MEngine();
 		~MEngine();
@@ -60,6 +65,11 @@ namespace MyEngine {
         void Stop();
 
 		static void Log(ELogType type, String^ category, String^ text);
+
+    private:
+        void OnStartChanging(bool value);
+        void OnStartChanged(bool value);
+
 	};
 
 }

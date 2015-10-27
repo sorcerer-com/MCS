@@ -1,0 +1,17 @@
+﻿<Window x:Class="MCS.MainWindows.ScriptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Script" Width="250" Height="90" Icon="/Images/MainWindow/Scripts.PNG"
+        WindowStyle="ToolWindow" Topmost="True">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="0" Content="{Binding OpenCommandTooltip}" Command="{Binding OpenCommand}" Margin="10"/>
+
+        <Button Grid.Column="1" Content="{Binding UpdateCommandTooltip}" Command="{Binding UpdateCommand}" Margin="10"/>
+        
+    </Grid>
+</Window>

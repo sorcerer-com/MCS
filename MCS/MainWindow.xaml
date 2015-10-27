@@ -78,7 +78,7 @@
                 <Button ToolTip="{Binding Path=AnimationsWindowCommandTooltip}" Command="{Binding Path=AnimationsWindowCommand}">
                     <Image Source="/Images/MainWindow/Animations.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Scripts (F10)">
+                <Button ToolTip="{Binding Path=ScriptWindowCommandTooltip}" Command="{Binding Path=ScriptWindowCommand}">
                     <Image Source="/Images/MainWindow/Scripts.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
             </ToolBar>

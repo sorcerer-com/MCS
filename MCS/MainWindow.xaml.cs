@@ -471,11 +471,20 @@ namespace MCS
             get { return "Animations " + WindowsManager.GetHotkey(this.GetType(), "AnimationsWindowCommand", true); }
         }
 
+        public ICommand ScriptWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ScriptWindow), this.engine.SceneManager); }); }
+        }
+        public string ScriptWindowCommandTooltip
+        {
+            get { return "Scripts " + WindowsManager.GetHotkey(this.GetType(), "ScriptWindowCommand", true); }
+        }
+
 
         public bool IsEngineStarted
         {
-            get { return this.engine.Started; }
-            set { this.engine.Started = value; this.OnPropertyChanged("IsEngineStarted"); }
+            get { return this.engine.IsStarted; }
+            set { this.engine.IsStarted = value; this.OnPropertyChanged("IsEngineStarted"); }
         }
         public ICommand PlayStopCommand
         {
@@ -607,6 +616,8 @@ namespace MCS
             this.DataContext = this;
 
             this.engine = new MEngine();
+            this.engine.StartChanging += Engine_StartChanging;
+            this.engine.StartChanged += Engine_StartChanged;
             this.engine.SceneManager.Changed += SceneManager_Changed;
             this.engine.AnimationManager.Changed += AnimationManager_Changed;
             MSelector.SelectionChanged += MSelector_SelectionChanged;
@@ -709,6 +720,20 @@ namespace MCS
             this.engine.Dispose();
         }
 
+        private void Engine_StartChanging(MEngine sender, bool value)
+        {
+            if (value)
+                ScriptWindow.StartScript(sender);
+            else
+                ScriptWindow.StopScript();
+        }
+
+        private void Engine_StartChanged(MEngine sender, bool value)
+        {
+            if (!value) // stopped
+                this.engine.AnimationManager.ResetTime();
+        }
+
         private void SceneManager_Changed(MSceneManager sender, MSceneElement element)
         {
             this.SceneSaved = false;
@@ -732,7 +757,7 @@ namespace MCS
         }
 
 
-        void render_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        private void render_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             // camera movement
             MCamera camera = this.engine.SceneManager.ActiveCamera;
@@ -799,7 +824,7 @@ namespace MCS
             this.OnPropertyChanged("SelectedElement");
         }
 
-        void render_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void render_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             Point mousePosition = new Point(e.X, e.Y);
             if (lastMousePosition.X == 0.0 && lastMousePosition.Y == 0.0)
@@ -873,7 +898,7 @@ namespace MCS
             this.lastMousePosition = mousePosition;
         }
 
-        void render_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void render_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (this.engine.SceneManager.ActiveCamera != null && this.SelectedElement != null &&
                 this.SelectedElement.Equals(this.engine.SceneManager.ActiveCamera))
@@ -882,7 +907,7 @@ namespace MCS
             }
         }
 
-        void render_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void render_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             uint id = this.engine.ViewPortRenderer.GetSceneElementID(e.X, e.Y);
             MSceneElement mse = this.engine.SceneManager.GetElement(id);
@@ -898,7 +923,7 @@ namespace MCS
             }
         }
 
-        void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void render_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (this.selectedCursor != ECursorType.Select &&
                 (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))) // change snap value
