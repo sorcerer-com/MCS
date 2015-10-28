@@ -700,7 +700,7 @@ namespace MCS
             this.engine.AnimationManager.SetKeyframe("Animation", "Rotation", 0, new double[] { 0.0, 0, 0 });
             this.engine.AnimationManager.SetKeyframe("Animation", "Rotation", 60, new double[] { 60.0, 0, 0 });
             this.engine.AnimationManager.SetKeyframe("Animation", "Rotation", 120, new double[] { 0.0, 0, 0 });
-            this.engine.AnimationManager.PlayAnimation(mre.ID, "Animation", 0, 0, false, true, 1.0);
+            this.engine.AnimationManager.PlayAnimation(mre.ID, "Animation", 0, 0, false, true, 1.0, false);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -962,13 +962,16 @@ namespace MCS
 
         private void updateTitle()
         {
-            this.Title = "My Creative Studio";
-            if (MEngine.Mode != EEngineMode.Editor)
-                this.Title += "!";
-            if (!string.IsNullOrEmpty(this.SceneFilePath))
-                this.Title += " - " + Path.GetFileNameWithoutExtension(this.SceneFilePath);
-            if (!this.SceneSaved)
-                this.Title += "*";
+            this.Dispatcher.Invoke(() =>
+                {
+                    this.Title = "My Creative Studio";
+                    if (MEngine.Mode != EEngineMode.Editor)
+                        this.Title += "!";
+                    if (!string.IsNullOrEmpty(this.SceneFilePath))
+                        this.Title += " - " + Path.GetFileNameWithoutExtension(this.SceneFilePath);
+                    if (!this.SceneSaved)
+                        this.Title += "*";
+                });
         }
 
         private void updateContextMenuItems()

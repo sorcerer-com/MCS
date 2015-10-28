@@ -392,8 +392,9 @@ namespace MyEngine {
 
 
     /* A N I M A T I O N   S T A T U S */
-    void AnimationManager::PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed)
+    void AnimationManager::PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed, bool linear)
     {
+        this->StopAnimation(seID);
         lock lck(this->thread->mutex("status"));
         if (!this->ContainsAnimation(animation))
             Engine::Log(EError, "AnimationManager", "Try to play non existent animation '" + animation + "'");
@@ -408,6 +409,7 @@ namespace MyEngine {
             animStatus.Paused = paused;
             animStatus.Loop = loop;
             animStatus.Speed = speed;
+            animStatus.Linear = linear;
 
             this->animationStatuses[seID] = animStatus;
             this->applyAnimation(seID, animStatus, startAt);
@@ -422,6 +424,11 @@ namespace MyEngine {
     void AnimationManager::StopAnimation(uint seID)
     {
         lock lck(this->thread->mutex("status"));
+
+        const auto& animStatus = this->animationStatuses[seID];
+        float dTime = -animStatus.CurrentTime / animStatus.Speed;
+        this->applyAnimation(seID, animStatus, dTime);
+
         this->animationStatuses.erase(seID);
     }
 
@@ -462,7 +469,7 @@ namespace MyEngine {
         }
         this->time += deltaTime;
 
-        Engine::Log(LogType::EWarning, "AnimationManager", "Move time with " + to_string(deltaTime) + " to " + to_string(this->time));
+        Engine::Log(LogType::ELog, "AnimationManager", "Move time with " + to_string(deltaTime) + " to " + to_string(this->time));
     }
 
     void AnimationManager::ResetTime()
@@ -471,11 +478,18 @@ namespace MyEngine {
 
         for (auto& animStatus : this->animationStatuses)
         {
-            float dTime = -animStatus.second.CurrentTime / animStatus.second.Speed;
+            float dTime = animStatus.second.CurrentTime;
+            float animLength = this->getAnimationLength(animStatus.second.Animation);
+            if (dTime > animLength)
+                dTime = animLength;
+            dTime = -dTime / animStatus.second.Speed;
+
             animStatus.second.CurrentTime = 0.0f;
             this->applyAnimation(animStatus.first, animStatus.second, dTime);
         }
         this->time = 0.0f;
+
+        Engine::Log(LogType::ELog, "AnimationManager", "Reset time");
     }
 
 
@@ -522,10 +536,10 @@ namespace MyEngine {
         for (const auto& track : anim)
         {
             float value[4], prev_value[4];
-            if (!this->getValue(track.second, animStatus.CurrentTime, value))
+            if (!this->getValue(track.second, animStatus.CurrentTime, animStatus.Linear, value))
                 continue;
 
-            this->getValue(track.second, animStatus.CurrentTime - deltaTime * animStatus.Speed, prev_value);
+            this->getValue(track.second, animStatus.CurrentTime - deltaTime * animStatus.Speed, animStatus.Linear, prev_value);
             if (track.second.Type == AnimTrack::TrackType::EFloat)
             {
                 float f = value[0] - prev_value[0];
@@ -553,7 +567,7 @@ namespace MyEngine {
             {
                 Vector3 vec = Vector3(value[0] - prev_value[0], value[1] - prev_value[1], value[2] - prev_value[2]);
                 if (track.first == "Rotation")
-                    se->Get<Quaternion>(track.first) = Quaternion(vec) * se->Get<Quaternion>(track.first);
+                    se->Get<Quaternion>(track.first) = Quaternion(se->Get<Quaternion>(track.first).toEulerAngle() + vec);
                 else
                     se->Get<Vector3>(track.first) += vec;
             }
@@ -583,7 +597,7 @@ namespace MyEngine {
         }
     }
 
-    bool AnimationManager::getValue(const AnimTrack& animTrack, float time, float* out)
+    bool AnimationManager::getValue(const AnimTrack& animTrack, float time, bool linear, float* out) const
     {
         // if we are outside the animation
         if (animTrack.KeyFrames.size() == 0 ||
@@ -612,9 +626,17 @@ namespace MyEngine {
                 float d = (float)(keyframe.first - prevKeyframeTime);
                 float t = (frame - prevKeyframeTime) / d;
                 const auto& prevKeyrame = prevKeyframeTime >= 0 ? animTrack.KeyFrames.at(prevKeyframeTime) : keyframe.second;
-                // cubic bezier
-                for (int i = 0; i < 4; i++)
-                    out[i] = pow(1.0f - t, 3) * prevKeyrame[i] + 3 * pow(1.0f - t, 2) * t * prevKeyrame[i] + 3 * (1.0f - t) * pow(t, 2) * keyframe.second[i] + pow(t, 3) * keyframe.second[i];
+                if (linear)
+                {
+                    for (int i = 0; i < 4; i++)
+                        out[i] = (1.0f - t) * prevKeyrame[i] + t * keyframe.second[i];
+                }
+                else
+                {
+                    // cubic bezier
+                    for (int i = 0; i < 4; i++)
+                        out[i] = pow(1.0f - t, 3) * prevKeyrame[i] + 3 * pow(1.0f - t, 2) * t * prevKeyrame[i] + 3 * (1.0f - t) * pow(t, 2) * keyframe.second[i] + pow(t, 3) * keyframe.second[i];
+                }
                 return true;
             }
             prevKeyframeTime = keyframe.first;

@@ -40,6 +40,7 @@ namespace MyEngine {
         lightCacheKdTree(3)
     {
         this->RegionSize = 64;
+        this->Preview = true;
         this->VolumetricFog = true;
         this->MinSamples = 1;
         this->MaxSamples = 4;
@@ -56,7 +57,6 @@ namespace MyEngine {
         this->LightCache = true;
         this->LightCacheSampleSize = 0.1f;
         this->Animation = false;
-        this->AnimationFPS = 30;
         this->AnimationResetCaches = false;
 
         this->thread->defThreadPool();
@@ -152,7 +152,7 @@ namespace MyEngine {
         ProfileLog;
         ProductionRenderer::Start();
         // TODO: progressive rendering
-        // TODO: think how to add preview as option because of sort of the regions
+        // TODO: may be implement ggx microfaset BSDF (important sampling)
 
         // clear previous scene
         if (this->rtcScene != NULL)
@@ -188,12 +188,15 @@ namespace MyEngine {
 
         this->phasePofiler->start();
         // preview phase
-        this->thread->addNTasks([&](int) { return this->render(true); }, (int)this->Regions.size());
-        this->thread->addWaitTask();
-        this->thread->addTask([&](int) { return this->sortRegions(); });
-        this->thread->addWaitTask();
-        this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Preview phase time"); return true; });
-        this->thread->addWaitTask();
+        if (this->Preview)
+        {
+            this->thread->addNTasks([&](int) { return this->render(true); }, (int)this->Regions.size());
+            this->thread->addWaitTask();
+            this->thread->addTask([&](int) { return this->sortRegions(); });
+            this->thread->addWaitTask();
+            this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Preview phase time"); return true; });
+            this->thread->addWaitTask();
+        }
         // irradiance map phase
         if (this->GI && this->IrradianceMap)
         {
@@ -213,7 +216,8 @@ namespace MyEngine {
         this->thread->addTask([&](int) { return this->postProcessing(); });
         this->thread->addWaitTask();
         this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", duration_to_string(this->phasePofiler->stop()) + " Post-processing phase time"); return true; });
-        this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", to_string(this->lightCacheSamples.size()) + " light cache samples generated"); return true; });
+        if (this->GI && this->LightCache)
+            this->thread->addTask([&](int) { Engine::Log(LogType::ELog, "CPURayRenderer", to_string(this->lightCacheSamples.size()) + " light cache samples generated"); return true; });
         this->thread->addTask([&](int) { this->Stop(); return true; });
 
         Engine::Log(LogType::ELog, "CPURayRenderer", "Start Rendering");
@@ -232,21 +236,24 @@ namespace MyEngine {
         Profile;
         lock lck(this->thread->mutex("regions"));
 
-        this->Regions.clear();
-        const int sw = (this->Width - 1) / this->RegionSize + 1;
-        const int sh = (this->Height - 1) / this->RegionSize + 1;
-        for (int y = 0; y < sh; y++)
+        if (this->Regions.size() == 0 || this->Preview)
         {
-            for (int x = 0; x < sw; x++)
+            this->Regions.clear();
+            const int sw = (this->Width - 1) / this->RegionSize + 1;
+            const int sh = (this->Height - 1) / this->RegionSize + 1;
+            for (int y = 0; y < sh; y++)
             {
-                int left = x * this->RegionSize;
-                int right = min(this->Width, (x + 1) * this->RegionSize);
-                int top = y * this->RegionSize;
-                int bottom = min(this->Height, (y + 1) * this->RegionSize);
-                if (left == right || top == bottom)
-                    continue;
+                for (int x = 0; x < sw; x++)
+                {
+                    int left = x * this->RegionSize;
+                    int right = min(this->Width, (x + 1) * this->RegionSize);
+                    int top = y * this->RegionSize;
+                    int bottom = min(this->Height, (y + 1) * this->RegionSize);
+                    if (left == right || top == bottom)
+                        continue;
 
-                this->Regions.push_back(Region(left, top, right - left, bottom - top));
+                    this->Regions.push_back(Region(left, top, right - left, bottom - top));
+                }
             }
         }
         this->nextRagion = 0;

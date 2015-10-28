@@ -32,6 +32,8 @@ namespace MyEngine {
             [MPropertyAttribute(SortName = "03", Group = "01. Main Settings")]
             property uint RegionSize;
             [MPropertyAttribute(SortName = "04", Group = "01. Main Settings")]
+            property bool Preview;
+            [MPropertyAttribute(SortName = "04", Group = "01. Main Settings")]
             property bool VolumetricFog;
             [MPropertyAttribute(SortName = "01", Group = "02. Samples Settings")]
             property uint MinSamples;
@@ -67,6 +69,10 @@ namespace MyEngine {
             property int AnimationFPS;
             [MPropertyAttribute(SortName = "03", Group = "05. Animation", Name = "ResetCaches")]
             property bool AnimationResetCaches;
+            [MPropertyAttribute(SortName = "04", Group = "05. Animation", Name = "StartTime")]
+            property double AnimationStartTime;
+            [MPropertyAttribute(SortName = "05", Group = "05. Animation", Name = "EndTime")]
+            property double AnimationEndTime;
         };
 
         property bool IsStarted
@@ -128,6 +134,7 @@ namespace MyEngine {
             {
                 CPURayRenderer* rayRenderer = (CPURayRenderer*)this->Renderer;
                 rayRenderer->RegionSize = settings->RegionSize;
+                rayRenderer->Preview = settings->Preview;
                 rayRenderer->VolumetricFog = settings->VolumetricFog;
                 rayRenderer->MinSamples = settings->MinSamples;
                 rayRenderer->MaxSamples = settings->MaxSamples;
@@ -144,7 +151,6 @@ namespace MyEngine {
                 rayRenderer->LightCache = settings->LightCache;
                 rayRenderer->LightCacheSampleSize = (float)settings->LightCacheSampleSize;
                 rayRenderer->Animation = settings->Animation;
-                rayRenderer->AnimationFPS = settings->AnimationFPS;
                 rayRenderer->AnimationResetCaches = settings->AnimationResetCaches;
             }
             this->Renderer->Init(settings->Width, settings->Height);

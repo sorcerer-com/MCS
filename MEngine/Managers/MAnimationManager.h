@@ -54,7 +54,7 @@ namespace MyEngine {
         bool DeleteTrack(String^ animation, String^ track);
         bool RemoveKeyframe(String^ animation, String^ track, int frame);
         
-        void PlayAnimation(uint seID, String^ animation, double startTime, double startAt, bool paused, bool loop, double speed);
+        void PlayAnimation(uint seID, String^ animation, double startTime, double startAt, bool paused, bool loop, double speed, bool linear);
         bool IsPlayingAnimation(uint seID);
         void StopAnimation(uint seID);
         double GetTime();

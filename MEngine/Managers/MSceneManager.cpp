@@ -251,7 +251,6 @@ namespace MyEngine {
 	        collection->Add(this->getMSceneElement(value));
 	    return collection;
 	}
-	
 #pragma endregion
 
     MSceneElement^ MSceneManager::AddElement(ESceneElementType type, String^ name, uint contentID)

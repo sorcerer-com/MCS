@@ -30,6 +30,7 @@ namespace MyEngine {
 	public:
         uint RegionSize;
         vector<Region> Regions;
+        bool Preview;
         bool VolumetricFog;
         // Samples Settings
         uint MinSamples, MaxSamples;
@@ -51,7 +52,6 @@ namespace MyEngine {
         float LightCacheSampleSize;
         // Animation
         bool Animation;
-        int AnimationFPS;
         bool AnimationResetCaches;
 
     protected:

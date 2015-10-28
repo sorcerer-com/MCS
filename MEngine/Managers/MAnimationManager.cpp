@@ -83,10 +83,9 @@ namespace MyEngine {
 	}
 	
 	
-	void MAnimationManager::PlayAnimation(uint seID, String^ animation, double startTime, double startAt, bool paused, bool loop, double speed)
+	void MAnimationManager::PlayAnimation(uint seID, String^ animation, double startTime, double startAt, bool paused, bool loop, double speed, bool linear)
 	{
-	    this->animationManager->PlayAnimation(seID, to_string(animation), (float)startTime, (float)startAt, paused, loop, (float)speed);
-	    this->OnChanged(nullptr);
+	    this->animationManager->PlayAnimation(seID, to_string(animation), (float)startTime, (float)startAt, paused, loop, (float)speed, linear);
 	}
 	
 	bool MAnimationManager::IsPlayingAnimation(uint seID)

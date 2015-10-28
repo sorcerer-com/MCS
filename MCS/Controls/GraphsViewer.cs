@@ -14,6 +14,9 @@ namespace MCS.Controls
         public static DependencyProperty DataProperty =
             DependencyProperty.Register("Data", typeof(Dictionary<string, List<Point>>), typeof(GraphsViewer));
 
+        public static DependencyProperty LinearProperty =
+            DependencyProperty.Register("Linear", typeof(bool), typeof(GraphsViewer));
+
         public static DependencyProperty HeaderSizeProperty =
             DependencyProperty.Register("HeaderSize", typeof(Size), typeof(GraphsViewer), new PropertyMetadata(new Size(100.0, 35.0)));
 
@@ -48,6 +51,12 @@ namespace MCS.Controls
         {
             get { return (Dictionary<string, List<Point>>)GetValue(DataProperty); }
             set { SetValue(DataProperty, value); }
+        }
+
+        public bool Linear
+        {
+            get { return (bool)GetValue(LinearProperty); }
+            set { SetValue(LinearProperty, value); }
         }
 
         public Size HeaderSize
@@ -288,13 +297,22 @@ namespace MCS.Controls
                 point2.Y *= scaleY;
                 point2 += (Vector)start;
 
-                double d = (point2.X - point1.X) / 2.0;
-                BezierSegment bs = new BezierSegment();
-                bs.Point1 = point1 + new Vector(d, 0);
-                bs.Point2 = point2 - new Vector(d, 0);
-                bs.Point3 = point2 + new Vector(1, 1);
-                bs.IsSmoothJoin = true;
-                pf.Segments.Add(bs);
+                if (this.Linear)
+                {
+                    LineSegment ls = new LineSegment();
+                    ls.Point = point2 + new Vector(1, 1);
+                    pf.Segments.Add(ls);
+                }
+                else
+                {
+                    double d = (point2.X - point1.X) / 2.0;
+                    BezierSegment bs = new BezierSegment();
+                    bs.Point1 = point1 + new Vector(d, 0);
+                    bs.Point2 = point2 - new Vector(d, 0);
+                    bs.Point3 = point2 + new Vector(1, 1);
+                    bs.IsSmoothJoin = true;
+                    pf.Segments.Add(bs);
+                }
             }
             drawingContext.DrawGeometry(null, new Pen(this.CurveBrush, this.CurveThickness), pg);
 

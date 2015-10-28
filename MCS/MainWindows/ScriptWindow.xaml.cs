@@ -306,34 +306,34 @@ namespace Script
 
         private static Assembly assembly;
         private static object script;
-        public static void StartScript(MEngine engine)
+        public static Task StartScript(MEngine engine)
         {
             if (!ScriptWindow.extractScript(engine.SceneManager.Script.ToArray()))
-                return;
+                return null;
 
             if (!File.Exists(Path.Combine(ScriptWindow.ExportPath, "Script.csproj")))
-                return;
+                return null;
 
             BuildManager manager = BuildManager.DefaultBuildManager;
             ProjectInstance projectInstance = new ProjectInstance(Path.Combine(ScriptWindow.ExportPath, "Script.csproj"));
             var result = manager.Build(new BuildParameters(), new BuildRequestData(projectInstance, new string[] { "Build" }));
             if (result.OverallResult != BuildResultCode.Success)
-                return;
+                return null;
 
             string assemblyPath = Path.Combine(ScriptWindow.ExportPath, "bin", "Script.dll");
             if (!File.Exists(assemblyPath))
-                return;
+                return null;
 
             ScriptWindow.assembly = Assembly.Load(File.ReadAllBytes(assemblyPath), File.ReadAllBytes(Path.ChangeExtension(assemblyPath, "pdb")));
             Type type = ScriptWindow.assembly.GetType("Script.Script");
             if (type == null)
-                return;
+                return null;
             ScriptWindow.script = ScriptWindow.assembly.CreateInstance("Script.Script");
             MethodInfo mainMethod = type.GetMethod("Main", new Type[] { typeof(MEngine) });
             if (mainMethod == null)
-                return;
+                return null;
 
-            Task.Run(() => mainMethod.Invoke(ScriptWindow.script, new object[] { engine }));
+            return Task.Run(() => mainMethod.Invoke(ScriptWindow.script, new object[] { engine }));
         }
 
         public static void StopScript()

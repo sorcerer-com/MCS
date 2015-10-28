@@ -57,7 +57,22 @@ namespace MCS.MainWindows
 
         public string RenderProgress
         {
-            get { return this.engine.ProductionRenderer.RenderTime.ToString(@"hh\:mm\:ss") + " (" + this.engine.ProductionRenderer.Progress.ToString("00") + "%)"; }
+            get
+            {
+                string result = this.engine.ProductionRenderer.RenderTime.ToString(@"hh\:mm\:ss");
+                result += " (" + this.engine.ProductionRenderer.Progress.ToString("00") + "%)";
+                if (RenderWindow.renderSettings.Animation)
+                {
+                    result += " ";
+                    double time = this.engine.AnimationManager.GetTime();
+                    if (time == 0.0)
+                        result += "0.00";
+                    else
+                        result += (time - RenderWindow.renderSettings.AnimationStartTime).ToString("0.00");
+                    result += " / " + (RenderWindow.renderSettings.AnimationEndTime - RenderWindow.renderSettings.AnimationStartTime).ToString("0.00");
+                }
+                return result;
+            }
         }
 
         public double Exposure
@@ -129,6 +144,13 @@ namespace MCS.MainWindows
                 {
                     if (!this.engine.ProductionRenderer.IsStarted)
                     {
+                        if (RenderWindow.renderSettings.Animation)
+                        {
+                            ScriptWindow.StartScript(this.engine);
+                            System.Threading.Thread.Sleep(100);
+                            this.engine.AnimationManager.MoveTime(RenderWindow.renderSettings.AnimationStartTime);
+                        }
+
                         this.engine.ProductionRenderer.Init(this.RenderSettings);
                         this.engine.ProductionRenderer.Start();
                         this.timer.Start();
@@ -136,8 +158,13 @@ namespace MCS.MainWindows
                     else
                     {
                         this.engine.ProductionRenderer.Stop();
+                        
                         if (RenderWindow.renderSettings.Animation)
+                        {
                             this.timer.Stop();
+                            this.engine.AnimationManager.ResetTime();
+                            ScriptWindow.StopScript();
+                        }
                     }
                 });
             }
@@ -172,6 +199,7 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.Height = 480;
             RenderWindow.renderSettings.RegionSize = 64;
             RenderWindow.renderSettings.VolumetricFog = true;
+            RenderWindow.renderSettings.Preview = true;
             RenderWindow.renderSettings.MinSamples = 1;
             RenderWindow.renderSettings.MaxSamples = 4;
             RenderWindow.renderSettings.SampleThreshold = 0.01;
@@ -189,6 +217,8 @@ namespace MCS.MainWindows
             RenderWindow.renderSettings.Animation = false;
             RenderWindow.renderSettings.AnimationFPS = 30;
             RenderWindow.renderSettings.AnimationResetCaches = false;
+            RenderWindow.renderSettings.AnimationStartTime = 0.0;
+            RenderWindow.renderSettings.AnimationEndTime = 0.0;
         }
 
         public RenderWindow(MEngine engine)
@@ -242,8 +272,25 @@ namespace MCS.MainWindows
                     this.saveBufferToFile(BuffersNames[BuffersNames.Count - 1], true); // save last buffer to file incrementally
 
                     this.engine.AnimationManager.MoveTime(1.0 / RenderWindow.renderSettings.AnimationFPS);
-                    this.engine.ProductionRenderer.Init(this.RenderSettings);
-                    this.engine.ProductionRenderer.Start();
+                    if (RenderWindow.renderSettings.AnimationEndTime != 0.0 &&
+                        this.engine.AnimationManager.GetTime() > RenderWindow.renderSettings.AnimationEndTime) // stop if end time is set and we reached it
+                    {
+                        this.timer.Stop();
+                        this.engine.AnimationManager.ResetTime();
+                        ScriptWindow.StopScript();
+                    }
+                    else
+                    {
+                        double time = this.engine.AnimationManager.GetTime();
+                        if ((time - Math.Truncate(time)) < 1.0 / (RenderWindow.renderSettings.AnimationFPS + 1))
+                            RenderWindow.renderSettings.Preview = true;
+                        else
+                            RenderWindow.renderSettings.Preview = false;
+                        this.OnPropertyChanged("RenderSettings");
+
+                        this.engine.ProductionRenderer.Init(this.RenderSettings);
+                        this.engine.ProductionRenderer.Start();
+                    }
                 }
                 else
                     this.timer.Stop();

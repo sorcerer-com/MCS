@@ -20,7 +20,8 @@ namespace MyEngine {
 		};
 
 
-		delegate void SelectionChangedEventHandler(ESelectionType selectionType, uint id);
+        delegate void SelectionChangedEventHandler(ESelectionType selectionType, uint id);
+        static event SelectionChangedEventHandler^ SelectionChanging;
 		static event SelectionChangedEventHandler^ SelectionChanged;
 
 
@@ -42,7 +43,8 @@ namespace MyEngine {
 
 
 		static bool Select(ESelectionType selectionType, uint id)
-		{
+        {
+            SelectionChanging(selectionType, id);
 			bool res = getSelection(selectionType).insert(id).second;
 			if (res) SelectionChanged(selectionType, id);
 			return res;
@@ -50,6 +52,7 @@ namespace MyEngine {
 
 		static bool Deselect(ESelectionType selectionType, uint id)
 		{
+            SelectionChanging(selectionType, id);
 			bool res = getSelection(selectionType).erase(id) > 0;
 			if (res) SelectionChanged(selectionType, id);
 			return res;
@@ -62,7 +65,8 @@ namespace MyEngine {
 		}
 
 		static void Clear(ESelectionType selectionType)
-		{
+        {
+            SelectionChanging(selectionType, 0);
 			getSelection(selectionType).clear();
 			SelectionChanged(selectionType, 0);
 		}

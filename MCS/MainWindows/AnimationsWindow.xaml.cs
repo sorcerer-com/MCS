@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace MCS.MainWindows
 {
@@ -61,6 +62,34 @@ namespace MCS.MainWindows
             }
         }
 
+        private bool isPlaying;
+        public bool IsPlaying
+        {
+            get { return this.isPlaying; }
+            set { this.isPlaying = value; this.OnPropertyChanged("IsPlaying"); }
+        }
+
+        private bool isLooping;
+        public bool IsLooping
+        {
+            get { return this.isLooping; }
+            set { this.isLooping = value; this.OnPropertyChanged("IsLooping"); }
+        }
+
+        private bool isLinear;
+        public bool IsLinear
+        {
+            get { return this.isLinear; }
+            set
+            {
+                this.isLinear = value;
+
+                this.value = this.GetCurveValue(this.SelectedCurve, this.CurrentFrame);
+                this.OnPropertyChanged("Value");
+                this.OnPropertyChanged("IsLinear");
+            }
+        }
+
         private double speed;
         public double Speed
         {
@@ -111,6 +140,7 @@ namespace MCS.MainWindows
         public bool Autokey { get; set; }
 
         private Point mousePosition;
+        private DispatcherTimer timer;
         
         #region Commands
 
@@ -267,9 +297,28 @@ namespace MCS.MainWindows
             this.DataContext = this;
             this.animationManager = animationManager;
 
+            MSelector.SelectionChanging += MSelector_SelectionChanging;
+
             this.RefreshCurves();
+            this.IsPlaying = false;
+            this.IsLooping = false;
             this.Speed = 1.0;
             this.CurrentFrame = 0;
+
+            this.timer = new DispatcherTimer();
+            this.timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            this.timer.Tick += new EventHandler(this.timer_Tick);
+            this.timer.Start();
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            this.timer.Stop();
+            this.animationManager.ResetTime();
+            foreach(var id in MSelector.Elements(MSelector.ESelectionType.SceneElement))
+            {
+                this.animationManager.StopAnimation(id);
+            }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -323,19 +372,52 @@ namespace MCS.MainWindows
                 if (found)
                     this.SelectedCurve = new List<string>(this.Curves.Keys)[0];
             }
-            //else if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.P) // play
-            //    this.playButton_Click(this.playButton, null);
-            //else if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.S) // stop
-            //    this.playButton_Click(this.stopButton, null);
-            //else if (Keyboard.IsKeyDown(Key.F12)) // Play / Pause
-            //{
-            //    if (this.timer.IsEnabled == true) // if is on play then stop
-            //        this.playButton_Click(this.stopButton, null);
-            //    else
-            //        this.playButton_Click(this.playButton, null);
-            //}
+            else if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.P) // play
+                this.IsPlaying = true;
+            else if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.S) // stop
+                this.IsPlaying = false;
+            else if (Keyboard.IsKeyDown(Key.Space)) // Play / Pause
+                this.IsPlaying = !this.IsPlaying;
             else
                 e.Handled = false;
+        }
+
+        void MSelector_SelectionChanging(MSelector.ESelectionType selectionType, uint id)
+        {
+            if (selectionType == MSelector.ESelectionType.SceneElement)
+            {
+                this.animationManager.StopAnimation(id);
+            }
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(this.SelectedAnimation))
+                return;
+
+            this.animationManager.ResetTime();
+            foreach(var id in MSelector.Elements(MSelector.ESelectionType.SceneElement))
+            {
+                this.animationManager.PlayAnimation(id, this.SelectedAnimation, 0, 0, false, false, 1.0, this.IsLinear);
+            }
+
+            double deltaTime = (double)this.CurrentFrame / 30 - this.animationManager.GetTime();
+            this.animationManager.MoveTime(deltaTime);
+
+            if (this.IsPlaying)
+            {
+                this.CurrentFrame += (int)(0.1 * 30 * this.Speed);
+
+                int lastFrame = 0;
+                foreach (var curve in this.Curves)
+                    lastFrame = Math.Max(lastFrame, (int)curve.Value[curve.Value.Count - 1].X);
+                if (this.CurrentFrame > lastFrame)
+                {
+                    this.CurrentFrame = 0;
+                    if (!this.IsLooping)
+                        this.IsPlaying = false;
+                }
+            }
         }
 
 
@@ -384,7 +466,10 @@ namespace MCS.MainWindows
                         return 0.0;
                     double d = (point.X - prev.X);
                     double t = (frame - prev.X) / d;
-                    return cubicBezier(t, prev, prev + new Vector(d / 2.0, 0), point - new Vector(d / 2.0, 0), point).Y;
+                    if (this.IsLinear)
+                        return ((1.0 - t) * (Vector)prev + t * (Vector)point).Y;
+                    else
+                        return cubicBezier(t, prev, prev + new Vector(d / 2.0, 0), point - new Vector(d / 2.0, 0), point).Y;
                 }
                 prev = point;
             }
@@ -396,6 +481,7 @@ namespace MCS.MainWindows
             if (string.IsNullOrEmpty(this.SelectedAnimation) ||
                 string.IsNullOrEmpty(this.SelectedCurve))
                 return;
+            this.animationManager.ResetTime();
 
             int index = 0;
             string track = this.SelectedCurve;
@@ -419,6 +505,7 @@ namespace MCS.MainWindows
             if (string.IsNullOrEmpty(this.SelectedAnimation) ||
                 string.IsNullOrEmpty(this.SelectedCurve))
                 return;
+            this.animationManager.ResetTime();
 
             string track = this.SelectedCurve;
             if (track.Contains("["))

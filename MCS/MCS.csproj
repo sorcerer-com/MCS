@@ -312,6 +312,11 @@
   <ItemGroup>
     <Resource Include="Images\Common\Clone.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\AnimationWindow\bezier.png" />
+    <Resource Include="Images\AnimationWindow\linear.png" />
+    <Resource Include="Images\AnimationWindow\loop.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

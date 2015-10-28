@@ -39,6 +39,7 @@ namespace MyEngine {
         bool Paused;
         bool Loop;
         float Speed;
+        bool Linear;
     };
 
 	class AnimationManager : public BaseManager
@@ -76,7 +77,7 @@ namespace MyEngine {
         AnimTrack GetTrack(const string& animation, const string& track);
         vector<string> GetTrackNames(const string& animation);
 
-        void PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed);    //* wrap
+        void PlayAnimation(uint seID, const string& animation, float startTime, float startAt, bool paused, bool loop, float speed, bool linear);    //* wrap const
         bool IsPlayingAnimation(uint seID) const;           //* wrap
         void StopAnimation(uint seID);                      //* wrap
         AnimStatus GetAnimationStatus(uint seID);
@@ -87,7 +88,7 @@ namespace MyEngine {
     private:
         void doAnimation();
         void applyAnimation(uint seID, const AnimStatus& animStatus, float deltaTime);
-        bool getValue(const AnimTrack& animTrack, float time, float* out);
+        bool getValue(const AnimTrack& animTrack, float time, bool linear, float* out) const;
         float getAnimationLength(const string& name);
 
     };
