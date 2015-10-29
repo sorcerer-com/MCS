@@ -145,6 +145,9 @@
     <Compile Include="MainWindows\LayersWindow.xaml.cs">
       <DependentUpon>LayersWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindows\ProfilerWindow.xaml.cs">
+      <DependentUpon>ProfilerWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindows\RenderWindow.xaml.cs">
       <DependentUpon>RenderWindow.xaml</DependentUpon>
     </Compile>
@@ -179,6 +182,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindows\LogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindows\ProfilerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -252,7 +259,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\MainWindow\Animations.png" />
-    <Resource Include="Images\MainWindow\BuildLightMaps.png" />
     <Resource Include="Images\MainWindow\Render.PNG" />
     <Resource Include="Images\MainWindow\Contents.PNG" />
     <Resource Include="Images\MainWindow\SelectCursor.PNG" />
@@ -262,9 +268,8 @@
     <Resource Include="Images\MainWindow\Log.png" />
     <Resource Include="Images\Common\New.png" />
     <Resource Include="Images\Common\Open.PNG" />
-    <Resource Include="Images\MainWindow\Packaging.png" />
     <Resource Include="Images\Common\Play.png" />
-    <Resource Include="Images\MainWindow\Profiling.png" />
+    <Resource Include="Images\MainWindow\Profiler.png" />
     <Resource Include="Images\MainWindow\Rotate.PNG" />
     <Resource Include="Images\Common\Save.PNG" />
     <Resource Include="Images\MainWindow\Scale.PNG" />

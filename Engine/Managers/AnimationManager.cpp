@@ -8,6 +8,7 @@
 #include "..\Utils\Utils.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Utils\Types\Thread.h"
+#include "..\Utils\Types\Profiler.h"
 #include "..\Utils\Types\Vector3.h"
 #include "..\Utils\Types\Quaternion.h"
 #include "..\Managers\SceneManager.h"
@@ -526,6 +527,7 @@ namespace MyEngine {
 
     void AnimationManager::applyAnimation(uint seID, const AnimStatus& animStatus, float deltaTime)
     {
+        Profile;
         if (!this->ContainsAnimation(animStatus.Animation) ||
             !this->Owner->SceneManager->ContainsElement(seID) ||
             deltaTime == 0.0f)

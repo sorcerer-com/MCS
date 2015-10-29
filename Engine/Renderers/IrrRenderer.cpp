@@ -10,6 +10,7 @@
 #include "..\Engine.h"
 #include "..\Utils\Config.h"
 #include "..\Utils\Types\Thread.h"
+#include "..\Utils\Types\Profiler.h"
 #include "..\Managers\SceneManager.h"
 #include "..\Managers\ContentManager.h"
 #include "..\Scene Elements\SceneElement.h"
@@ -205,6 +206,8 @@ namespace MyEngine {
 
     void IrrRenderer::updateScene()
     {
+        Profile;
+
         // Setup Camera
         Camera* camera = this->Owner->SceneManager->ActiveCamera;
         if (camera)
@@ -263,6 +266,8 @@ namespace MyEngine {
 
     void IrrRenderer::updateSceneElement(const SceneElementPtr sceneElement)
     {
+        Profile;
+
         if (!sceneElement)
             return;
 

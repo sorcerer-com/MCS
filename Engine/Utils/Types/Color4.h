@@ -6,6 +6,11 @@
 
 namespace MyEngine {
 
+#ifdef __SSE__
+#pragma warning( disable : 4793 )
+#pragma optimize( "g", off )
+#endif
+
 	struct Color4
 	{
 		float r, g, b, a;
@@ -13,7 +18,8 @@ namespace MyEngine {
 		Color4() { set(0, 0, 0, 0); }
 		Color4(const Color4& c) { set(c.r, c.g, c.b, c.a); }
 		Color4(double _r, double _g, double _b) { set(_r, _g, _b, 1.0); }
-		Color4(double _r, double _g, double _b, double _a) { set(_r, _g, _b, _a); }
+        Color4(double _r, double _g, double _b, double _a) { set(_r, _g, _b, _a); }
+        Color4(const __m128& xmm_) { set(xmm_.m128_f32[0], xmm_.m128_f32[1], xmm_.m128_f32[2], xmm_.m128_f32[3]); }
 
 		void set(double _r, double _g, double _b, double _a)
 		{
@@ -45,35 +51,52 @@ namespace MyEngine {
         }
 
 		inline void operator +=(const Color4& c)
-		{
+        {
+#ifdef __SSE__
+            *this = _mm_add_ps(*this, c);
+#else
 			r += c.r;
 			g += c.g;
 			b += c.b;
-			a += c.a;
+            a += c.a;
+#endif
 		}
 
 		inline void operator -=(const Color4& c)
-		{
+        {
+#ifdef __SSE__
+            *this = _mm_sub_ps(*this, c);
+#else
 			r -= c.r;
 			g -= c.g;
 			b -= c.b;
-			a -= c.a;
+            a -= c.a;
+#endif
 		}
 
 		inline void operator *=(const Color4& c)
-		{
+        {
+#ifdef __SSE__
+            *this = _mm_mul_ps(*this, c);
+#else
 			r *= c.r;
 			g *= c.g;
 			b *= c.b;
-			a *= c.a;
+            a *= c.a;
+#endif
 		}
 
 		inline void operator *=(double multiplier)
-		{
+        {
+#ifdef __SSE__
+            Color4 c(multiplier, multiplier, multiplier, multiplier);
+            *this = _mm_mul_ps(*this, c);
+#else
 			r *= (float)multiplier;
 			g *= (float)multiplier;
 			b *= (float)multiplier;
-			a *= (float)multiplier;
+            a *= (float)multiplier;
+#endif
 		}
 
 		inline float intensity() const
@@ -90,26 +113,49 @@ namespace MyEngine {
         {
             return Color4(1.0f, 1.0f, 1.0f);
         }
+
+
+        inline operator __m128() const
+        {
+            return *((__m128*)this);
+        }
 	};
 
 	inline Color4 operator *(const Color4& a, float f)
-	{
-		return Color4(a.r * f, a.g * f, a.b * f, a.a * f);
+    {
+#ifdef __SSE__
+        Color4 c(f, f, f, f);
+        return _mm_mul_ps(a, c);
+#else
+        return Color4(a.r * f, a.g * f, a.b * f, a.a * f);
+#endif
     }
 
     inline Color4 operator *(const Color4& a, const Color4& b)
     {
+#ifdef __SSE__
+        return _mm_mul_ps(a, b);
+#else
         return Color4(a.r * b.r, a.g * b.g, a.b * b.b, a.a * b.a);
+#endif
     }
 
     inline Color4 operator +(const Color4& a, const Color4& b)
     {
+#ifdef __SSE__
+        return _mm_add_ps(a, b);
+#else
         return Color4(a.r + b.r, a.g + b.g, a.b + b.b, a.a + b.a);
+#endif
     }
 
     inline Color4 operator -(const Color4& a, const Color4& b)
     {
+#ifdef __SSE__
+        return _mm_sub_ps(a, b);
+#else
         return Color4(a.r - b.r, a.g - b.g, a.b - b.b, a.a - b.a);
+#endif
     }
 
 
@@ -143,5 +189,10 @@ namespace MyEngine {
     {
         return Color4(abs(c.r), abs(c.g), abs(c.b), abs(c.a));
     }
+
+#ifdef __SSE__
+#pragma warning( default : 4793 )
+#pragma optimize( "g", on )
+#endif
 
 }

@@ -1,0 +1,10 @@
+﻿<Window x:Class="MCS.MainWindows.ProfilerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mcs="clr-namespace:MCS.Controls"
+        Title="Profiler" Width="640" Height="480" Icon="/Images/MainWindow/Profiler.PNG"
+        MouseWheel="Window_MouseWheel">
+    <Grid>
+        <mcs:GraphsViewer Data="{Binding Curves}" Start="{Binding Start}" Scale="350, 1" HeaderSize="300, 35"/>
+    </Grid>
+</Window>

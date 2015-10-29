@@ -18,6 +18,7 @@ namespace MyEngine {
 
     // P R O F I L E R
     map<string, Profiler::Data> Profiler::data;
+    mutex Profiler::dataMutex;
 
 	/* S E L E C T O R */
 	set<uint> Selector::ContentElements;
@@ -68,6 +69,11 @@ namespace MyEngine {
 		Engine::Log(LogType::ELog, "Engine", "Destroy engine");
 	}
 
+
+    map<string, long long> Engine::GetProfilerData()
+    {
+        return Profiler::GetDurations();
+    }
 
 	void Engine::Log(LogType type, const string& category, const string& text)
 	{

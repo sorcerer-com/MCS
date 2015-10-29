@@ -114,8 +114,6 @@ namespace MCS.Controls
         }
 
 
-        private Point mousePosition;
-
         private static Size guidelineSize = new Size(30.0, 40.0);
         private static Typeface typefaceNormal = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
         private static Typeface typefaceBold = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
@@ -125,8 +123,6 @@ namespace MCS.Controls
         {
             this.Background = Brushes.DarkGray;
             this.BorderBrush = Brushes.Silver;
-
-            this.mousePosition = Mouse.GetPosition(this);
         }
 
 
@@ -230,7 +226,7 @@ namespace MCS.Controls
                     text = new FormattedText(pair.Key, System.Globalization.CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, typefaceNormal, 16, this.Foreground);
                     if (pair.Key == this.SelectedCurve)
                         text.SetFontTypeface(typefaceBold);
-                    text.MaxTextWidth = 90;
+                    text.MaxTextWidth = this.HeaderSize.Width - 10;
                     text.MaxLineCount = 1;
                     drawingContext.DrawText(text, new Point(5, this.Start.Y * this.Scale.Height + this.HeaderSize.Height + guidelineSize.Height * (count + 1) * this.Scale.Height - text.Height - 5));
                     count++;

@@ -58,6 +58,7 @@ namespace MyEngine {
 		Engine();
 		~Engine();
 
+        static map<string, long long> GetProfilerData();
 		static void Log(LogType type, const string& category, const string& text);
 	};
 

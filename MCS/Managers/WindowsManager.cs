@@ -137,6 +137,7 @@ namespace MCS.Managers
             keys.Add(new HotKeyInfo(Key.A, true, false, false, "", "AnimationsWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F10, false, false, false, "", "ScriptWindowCommand"));
             keys.Add(new HotKeyInfo(Key.System, false, false, false, "", "ScriptWindowCommand"));
+            keys.Add(new HotKeyInfo(Key.P, true, false, false, "", "ProfilerWindowCommand"));
             keys.Add(new HotKeyInfo(Key.F5, false, false, false, "", "PlayStopCommand"));
             hotkeys.Add(typeof(MainWindow), keys);
 

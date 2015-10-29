@@ -8,6 +8,7 @@
 #include "..\Utils\Utils.h"
 #include "..\Utils\IOUtils.h"
 #include "..\Utils\Types\Thread.h"
+#include "..\Utils\Types\Profiler.h"
 #include "..\Content Elements\ContentElement.h"
 #include "..\Content Elements\Mesh.h"
 #include "..\Content Elements\Material.h"
@@ -504,6 +505,7 @@ namespace MyEngine {
 		{
 			while (!this->requests.empty())
 			{
+                Profile;
 				this->thread->mutex("requests").lock();
 				auto request = this->requests.front();
 				this->thread->mutex("requests").unlock();

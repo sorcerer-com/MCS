@@ -6,16 +6,6 @@
 
 namespace MyEngine {
 
-    EEngineMode MEngine::Mode::get()
-    {
-        return (EEngineMode)Engine::Mode;
-    }
-
-    void MEngine::Mode::set(EEngineMode value)
-    {
-        Engine::Mode = (EngineMode)value;
-    }
-
     bool MEngine::IsStarted::get()
     {
         return this->engine->Started;
@@ -26,6 +16,38 @@ namespace MyEngine {
         this->OnStartChanging(value);
         this->engine->Started = value;
         this->OnStartChanged(value);
+    }
+
+
+    EEngineMode MEngine::Mode::get()
+    {
+        return (EEngineMode)Engine::Mode;
+    }
+
+    void MEngine::Mode::set(EEngineMode value)
+    {
+        Engine::Mode = (EngineMode)value;
+    }
+
+    Dictionary<String^, TimeSpan>^ MEngine::ProfilerData::get()
+    {
+        Dictionary<String^, TimeSpan>^ collection = gcnew Dictionary<String^, TimeSpan>();
+
+        const auto& data = Engine::GetProfilerData();
+        for (const auto& pair : data)
+        {
+            long long milisecs = pair.second;
+            long long seconds = pair.second / 1000;
+            long long minutes = seconds / 60;
+            long long hours = minutes / 60;
+            milisecs -= seconds * 1000;
+            seconds -= minutes * 60;
+            minutes -= hours * 60;
+
+            collection->Add(gcnew String(pair.first.c_str()), TimeSpan(0, (int)hours, (int)minutes, (int)seconds, (int)milisecs));
+        }
+
+        return collection;
     }
 
 

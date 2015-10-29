@@ -86,16 +86,8 @@
                 <Button ToolTip="{Binding Path=RenderWindowCommandTooltip}" Command="{Binding Path=RenderWindowCommand}">
                     <Image Source="/Images/MainWindow/Render.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
-                <Button ToolTip="Build Light Maps (F6)">
-                    <Image Source="/Images/MainWindow/BuildLightMaps.png" Style="{StaticResource toolbarButtonImageStyle}"/>
-                </Button>
-                <Button ToolTip="Package Game (F12)">
-                    <Image Source="/Images/MainWindow/Packaging.png" Style="{StaticResource toolbarButtonImageStyle}"/>
-                </Button>
-            </ToolBar>
-            <ToolBar Band="1" BandIndex="5" IsManipulationEnabled="True">
-                <Button ToolTip="Profiling (Ctrl+P)">
-                    <Image Source="/Images/MainWindow/Profiling.png" Style="{StaticResource toolbarButtonImageStyle}"/>
+                <Button ToolTip="{Binding Path=ProfilerWindowCommandTooltip}" Command="{Binding Path=ProfilerWindowCommand}">
+                    <Image Source="/Images/MainWindow/Profiler.png" Style="{StaticResource toolbarButtonImageStyle}"/>
                 </Button>
                 <ToggleButton ToolTip="{Binding Path=PlayStopCommandTooltip}" IsChecked="{Binding IsEngineStarted}">
                     <Image>

@@ -481,6 +481,15 @@ namespace MCS
         }
 
 
+        public ICommand ProfilerWindowCommand
+        {
+            get { return new DelegateCommand((o) => { WindowsManager.ShowWindow(typeof(ProfilerWindow)); }); }
+        }
+        public string ProfilerWindowCommandTooltip
+        {
+            get { return "Profiler " + WindowsManager.GetHotkey(this.GetType(), "ProfilerWindowCommand", true); }
+        }
+
         public bool IsEngineStarted
         {
             get { return this.engine.IsStarted; }

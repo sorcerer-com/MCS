@@ -21,8 +21,6 @@ namespace MyEngine {
         bool log;
         chrono::system_clock::time_point time;
 
-        mutex dataMutex;
-
     public:
         Profiler()
         {
@@ -45,7 +43,7 @@ namespace MyEngine {
 
         ~Profiler()
         {
-            lock_guard<mutex> lck(this->dataMutex);
+            lock_guard<mutex> lck(Profiler::dataMutex);
             if (Engine::Mode == EngineMode::EEngine || this->name == "")
                 return;
 
@@ -96,14 +94,18 @@ namespace MyEngine {
         };
 
         static map<string, Data> data;
+        static mutex dataMutex;
 
     public:
-        map<string, chrono::system_clock::duration> getDurations()
+        static map<string, long long> GetDurations()
         {
-            lock_guard<mutex> lck(this->dataMutex);
-            map<string, chrono::system_clock::duration> durations;
+            lock_guard<mutex> lck(Profiler::dataMutex);
+            map<string, long long> durations;
             for (auto& d : data)
-                durations[d.first] = d.second.deltaSum / d.second.counter;
+            {
+                long long milisecs = chrono::duration_cast<chrono::milliseconds>(d.second.deltaSum).count();
+                durations[d.first] = milisecs / d.second.counter;
+            }
             return durations;
         }
     };

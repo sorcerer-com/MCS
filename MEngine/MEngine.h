@@ -46,10 +46,16 @@ namespace MyEngine {
             void set(bool value);
         }
 
+
         static property EEngineMode Mode
         {
             EEngineMode get();
             void set(EEngineMode value);
+        }
+
+        static property Dictionary<String^, TimeSpan>^ ProfilerData
+        {
+            Dictionary<String^, TimeSpan>^ get();
         }
 
 
