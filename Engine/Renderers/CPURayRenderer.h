@@ -13,6 +13,7 @@ namespace embree {
     enum RTCError;
     struct RTCRay;
     struct RTCRay4;
+    struct __RTCDevice;
     struct __RTCScene;
 }
 
@@ -65,6 +66,7 @@ namespace MyEngine {
         float focalPlaneDist, fNumber;
         int nextRagion;
 
+        embree::__RTCDevice* rtcDevice;
         embree::__RTCScene* rtcScene;
         embree::__RTCScene* rtcSystemScene;
         map<uint, embree::__RTCScene*> rtcGeometries; // mesh id / rtcScene(Geometry)

@@ -87,7 +87,8 @@ namespace MyEngine {
             this->rtcGeometries.clear();
             embree::rtcDeleteScene(this->rtcScene);
             this->rtcScene = NULL;
-            embree::rtcExit();
+            embree::rtcDeleteDevice(this->rtcDevice);
+            this->rtcDevice = NULL;
         }
 
         Engine::Log(LogType::ELog, "CPURayRenderer", "DeInit CPU Ray Renderer");
@@ -141,7 +142,7 @@ namespace MyEngine {
         Random::initRandom((int)Now, []() -> int { return (int)this_thread::get_id().hash(); });
         this->generateRegions();
 
-        embree::rtcSetErrorFunction((embree::RTCErrorFunc)&onRTCError);
+        embree::rtcDeviceSetErrorFunction(this->rtcDevice, (embree::RTCErrorFunc)&onRTCError);
 
         Engine::Log(LogType::ELog, "CPURayRenderer", "Init CPU Ray Renderer to (" + to_string(width) + ", " + to_string(height) + ")");
         return true;
@@ -179,10 +180,11 @@ namespace MyEngine {
             this->rtcGeometries.clear();
             embree::rtcDeleteScene(this->rtcScene);
             this->rtcScene = NULL;
-            embree::rtcExit();
+            embree::rtcDeleteDevice(this->rtcDevice);
+            this->rtcDevice = NULL;
         }
 
-        embree::rtcInit();
+        this->rtcDevice = embree::rtcNewDevice();
         this->beginFrame();
         this->createRTCScene();
 
@@ -430,7 +432,7 @@ namespace MyEngine {
         // Create Scene
         embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
         embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1 | embree::RTCAlgorithmFlags::RTC_INTERSECT4;
-        this->rtcScene = embree::rtcNewScene(sflags, aflags);
+        this->rtcScene = embree::rtcDeviceNewScene(this->rtcDevice, sflags, aflags);
 
         // Create SceneElements
         vector<SceneElementPtr> sceneElements = this->Owner->SceneManager->GetElements();
@@ -457,7 +459,7 @@ namespace MyEngine {
 
 
         // Create System Scene
-        this->rtcSystemScene = embree::rtcNewScene(sflags, aflags);
+        this->rtcSystemScene = embree::rtcDeviceNewScene(this->rtcDevice, sflags, aflags);
 
         // Create SceneElements
         sceneElements = this->Owner->SceneManager->GetElements(SceneElementType::ERenderObject);
@@ -508,7 +510,7 @@ namespace MyEngine {
         // create rtcScene
         embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
         embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1 | embree::RTCAlgorithmFlags::RTC_INTERSECT4;
-        embree::RTCScene rtcGeometry = embree::rtcNewScene(sflags, aflags);
+        embree::RTCScene rtcGeometry = embree::rtcDeviceNewScene(this->rtcDevice, sflags, aflags);
 
         // create rtcMesh
         uint meshID = embree::rtcNewTriangleMesh(rtcGeometry, embree::RTCGeometryFlags::RTC_GEOMETRY_STATIC, mesh->Triangles.size(), mesh->Vertices.size());
@@ -1008,7 +1010,7 @@ namespace MyEngine {
         // create rtcScene
         embree::RTCSceneFlags sflags = embree::RTCSceneFlags::RTC_SCENE_STATIC | embree::RTCSceneFlags::RTC_SCENE_COHERENT;
         embree::RTCAlgorithmFlags aflags = embree::RTCAlgorithmFlags::RTC_INTERSECT1;
-        this->rtcIrrMapScene = embree::rtcNewScene(sflags, aflags);
+        this->rtcIrrMapScene = embree::rtcDeviceNewScene(this->rtcDevice, sflags, aflags);
 
         // create rtcMesh
         uint meshID = embree::rtcNewTriangleMesh(this->rtcIrrMapScene, embree::RTCGeometryFlags::RTC_GEOMETRY_STATIC, this->irrMapTriangles.size() / 3, this->irrMapSamples.size());
@@ -1841,12 +1843,16 @@ namespace MyEngine {
         // set to light cache
         if (this->LightCache && interInfo.sceneElement->Type != SceneElementType::EDynamicObject)
         {
-            // trace 2 more rays
-            embree::RTCRay rtcNextRay = rtcRay;
-            rtcNextRay.align0++;
-            for (int i = 1; i < 3; i++)
-                result += this->getGILighting(rtcNextRay, interInfo, pathMultiplier);
-            result *= 1.0f / 3.0f;
+            // trace more rays
+            uint samples = adaptiveSampling(this->MinSamples, this->GISamples, this->SampleThreshold, [&](int)->Color4
+            {
+                embree::RTCRay rtcNextRay = rtcRay;
+                rtcNextRay.align0++;
+                const auto& temp = this->getGILighting(rtcNextRay, interInfo, pathMultiplier);
+                result += temp;
+                return temp;
+            });
+            result *= 1.0f / (samples + 1);
 
             LightCacheSample sample;
             sample.position = interInfo.interPos;

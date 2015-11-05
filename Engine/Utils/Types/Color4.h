@@ -19,7 +19,9 @@ namespace MyEngine {
 		Color4(const Color4& c) { set(c.r, c.g, c.b, c.a); }
 		Color4(double _r, double _g, double _b) { set(_r, _g, _b, 1.0); }
         Color4(double _r, double _g, double _b, double _a) { set(_r, _g, _b, _a); }
+#ifdef __SSE__
         Color4(const __m128& xmm_) { set(xmm_.m128_f32[0], xmm_.m128_f32[1], xmm_.m128_f32[2], xmm_.m128_f32[3]); }
+#endif
 
 		void set(double _r, double _g, double _b, double _a)
 		{
@@ -115,10 +117,12 @@ namespace MyEngine {
         }
 
 
+#ifdef __SSE__
         inline operator __m128() const
         {
             return *((__m128*)this);
         }
+#endif
 	};
 
 	inline Color4 operator *(const Color4& a, float f)

@@ -17,7 +17,9 @@ namespace MyEngine {
 		Vector3() { set(0, 0, 0); }
         Vector3(const Vector3& v) { set(v.x, v.y, v.z); }
         Vector3(double _x, double _y, double _z) { set(_x, _y, _z); }
+#ifdef __SSE__
         Vector3(const __m128& xmm_) { set(xmm_.m128_f32[0], xmm_.m128_f32[1], xmm_.m128_f32[2]); }
+#endif
 
 		void set(double _x, double _y, double _z)
 		{
@@ -120,10 +122,12 @@ namespace MyEngine {
 		}
 
 
+#ifdef __SSE__
         inline operator __m128() const
         {
             return *((__m128*)this);
         }
+#endif
 	};
 
 	inline Vector3 operator -(const Vector3& a)
